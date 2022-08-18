@@ -1,0 +1,11 @@
+{
+  "name": "smonorepo",
+  "version": "1.0.0",
+  "description": "SMonorepo study!",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "dofw",
+  "license": "ISC"
+}
