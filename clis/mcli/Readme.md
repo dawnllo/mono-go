@@ -1,3 +1,16 @@
+## 开源库选择
+
+1. 命令行交互
+inquire: 大生态用的比较多, 依赖比较重。
+prompts: 依赖比较少相对轻量。比较适合个人日常开发使用。
+commander： 0依赖, 也不错。
+
+2. 云函数平台https://vercel.com(汪磊)
+
+- vercel、阿里云平台的使用，捣鼓捣鼓。例子：向云平台配置一个函数，配置不对外暴露的keys, 对githubApi进行包装、处理, 返回需要的格式数据。https://caz.vercel.app/templates?owner=${owner}。
+- cli设计，中间件细想。
+
+
 ### chalk 美化字体颜色。
 
 安装说明：chalk@5.0.0 使用的 es6module 的方式。在 commonjs 中不支持，原因没有 webpack 这样的工具。
