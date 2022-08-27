@@ -31,5 +31,4 @@ pnpm 使用 npm 的配置文件。
   "scripts": {
     "preinstall": "npx only-allow pnpm", // 限制仅pnpm进行install
   }
-
 ```
