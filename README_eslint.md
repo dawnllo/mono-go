@@ -16,7 +16,8 @@ vsCode有自己的默认格式配置。
 ```json
   "editor.formatOnSave": true, // 自动保存
   "editor.codeActionsOnSave": { // 改变格式模式
-    "source.fixAll.eslint": true 
+    "source.fixAll": true, // turns on Auto Fix for all providers including ESLint
+    "source.fixAll.eslint": false // only turns it on for ESLint (有选择的禁掉eslit,开启其它)
   },
 
   // https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint#settings-options vscode官网 eslint插件setting options配置说明
@@ -48,7 +49,7 @@ prettier 仅仅是为 格式化 而生的工具
 
 原因:
 
-当两者一起使用时，在格式化风格上有冲突，导致闪烁bug
+项目中使用了vscode的eslint和prettier插件，并开启了保存时自动格式化和自动修复代码的功能，在格式化风格上有冲突，导致闪烁bug
 
 解决冲突:
 
