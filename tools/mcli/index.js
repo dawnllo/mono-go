@@ -1,18 +1,11 @@
 #!/usr/bin/env node
 
-// 1. 命令定义
-// const { Command } = require("commander")
-// const chalk = require("chalk") 
-// const ora = require("ora") 
-// const inquirer = require("inquirer") 
-
-// const download = require("download-git-repo") 
-
 import {Command} from 'commander'   // 定义指令
+import inquirer from 'inquirer' // 采集用户输入
+
+import download from 'download-git-repo' // 下载仓库模板工具
 import chalk from 'chalk' // 字体颜色
 import ora from 'ora' // loading动效
-import inquirer from 'inquirer' // 采集用户输入
-import download from 'download-git-repo' // 下载仓库模板工具
 import handlebars from 'handlebars'// 模板引擎
 // import fs from 'fs'
 
