@@ -10,13 +10,12 @@ import handlebars from 'handlebars'// 模板引擎
 // import fs from 'fs'
 
 const program = new Command()
-console.log(chalk("12313221"))
 
 // 命令的描述
 program
   .name(chalk.greenBright("mycli"))
   .description("study build myself Cli Tool !!!")
-  .version("1.0.0", "-V, --version", "版本号")
+  .version("1.0.0", "-v, --version", "版本号")
   .option("-h, --help", "帮助选项")
 
 // 添加 组件模板（子命令）
@@ -69,7 +68,7 @@ program
         })  
       });
     }else{
-      throw '不存在的Template!'
+      // throw '不存在的Template!'
     }
   })
   .on("--help", () => {
