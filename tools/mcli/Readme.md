@@ -8,6 +8,7 @@ commander： 0依赖, 也不错。
 2. 云函数平台https://vercel.com(汪磊)
 
 - vercel、阿里云平台的使用，捣鼓捣鼓。例子：向云平台配置一个函数，配置不对外暴露的keys, 对githubApi进行包装、处理, 返回需要的格式数据。https://caz.vercel.app/templates?owner=${owner}。
+
 - cli设计，中间件细想。
 
 
