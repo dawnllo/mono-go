@@ -1,5 +1,5 @@
 // 流程
-import parse from './parse.js'
+import parsePath from './parsePath.js'
 import load from './load.js'
 import MiddleWare from './cliMiddle.js'
 
@@ -10,7 +10,7 @@ export const ctx = {
 
 const app = new MiddleWare(ctx)
 
-app.use(parse)
+app.use(parsePath)
    .use(load)
 
 const excuteQueues = (...args) => {
