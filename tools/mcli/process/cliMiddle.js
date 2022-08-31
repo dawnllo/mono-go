@@ -1,10 +1,11 @@
-const middleWare = (function (){
+const MiddleWare = (function (){
   const QUEUES = Symbol('执行队列')
   
-  return class middleWare {
+  return class MiddleWare {
     [QUEUES] = [] 
     
-    construction () {
+    construction (context) {
+      this.context = context || {}
     }
 
     use(fn) {
@@ -15,20 +16,21 @@ const middleWare = (function (){
     }
 
     run() {
+      const _that = this
       const iterator = this.generator()
       let result = iterator.next()
       handlerResult()
-      
+
       //tools
       function handlerResult() {
         if (result.done) {
           return 
         }
 
-        const res = result.value.call(this, this.context)
+        const res = result.value.call(_that, _that.context)
 
         // Promise
-        if(typeof res.then === "function"){
+        if(res && typeof res.then === "function"){
           res.then(() => {
             result = iterator.next()
             handlerResult()
@@ -53,3 +55,5 @@ const middleWare = (function (){
     }
   }
 })()
+
+export default MiddleWare

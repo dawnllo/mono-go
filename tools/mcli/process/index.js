@@ -1,27 +1,22 @@
 // 流程
-import parse from './parse'
-import load from './load'
+import parse from './parse.js'
+import load from './load.js'
+import MiddleWare from './cliMiddle.js'
 
+// 作用域对config做约束。确实需要ts
 export const ctx = {
   a: 1,
 }
 
-function *generatorTemp() {
-  yield parse(ctx)
-  yield load(ctx)
-  // yield inquire()
-  // yield setupHook()
-  // yield prepare()
-  // yield render()
-  // yield emit() //写入
-  // yield install()
-  // yield complete()
+const app = new MiddleWare(ctx)
+
+app.use(parse)
+   .use(load)
+
+const excuteQueues = (...args) => {
+  // 融合参数
+  ctx.args = args
+  app.run()
 }
 
-const temp = generatorTemp()
-
-class CliMiddleWare {
-  
-}
-
-
+export default excuteQueues
