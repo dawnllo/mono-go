@@ -4,8 +4,8 @@ const MiddleWare = (function (){
   return class MiddleWare {
     [QUEUES] = [] 
     
-    construction (context) {
-      this.context = context || {}
+    construction () {
+      this.context = null
     }
 
     use(fn) {
@@ -15,7 +15,10 @@ const MiddleWare = (function (){
       return this
     }
 
-    run() {
+    async run(context) {
+      // init context
+      this.context = context
+
       const _that = this
       const iterator = this.generator()
       let result = iterator.next()

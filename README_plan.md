@@ -1,7 +1,9 @@
 # 计划
 
-- 基础: Promise、vue3书籍、设计模式、cli
+- 基础: Promise、vue3 书籍、设计模式、cli
 
-- 业务: upload、editor、transition动画应用
+- 业务: upload、editor、transition 动画应用
 
-- 框架: react nuxt、nestjs、go、java、sql-mysql、mongodb、threejs
+- 框架: react nuxt、nestjs、threejs
+
+- 语言: nodejs(cjs、ejs)、go、java、sql-mysql、mongodb

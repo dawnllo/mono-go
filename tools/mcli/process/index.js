@@ -1,22 +1,30 @@
 // 流程
 import parsePath from './parsePath.js'
 import load from './load.js'
-import MiddleWare from './cliMiddle.js'
+import MiddleWare from './middleware.js'
 
-// 作用域对config做约束。确实需要ts
-export const ctx = {
-  a: 1,
-}
-
-const app = new MiddleWare(ctx)
+const app = new MiddleWare()
 
 app.use(parsePath)
    .use(load)
 
-const excuteQueues = (...args) => {
-  // 融合参数
-  ctx.args = args
-  app.run()
+const excuteQueues = async (path, project, options) => {
+  
+  if(path === null || path === '') throw new Error('Missing require argument: `tempalte`.')
+  
+  // create context
+  const context = {
+    path,
+    project,
+    options,
+    src: '',
+    dest: '',
+    config: Object.create(null), // 获取模板，读取require
+    answers: Object.create(null),
+    files: []
+  }
+
+  await app.run(context)
 }
 
 export default excuteQueues
