@@ -45,7 +45,6 @@ const MiddleWare = (function (){
           result = iterator.next()
           handlerResult()
         }
-
       }
     }
 

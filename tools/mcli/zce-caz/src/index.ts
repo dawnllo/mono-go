@@ -1,45 +1,49 @@
-import prompts from 'prompts'
+import prompts from "prompts";
 
-import list, { ListOptions } from './list'
+import list, { ListOptions } from "./list";
 
-import { file, http, config, exec, Ware, Middleware } from './core'
-import { Options, Context, Template } from './types'
+import { file, http, config, exec, Ware, Middleware } from "./core";
+import { Options, Context, Template } from "./types";
 
-import confirm from './confirm'
-import resolve from './resolve'
-import load from './load'
-import inquire from './inquire'
-import setup from './setup'
-import prepare from './prepare'
-import rename from './rename'
-import render from './render'
-import emit from './emit'
-import install from './install'
-import init from './init'
-import complete from './complete'
+import confirm from "./confirm";
+import resolve from "./resolve";
+import load from "./load";
+import inquire from "./inquire";
+import setup from "./setup";
+import prepare from "./prepare";
+import rename from "./rename";
+import render from "./render";
+import emit from "./emit";
+import install from "./install";
+import init from "./init";
+import complete from "./complete";
 
 // export inject for test
-const { inject } = prompts
+const { inject } = prompts;
 
-const creator = new Ware<Context>()
+const creator = new Ware<Context>();
 
-creator.use(confirm)
-creator.use(resolve)
-creator.use(load)
-creator.use(inquire)
-creator.use(setup)
-creator.use(prepare)
-creator.use(rename)
-creator.use(render)
-creator.use(emit)
-creator.use(install)
-creator.use(init)
-creator.use(complete)
+creator.use(confirm);
+creator.use(resolve);
+creator.use(load);
+creator.use(inquire);
+creator.use(setup);
+creator.use(prepare);
+creator.use(rename);
+creator.use(render);
+creator.use(emit);
+creator.use(install);
+creator.use(init);
+creator.use(complete);
 
-export default async (template: string, project: string = '.', options: Options = {}): Promise<void> => {
+export default async (
+  template: string,
+  project: string = ".",
+  options: Options = {}
+): Promise<void> => {
   // required arguments
-  if (template == null || template === '') {
-    throw new Error('Missing required argument: `template`.')
+  if (template == null || template === "") {
+    throw new Error("Missing required argument: `template`.");
   }
 
   // create context
@@ -47,15 +51,28 @@ export default async (template: string, project: string = '.', options: Options 
     template,
     project,
     options,
-    src: '',
-    dest: '',
+    src: "",
+    dest: "",
     config: Object.create(null),
     answers: Object.create(null),
-    files: []
-  }
+    files: [],
+  };
 
   // running creator
-  await creator.run(context)
-}
+  await creator.run(context);
+};
 
-export { inject, file, http, config, exec, Ware, list, Middleware, Options, Context, Template, ListOptions }
+export {
+  inject,
+  file,
+  http,
+  config,
+  exec,
+  Ware,
+  list,
+  Middleware,
+  Options,
+  Context,
+  Template,
+  ListOptions,
+};
