@@ -1,20 +1,20 @@
 // 流程
-import parsePath from './parsePath.js'
+import MiddleWare from '../core/middleware.js'
+import parse from './parse.js'
 import load from './load.js'
-import MiddleWare from './middleware.js'
 
 const app = new MiddleWare()
 
-app.use(parsePath)
+app.use(parse)
    .use(load)
 
-const excuteQueues = async (path, project, options) => {
+const excuteQueues = async (template, project, options) => {
   
-  if(path === null || path === '') throw new Error('Missing require argument: `tempalte`.')
+  if(template === null || template === '') throw new Error('Missing require argument: `tempalte`.')
   
   // create context
   const context = {
-    path,
+    template,
     project,
     options,
     src: '',

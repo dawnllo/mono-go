@@ -22,10 +22,12 @@ const MiddleWare = (function (){
       const _that = this
       const iterator = this.generator()
       let result = iterator.next()
-      handlerResult()
+
+      await handlerResult()
+      console.log('run')
 
       //tools
-      function handlerResult() {
+     async function handlerResult() {
         if (result.done) {
           return 
         }
@@ -34,13 +36,14 @@ const MiddleWare = (function (){
 
         // Promise
         if(res && typeof res.then === "function"){
-          res.then(() => {
+          try {
+            await res
             result = iterator.next()
             handlerResult()
-          }).catch((err) => {
-            result = iterator.throw(err)
+          } catch (error) {
+            result = iterator.throw(error)
             handlerResult()
-          })
+          }
         }else{
           result = iterator.next()
           handlerResult()
