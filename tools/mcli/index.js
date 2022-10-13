@@ -1,24 +1,25 @@
 #!/usr/bin/env node
-
+// import { name, version } from './package.json' assert { type: 'json' } // Node.js v17.1.0+ 后支持
 import {Command} from 'commander'   // 定义指令
+import excuteQueues from './process/index.js'
+import chalk from 'chalk' // 字体颜色
 // import inquirer from 'inquirer' // 采集用户输入
-// import chalk from 'chalk' // 字体颜色
 // import ora from 'ora' // loading动效
 // import handlebars from 'handlebars'// 模板引擎
 // import fs from 'fs'
-import excuteQueues from './process/index.js'
-const program = new Command()
+
+const mcli = new Command()
 
 // 命令的描述
-program
-  .name("mcli")
+mcli
+  .name(chalk.green('mcli'))
   .description("study build myself Cli Tool !")
-  .version("1.0.0", "-v, --version", "version")
+  .version(chalk.green('1.0.0'), "-v, --version", "version")
   .option("-h, --help", "help information")
 
-program
+mcli
   .command("add <template> [rename]") 
   .description('add template')
   .action(excuteQueues)
 
-program.parse()
+mcli.parse()

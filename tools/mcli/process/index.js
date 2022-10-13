@@ -2,13 +2,21 @@
 import MiddleWare from '../core/middleware.js'
 import parse from './parse.js'
 import load from './load.js'
+// import confirm from './comfirm.js'
 
 const app = new MiddleWare()
 
 app.use(parse)
    .use(load)
 
-const excuteQueues = async (template, project, options) => {
+/**
+ * 
+ * @param {*} template add <template> 模板名
+ * @param {*} project [rename] 项目重命名
+ * @param {*} options option 对象
+ * @param {*} Command Command 对象
+ */
+const excuteQueues = async (template, project, options, Command) => {
   
   if(template === null || template === '') throw new Error('Missing require argument: `tempalte`.')
   

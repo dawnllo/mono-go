@@ -18,20 +18,19 @@ const MiddleWare = (function (){
     async run(context) {
       // init context
       this.context = context
-
       const _that = this
       const iterator = this.generator()
       let result = iterator.next()
 
-      await handlerResult()
-      console.log('run')
+      handlerResult() 
 
       //tools
-     async function handlerResult() {
+      async function handlerResult() {
         if (result.done) {
           return 
         }
 
+        //运行func
         const res = result.value.call(_that, _that.context)
 
         // Promise
@@ -45,6 +44,7 @@ const MiddleWare = (function (){
             handlerResult()
           }
         }else{
+          //同步
           result = iterator.next()
           handlerResult()
         }
