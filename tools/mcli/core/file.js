@@ -36,13 +36,11 @@ export const isDirectory = async (input) => {
   return result === "dir";
 };
 
-export const isEmpty = async (input) => {
+export const isDirEmpty = async (input) => {
   const files = await fs.promises.readdir(input);
   return files.length === 0;
 };
 
-
-//********************************以下待了解 */
 /**
  * Make directory recursive.
  * require node >= v10.12
@@ -121,7 +119,7 @@ export const tildify = (input) => {
 };
 
 /**
- * Untildify tilde path.
+ * Untildify tilde path. ~
  * @param input tilde path
  * @see https://github.com/sindresorhus/untildify
  */

@@ -3,36 +3,22 @@ import prompts from 'prompts'
 import { file } from '../core/file'
 
 /**
- * 确定文件目标
+ * 确定文件目标是否存在
  */
 export default async (ctx) => {
-  // resolve dest path
   ctx.dest = path.resolve(ctx.project)
 
-  // exist
   const exists = await file.exists(ctx.dest)
 
-  // dist not exists
   if (exists === false) return
 
-  // force mode
-  if (ctx.options.force != null && ctx.options.force) {
-    return await file.remove(ctx.dest)
-  }
+  if (exists === 'file'|| exists === 'other') throw new Error(`Cannot create ${ctx.project}: File exists.`)
 
-  // destination is file
-  if (exists !== 'dir') throw new Error(`Cannot create ${ctx.project}: File exists.`)
+  // else dir
+  if (await file.isDirEmpty(ctx.dest)) return
 
-  // is empty dir
-  if (await file.isEmpty(ctx.dest)) return
-
-  // is current working directory
   const isCurrent = ctx.dest === process.cwd()
 
-  // // require node >= v8.3.0
-  // console.clear()
-
-  // confirm & choose next
   const { choose } = await prompts([
     {
       name: 'sure',
@@ -52,11 +38,8 @@ export default async (ctx) => {
     }
   ])
 
-  // Otherwise is cancel task
   if (choose == null || choose === 'cancel') throw new Error('You have cancelled this task.')
 
-  // Overwrite require empty dest
   if (choose === 'overwrite') await file.remove(ctx.dest)
 
-  // Merge not require any action
 }

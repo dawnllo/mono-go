@@ -9,7 +9,7 @@
 
 2. 定义指令
 
-- commander node.js 命令行解决方案。
+- commander node.js 命令行解决方案。0 依赖, 也不错。
 - cac 汪磊 up 个人喜欢使用,是 ts 写的。
 
 3. 辅助
