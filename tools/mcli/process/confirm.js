@@ -1,45 +1,72 @@
-import path from 'path'
-import prompts from 'prompts'
-import { file } from '../core/file'
+import path from "path";
+import prompts from "prompts";
+import chalk from "chalk";
+import log from "../core/log.js";
+import * as file from "../core/file.js";
 
 /**
- * 确定文件目标是否存在
+ * 确定文件目标
+ * 存在：用户交互，是否重写、或取消重新输入。
+ * 不存在：进行下一步。
  */
-export default async (ctx) => {
-  ctx.dest = path.resolve(ctx.project)
+export default async (ctx, ware) => {
+  ctx.dest = path.resolve(ctx.project);
+  log.green(`目标文件:`, ctx.dest);
 
-  const exists = await file.exists(ctx.dest)
+  // DOTO 磊哥封
+  let stat = await file.exists(ctx.dest);
+  if (!stat) return;
+  if (stat === "file" || stat === "other")
+    throw new Error(chalk.red(`Cannot create ${ctx.project}: File exists.`));
 
-  if (exists === false) return
+  // dir
+  if (await file.isDirEmpty(ctx.dest)) return;
 
-  if (exists === 'file'|| exists === 'other') throw new Error(`Cannot create ${ctx.project}: File exists.`)
+  // isCurrent
+  const isCurrent = ctx.dest === process.cwd();
 
-  // else dir
-  if (await file.isDirEmpty(ctx.dest)) return
-
-  const isCurrent = ctx.dest === process.cwd()
-
-  const { choose } = await prompts([
+  // prompts
+  const { choose, end } = await prompts([
     {
-      name: 'sure',
-      type: 'confirm',
-      message: isCurrent ? 'Create in current directory?' : 'Target directory already exists. Continue?'
+      name: "start",
+      type: "confirm",
+      message: isCurrent
+        ? "Create in current directory?"
+        : "Target directory already exists. Continue?",
     },
     {
-      name: 'choose',
-      type: (prev) => prev ? 'select' : null,
-      message: `${isCurrent ? 'Current' : 'Target'} directory is not empty. How to continue?`,
-      hint: ' ',
+      name: "choose",
+      type: (prev) => {
+        return prev ? "select" : null;
+      },
+      message: `${
+        isCurrent ? "Current" : "Target"
+      } directory is not empty. How to continue?`,
+      hint: " ",
       choices: [
-        { title: 'Merge', value: 'merge' },
-        { title: 'Overwrite', value: 'overwrite' },
-        { title: 'Cancel', value: 'cancel' }
-      ]
-    }
-  ])
+        { title: "Merge", value: "merge" },
+        { title: "Overwrite", value: "overwrite" },
+        { title: "Cancel", value: "cancel" },
+      ],
+    },
+    {
+      name: "end",
+      type: (prev) => {
+        return prev === "overwrite" ? "confirm" : null;
+      },
+      message: "are you sure to do?",
+    },
+  ]);
 
-  if (choose == null || choose === 'cancel') throw new Error('You have cancelled this task.')
+  // cancel
+  if (choose == null || choose === "cancel") {
+    ware.cancle("ok, you already canceled.");
+  }
 
-  if (choose === 'overwrite') await file.remove(ctx.dest)
-
-}
+  // overwrite 3保险insurance
+  if (end && ctx.options.force) {
+    await file.remove(ctx.dest);
+  } else {
+    ware.cancle("Warn: if you sure overwrite, please add -f or --force.");
+  }
+};

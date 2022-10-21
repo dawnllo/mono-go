@@ -19,6 +19,10 @@
 - download-git-repo github 下载仓库工具
 - handlebars 模板引擎
 - node-fetch 在 node 环境中使用接近 web 标准的 fetch，看官网介绍。
+- ini ini 格式的文件解析和序列化器 https://github.com/npm/ini。
+- env-paths 获取存储数据、配置、缓存等的路径；使用正确的操作系统特定路径。大多数开发人员都错在这一点上。
+
+Uses the correct OS-specific paths. Most developers get this wrong.
 
 ## 设计模式
 

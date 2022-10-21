@@ -19,14 +19,15 @@ export const exists = async (input) => {
       return "other";
     }
   } catch (err) {
-    if (err.code !== "ENOENT") { //enoent 文件或目录不存在。
+    if (err.code !== "ENOENT") {
+      //enoent 文件或目录不存在。
       throw err;
     }
     return false;
   }
 };
 
-export const isFile = async (input)=> {
+export const isFile = async (input) => {
   const result = await exists(input);
   return result === "file";
 };
@@ -47,10 +48,7 @@ export const isDirEmpty = async (input) => {
  * @param input input path
  * @param options recursive by default
  */
-export const mkdir = async (
-  input,
-  options
-) => {
+export const mkdir = async (input, options) => {
   await fs.promises.mkdir(input, { recursive: true, ...options });
 };
 
@@ -61,10 +59,7 @@ export const mkdir = async (
  * @param options recursive & force by default
  * @todo https://github.com/sindresorhus/trash
  */
-export const remove = async (
-  input,
-  options
-) => {
+export const remove = async (input, options) => {
   await fs.promises.rm(input, { recursive: true, force: true, ...options });
 };
 
@@ -81,10 +76,7 @@ export const read = async (input) => {
  * @param input file name
  * @param contents file contents
  */
-export const write = async (
-  input,
-  contents
-) => {
+export const write = async (input, contents) => {
   await mkdir(path.dirname(input));
   return await fs.promises.writeFile(input, contents);
 };
@@ -138,11 +130,7 @@ export const untildify = (input) => {
  * @param strip strip output path
  * @see https://github.com/shinnn/node-strip-dirs
  */
-export const extract = async (
-  input,
-  output,
-  strip = 0
-) =>
+export const extract = async (input, output, strip = 0) =>
   await new Promise((resolve) => {
     const zip = new AdmZip(input);
 
