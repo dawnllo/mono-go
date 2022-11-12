@@ -15,14 +15,19 @@
 3. 辅助
 
 - chalk 字体样式
-- ora 字体样式
+- ora 加载动效
 - download-git-repo github 下载仓库工具
 - handlebars 模板引擎
 - node-fetch 在 node 环境中使用接近 web 标准的 fetch，看官网介绍。
-- ini ini 格式的文件解析和序列化器 https://github.com/npm/ini。
+- ini ini 格式的文件解析和序列化器 <https://github.com/npm/ini>。
 - env-paths 获取存储数据、配置、缓存等的路径；使用正确的操作系统特定路径。大多数开发人员都错在这一点上。
 
-Uses the correct OS-specific paths. Most developers get this wrong.
+## Node API
+
+1. os
+2. fs
+3. path
+4. crypto
 
 ## 设计模式
 
@@ -30,10 +35,9 @@ Uses the correct OS-specific paths. Most developers get this wrong.
 
 ```js
 confirm; // 确认生成的路径是不是可用的路径，不是提示是否删除已存在等等操作。
-resolve; // 解析传参，是否是本地路径还是请求仓库的资源。
-load; // 根据解析结果加载模板
-inquire; // 根据输入信息，生成定义内容
-setup; // setup钩子运行
+parse; // 解析template，是否是本地路径还是请求仓库的资源。远程，此处下载资源。
+load; // 根据解析src，加载资源生成流问题件集合。
+inquire; // 根据配置文件，生成prompt配置，同时执行收集用户问题。
 prepare; // 读取配置文件的过滤器，进行过滤等工作 fast-glob，rename
 render; //
 emit; // 写入

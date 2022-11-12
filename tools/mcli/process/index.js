@@ -7,7 +7,10 @@ import confirm from "./confirm.js";
 
 const app = new MiddleWare();
 
-app.use(confirm).use(parse).use(load);
+app
+  .use(confirm) // 确定文件是否存在、确认。
+  .use(parse) // 解析template为本地、远程。
+  .use(load);
 
 /**
  *

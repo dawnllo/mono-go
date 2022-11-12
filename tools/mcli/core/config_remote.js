@@ -20,7 +20,7 @@ const defaults = {
   // {owner} & {name} & {branch} will eventually be replaced by the corresponding value
   registry: "https://github.com/{owner}/{name}/archive/refs/heads/{branch}.zip",
   // template offlicial owner name
-  official: "caz-templates",
+  official: "Dofw",
   // default template branch name
   branch: "master",
   // download socks proxy config
