@@ -1,15 +1,13 @@
-# SMonorepo
+## 项目组织结构
 
-（monorepo）代码仓库设计
+```
+mono-go
+|-- docs
+|-- packages
+    |-- cli
+    |-- v2-ui
+    |-- v3-ui
+|-- scripts
+|-- readme.md
 
-## file structure
-
-1. tools 工具层
-
-2. packages 应用层
-
-<!-- 3. components 组件层 -->
-
-## pnpm 命令（见笔记）
-
-总结-待整理
+```

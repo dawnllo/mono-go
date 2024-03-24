@@ -1,5 +1,5 @@
 {
-  "name": "mono-go",
+  "name": "@mono-go/cli",
   "version": "1.0.0",
   "description": "mono-go",
   "type": "module",
