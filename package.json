@@ -11,5 +11,8 @@
   "keywords": [],
   "author": "dawnl",
   "license": "ISC",
-  "dependencies": {}
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.11.6",
+    "eslint": "^8.57.0"
+  }
 }
