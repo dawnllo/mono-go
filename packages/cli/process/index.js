@@ -1,16 +1,16 @@
 // 流程
-import MiddleWare from "../core/middleware.js";
-import chalk from "chalk";
-import parse from "./parse.js";
-import load from "./load.js";
-import confirm from "./confirm.js";
+import chalk from 'chalk'
+import MiddleWare from '../core/middleware.js'
+import parse from './parse.js'
+import load from './load.js'
+import confirm from './confirm.js'
 
-const app = new MiddleWare();
+const app = new MiddleWare()
 
 app
   .use(confirm) // 确定文件是否存在、确认。
   .use(parse) // 解析template为本地、远程。
-  .use(load);
+  .use(load)
 
 /**
  *
@@ -19,24 +19,23 @@ app
  * @param {*} options option 对象
  * @param {*} Command Command 对象
  */
-const excuteQueues = async (template, project, options, Command) => {
-  if (template === null || template === "") {
-    throw new Error(chalk.red("Missing require argument: `tempalte`."));
-  }
+async function excuteQueues(template, project, options, Command) {
+  if (template === null || template === '')
+    throw new Error(chalk.red('Missing require argument: `tempalte`.'))
 
   // create context
   const context = {
     template,
     project: project || template,
     options,
-    src: "",
-    dest: "",
+    src: '',
+    dest: '',
     config: Object.create(null), // 获取模板，读取require
     answers: Object.create(null),
     files: [],
-  };
+  }
 
-  await app.run(context);
-};
+  await app.run(context)
+}
 
-export default excuteQueues;
+export default excuteQueues

@@ -1,18 +1,22 @@
 {
   "name": "mono-go",
-  "version": "1.0.0",
-  "description": "mono-go",
   "type": "module",
+  "version": "1.0.0",
   "packageManager": "pnpm@8.15.5",
+  "description": "mono-go",
+  "author": "dawnl",
+  "license": "ISC",
+  "keywords": [],
   "engines": {
     "node": ">=18.17.0"
   },
-  "scripts": {},
-  "keywords": [],
-  "author": "dawnl",
-  "license": "ISC",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^2.11.6",
+    "@unocss/eslint-plugin": "0.59.0-beta.1",
     "eslint": "^8.57.0"
   }
 }

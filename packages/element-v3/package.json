@@ -1,15 +1,15 @@
 {
   "name": "@mono-go/element-v3",
-  "version": "1.0.0",
-  "description": "mono-go",
   "type": "module",
+  "version": "1.0.0",
   "packageManager": "pnpm@8.15.5",
+  "description": "mono-go",
+  "author": "dawnl",
+  "license": "ISC",
+  "keywords": [],
   "engines": {
     "node": ">=18.17.0"
   },
   "scripts": {},
-  "keywords": [],
-  "author": "dawnl",
-  "license": "ISC",
   "dependencies": {}
 }
