@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// import { name, version } from './package.json' assert { type: 'json' } // Node.js v17.1.0+ 后支持
 import { Command } from 'commander' // 定义指令
 import chalk from 'chalk' // 字体颜色
 import excuteQueues from './process/index.js'
