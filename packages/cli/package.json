@@ -1,9 +1,9 @@
 {
-  "name": "@mono-go/cli",
+  "name": "@dawnll/cli",
   "type": "module",
   "version": "1.0.0",
   "packageManager": "pnpm@8.15.5",
-  "description": "mono-go",
+  "description": "dawnl cli",
   "author": "dawnl",
   "license": "ISC",
   "keywords": [],
@@ -11,5 +11,7 @@
     "node": ">=18.17.0"
   },
   "scripts": {},
-  "dependencies": {}
+  "dependencies": {
+    "@types/inquirer": "^9.0.7"
+  }
 }

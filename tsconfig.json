@@ -20,7 +20,6 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },
-  "files": ["packages/**/*.ts"],
   "include": ["*.ts", "packages"],
   "exclude": [
     "unocss.config.ts",
