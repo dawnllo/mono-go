@@ -10,15 +10,27 @@
     "paths": {},
     "resolveJsonModule": true,
     "types": [],
-    "strict": true,
-    "strictFunctionTypes": true,
-    "strictNullChecks": true,
-    "noUnusedLocals": true,
+
     "declaration": true,
     "declarationDir": "./types",
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+
+    // modules
+
+    // type checking
+    "strict": true,
+    "strictFunctionTypes": true, // 协变逆变
+    "strictNullChecks": true, // 严格空值检查
+    "strictPropertyInitialization": true, //class 中 init
+    "strictBindCallApply": true, // 确保bind/call/apply的参数匹配
+    "noImplicitThis": true, // 禁止隐式不明确的 this
+    "noUnusedLocals": true, // 禁止未使用的变量
+    "noUncheckedIndexedAccess": true, // 禁止未检查的索引访问, 开启时，会向索引签名类型中注入 undefined。
+    "noFallthroughCasesInSwitch": true, // 禁止switch语句的fallthrough(switch的case没有break)
+    "noImplicitOverride": true, // 确保派生类重写了基类的方法,必须标记 override
+    "allowUnreachableCode": false // 允许不可达代码
   },
   "files": ["packages/**/*.ts"],
   "include": ["*.ts", "packages"],
