@@ -32,7 +32,6 @@
     "noImplicitOverride": true, // 确保派生类重写了基类的方法,必须标记 override
     "allowUnreachableCode": false // 允许不可达代码
   },
-  "files": ["packages/**/*.ts"],
   "include": ["*.ts", "packages"],
   "exclude": [
     "unocss.config.ts",

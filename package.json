@@ -1,9 +1,9 @@
 {
-  "name": "mono-go",
+  "name": "@dawnll/monorepo",
   "type": "module",
   "version": "1.0.0",
   "packageManager": "pnpm@8.15.5",
-  "description": "mono-go",
+  "description": "dawnl monorepo",
   "author": "dawnl",
   "license": "ISC",
   "keywords": [],
