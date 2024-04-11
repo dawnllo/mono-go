@@ -1,9 +1,5 @@
 import chalk from 'chalk'
 
-export function normal(str) {
-  console.log(chalk.white(str))
-}
-
 const colors = [
   'black',
   'red',
@@ -39,12 +35,20 @@ const colors = [
   'bgMagentaBright',
   'bgCyanBright',
   'bgWhiteBright',
-]
-const customChalk = {}
+] as const
+
+type FuncKeys = keyof typeof colors
+
+interface Log {
+  [key: FuncKeys]: (...strs: any[]) => void
+}
+
+const log: Log = {} as Log
+
 colors.forEach((item) => {
-  customChalk[item] = (...strs) => {
+  log[item] = (...strs) => {
     console.log(chalk[item](...strs))
   }
 })
 
-export default customChalk
+export default log

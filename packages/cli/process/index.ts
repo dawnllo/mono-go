@@ -1,9 +1,9 @@
 // 流程
 import chalk from 'chalk'
-import MiddleWare from '../core/middleware.js'
-import parse from './parse.js'
-import load from './load.js'
-import confirm from './confirm.js'
+import MiddleWare from '../core/middleware'
+import parse from './parse'
+import load from './load'
+import confirm from './confirm'
 
 const app = new MiddleWare()
 

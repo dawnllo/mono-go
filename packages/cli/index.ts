@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
 import chalk from 'chalk'
-import excuteQueues from './process/index.js'
+import excuteQueues from './process'
 
 const dlc = new Command()
 

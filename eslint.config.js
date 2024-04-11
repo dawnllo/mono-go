@@ -7,7 +7,8 @@ export default antfu({
   unocss: true,
   overrides: {
     stylistic: {
-      'jsonc/eol-last': 'never',
+      'jsonc/eol-last': 'off',
+      'no-console': 'off',
     },
   },
 })
