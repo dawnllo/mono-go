@@ -35,12 +35,12 @@ const colors = [
   'bgMagentaBright',
   'bgCyanBright',
   'bgWhiteBright',
-] as const
+] as const // as const 它告诉 TypeScript 将数组中的元素视为字面量类型，而不是普通的 string 类型。
 
-type FuncKeys = keyof typeof colors
+type FuncKeys = typeof colors[number]
 
-interface Log {
-  [key: FuncKeys]: (...strs: any[]) => void
+type Log = {
+  [key in FuncKeys]: (...strs: any[]) => void
 }
 
 const log: Log = {} as Log

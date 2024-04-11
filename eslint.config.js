@@ -5,9 +5,10 @@ import antfu from '@antfu/eslint-config'
 export default antfu({
   isInEditor: true,
   unocss: true,
+  typescript: true,
   overrides: {
     stylistic: {
-      'jsonc/eol-last': 'off',
+      'eol-last': 'off',
       'no-console': 'off',
     },
   },

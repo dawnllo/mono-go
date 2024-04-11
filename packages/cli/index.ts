@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
-import chalk from 'chalk'
+import log from './utils/log'
 import excuteQueues from './process'
 
 const dlc = new Command()
 
 dlc
-  .name(chalk.green('dlc'))
+  .name(log.green('dlc'))
   .description('study build myself Cli Tool !')
-  .version(chalk.green('1.0.0'), '-v, --version', 'version')
+  .version(log.green('1.0.0'), '-v, --version', 'version')
   .option('-h, --help', 'help information')
 
 dlc

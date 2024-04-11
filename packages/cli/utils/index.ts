@@ -1,12 +1,7 @@
-/**
- * 延迟函数
- * @param {*} timeout 延迟时间
- * @returns
- */
-export function delay(timeout) {
-  return new Promise((resolve, reject) => {
+export function delay(timeout: number): Promise<void> {
+  return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(1)
+      resolve()
     }, timeout)
   })
 }
