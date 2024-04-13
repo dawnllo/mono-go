@@ -1,17 +1,20 @@
 {
-  "name": "@dawnll/cli",
+  "name": "@dawnll/dlc",
   "type": "module",
   "version": "1.0.0",
   "packageManager": "pnpm@8.15.5",
-  "description": "dawnl cli",
+  "description": "command dlc, a cli tool",
   "author": "dawnl",
   "license": "ISC",
   "keywords": [],
+  "bin": "./index.ts",
   "engines": {
     "node": ">=18.18.0"
   },
   "scripts": {},
   "dependencies": {
-    "@types/inquirer": "^9.0.7"
+    "@types/inquirer": "^9.0.7",
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0"
   }
 }

@@ -12,7 +12,8 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "dlc": "pnpm --filter @dawnll/element-v2 run dlc"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.11.6",

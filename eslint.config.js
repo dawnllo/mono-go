@@ -8,7 +8,7 @@ export default antfu({
   typescript: true,
   overrides: {
     stylistic: {
-      'eol-last': 'off',
+      'eol-last': 'error',
       'no-console': 'off',
     },
   },

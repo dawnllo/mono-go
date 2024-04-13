@@ -1,9 +1,9 @@
 {
-  "name": "@mono-go/element-v3",
+  "name": "@dawnll/element-v3",
   "type": "module",
   "version": "1.0.0",
   "packageManager": "pnpm@8.15.5",
-  "description": "mono-go",
+  "description": "dawanll element-v3",
   "author": "dawnl",
   "license": "ISC",
   "keywords": [],
