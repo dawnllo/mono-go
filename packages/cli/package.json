@@ -7,11 +7,26 @@
   "author": "dawnl",
   "license": "ISC",
   "keywords": [],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./*": "./*"
+  },
+  "main": "./index.cjs",
+  "module": "./index.mjs",
+  "types": "./index.d.ts",
   "bin": "./index.ts",
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=18.18.0"
   },
-  "scripts": {},
+  "scripts": {
+    "build": "vite build"
+  },
   "dependencies": {
     "@types/inquirer": "^9.0.7",
     "chalk": "^5.3.0",

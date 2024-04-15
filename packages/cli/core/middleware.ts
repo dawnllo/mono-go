@@ -1,6 +1,7 @@
-import log from './log.js'
+import log from '../utils/log.js'
+
 export default class MiddleWare {
-  #queues = [];
+  #queues = []
   #iterator = null
 
   construction() {
@@ -73,4 +74,3 @@ export default class MiddleWare {
     }
   }
 }
-
