@@ -4,7 +4,6 @@ import chalk from 'chalk'
 import excuteQueues from './process'
 
 const dlc = new Command()
-export const test = 1
 
 dlc
   .name(chalk.green('dlc'))

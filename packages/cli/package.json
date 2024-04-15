@@ -14,10 +14,11 @@
     },
     "./*": "./*"
   },
-  "main": "./index.cjs",
-  "module": "./index.mjs",
+  "main": "./index.ts",
   "types": "./index.d.ts",
-  "bin": "./index.ts",
+  "bin": {
+    "dlc": "./dist/index.cjs"
+  },
   "files": [
     "dist"
   ],

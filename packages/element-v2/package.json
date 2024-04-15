@@ -13,7 +13,7 @@
   "scripts": {
     "dlc": "dlc"
   },
-  "dependencies": {
+  "devDependencies": {
     "@dawnll/dlc": "workspace:^"
   }
 }

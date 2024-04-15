@@ -7,8 +7,9 @@ export default defineConfig({
   build: {
     minify: false,
     rollupOptions: {
+      preserveEntrySignatures: 'strict',
       input: {
-        index: './test.ts',
+        index: './index.ts',
       },
       output: [
         {
