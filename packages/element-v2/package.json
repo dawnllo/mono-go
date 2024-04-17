@@ -11,7 +11,7 @@
     "node": ">=18.18.0"
   },
   "scripts": {
-    "dlc": "dlc"
+    "dlc": "dlc -h"
   },
   "devDependencies": {
     "@dawnll/dlc": "workspace:^"

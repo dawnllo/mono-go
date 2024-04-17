@@ -14,6 +14,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build": "pnpm --filter @dawnll/dlc build",
+    "build2": "pnpm --filter @dawnll/dlc build:rollup",
     "dlc": "pnpm --filter @dawnll/element-v2 run dlc"
   },
   "devDependencies": {
@@ -25,5 +26,8 @@
     "typescript": "^5.4.4",
     "vite": "^5.2.8",
     "vite-plugin-node-polyfills": "^0.21.0"
+  },
+  "dependencies": {
+    "rollup": "^4.14.3"
   }
 }
