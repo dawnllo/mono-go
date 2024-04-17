@@ -2,15 +2,15 @@
 import chalk from 'chalk'
 import MiddleWare from '../core/middleware'
 // import parse from './parse'
-import load from './load'
+// import load from './load'
 // import confirm from './confirm'
 
 const app = new MiddleWare()
 
-app
+// app
   // .use(confirm) // 确定文件是否存在、确认。
   // .use(parse) // 解析template为本地、远程。
-  .use(load)
+  // .use(load)
 
 /**
  *
@@ -39,3 +39,4 @@ async function excuteQueues(template, project, options, Command) {
 }
 
 export default excuteQueues
+

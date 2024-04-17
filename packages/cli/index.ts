@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
 import chalk from 'chalk'
-import excuteQueues from './process'
+import excuteQueues  from './process/index'
 
 const dlc = new Command()
+console.log(123)
 
 dlc
   .name(chalk.green('dlc'))
@@ -11,10 +12,10 @@ dlc
   .version(chalk.green('1.0.0'), '-v, --version', 'version')
   .option('-h, --help', 'help information')
 
-dlc
-  .command('add <template> [rename]')
-  .description('add template')
-  .option('-f, --force', 'force overwrite file destination !!!')
-  .action(excuteQueues)
+// dlc
+//   .command('add <template> [rename]')
+//   .description('add template')
+//   .option('-f, --force', 'force overwrite file destination !!!')
+//   .action(excuteQueues)
 
 dlc.parse()

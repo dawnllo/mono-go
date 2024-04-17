@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "paths": {
-      "@utils/*": ["./utils/*"]
-    }
+    "module": "ESNext"
   },
-  "files": ["./global.d.ts"]
+  "files": ["./global.d.ts"],
+  "ts-node": {
+    // "esm": true,
+    // "experimentalSpecifierResolution": "node"
+  }
 }
