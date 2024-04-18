@@ -6,6 +6,10 @@ export default defineConfig({
 
   build: {
     minify: false,
+    commonjsOptions: {
+      include: /node_modules/,
+      
+    },
     rollupOptions: {
       preserveEntrySignatures: 'strict',
       input: {
