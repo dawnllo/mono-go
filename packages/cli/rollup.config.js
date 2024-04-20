@@ -16,12 +16,12 @@ export default defineConfig({
   },
   output: [
     {
-      dir: 'dist',
+      dir: 'dist2',
       format: 'es',
       entryFileNames: '[name].mjs',
     },
     {
-      dir: 'dist',
+      dir: 'dist2',
       format: 'cjs',
       entryFileNames: '[name].cjs',
     },
