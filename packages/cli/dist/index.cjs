@@ -2943,18 +2943,18 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * @private
    */
   _conflictingOption(option2, conflictingOption) {
-    const findBestOptionFromValue = (option3) => {
-      const optionKey = option3.attributeName();
+    const findBestOptionFromValue = (option22) => {
+      const optionKey = option22.attributeName();
       const optionValue = this.getOptionValue(optionKey);
       const negativeOption = this.options.find((target) => target.negate && optionKey === target.attributeName());
       const positiveOption = this.options.find((target) => !target.negate && optionKey === target.attributeName());
       if (negativeOption && (negativeOption.presetArg === void 0 && optionValue === false || negativeOption.presetArg !== void 0 && optionValue === negativeOption.presetArg)) {
         return negativeOption;
       }
-      return positiveOption || option3;
+      return positiveOption || option22;
     };
-    const getErrorMessage = (option3) => {
-      const bestOption = findBestOptionFromValue(option3);
+    const getErrorMessage = (option22) => {
+      const bestOption = findBestOptionFromValue(option22);
       const optionKey = bestOption.attributeName();
       const source = this.getOptionValueSource(optionKey);
       if (source === "env") {

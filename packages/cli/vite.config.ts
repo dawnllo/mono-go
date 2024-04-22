@@ -9,31 +9,21 @@ export default defineConfig({
     commonjsOptions: {
       include: /node_modules/,
     },
-    lib: {
-      entry: ['./index.ts'],
-      formats: ['es', 'cjs'],
-      fileName: (format, entryAlias) => {
-        if(format === 'es') return `${entryAlias}.mjs`
-        if(format === 'cjs') return `${entryAlias}.cjs`
-      }
-    },
     rollupOptions: {
       preserveEntrySignatures: 'strict',
-      // input: {
-      //   index: './index.ts',
-      // },
-      // output: [
-      //   {
-      //     dir: 'dist',
-      //     format: 'es',
-      //     entryFileNames: '[name].mjs',
-      //   },
-      //   {
-      //     dir: 'dist',
-      //     format: 'cjs',
-      //     entryFileNames: '[name].cjs',
-      //   },
-      // ],
+      input: {
+        index: './index.ts',
+      },
+      output: [
+        {
+          format: 'es',
+          entryFileNames: '[name].mjs',
+        },
+        {
+          format: 'cjs',
+          entryFileNames: '[name].cjs',
+        },
+      ],
     },
   },
 })
