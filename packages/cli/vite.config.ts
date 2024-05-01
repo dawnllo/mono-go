@@ -1,9 +1,7 @@
 import { defineConfig } from 'vite'
-import { nodePolyfills } from 'vite-plugin-node-polyfills' // 待了解，vite报警告的问题。
 
+// 先熟悉 rollup 构建 脚手架. 待 rolldown 稳定后, 尝试使用 vite 构建.
 export default defineConfig({
-  // plugins: [nodePolyfills()],
-
   build: {
     minify: false,
     commonjsOptions: {

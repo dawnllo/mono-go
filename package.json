@@ -1,6 +1,6 @@
 {
   "name": "@dawnll/monorepo",
-  "type": "commonjs",
+  "type": "module",
   "version": "1.0.0",
   "packageManager": "pnpm@8.15.5",
   "description": "dawnl monorepo",
@@ -13,9 +13,10 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "build": "pnpm --filter @dawnll/dlc build",
-    "build2": "pnpm --filter @dawnll/dlc build:rollup",
-    "dlc": "pnpm --filter @dawnll/element-v2 run dlc"
+    "build:vite": "pnpm --filter @dawnll/dlc build:vite",
+    "build:rollup": "pnpm --filter @dawnll/dlc build:rollup",
+    "dlc": "pnpm --filter @dawnll/element-v2 run dlc",
+    "exec": "pnpm --filter @dawnll/dlc run exec"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.11.6",
@@ -24,12 +25,10 @@
     "@types/node": "^20.12.7",
     "@unocss/eslint-plugin": "0.59.0-beta.1",
     "eslint": "^9.0.0",
+    "rollup": "^4.17.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4",
     "vite": "^5.2.8",
     "vite-plugin-node-polyfills": "^0.21.0"
-  },
-  "dependencies": {
-    "rollup": "^4.14.3"
   }
 }

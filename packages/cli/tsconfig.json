@@ -2,9 +2,8 @@
   "compilerOptions": {
     "module": "ESNext"
   },
-  "files": ["./global.d.ts"],
-  "ts-node": {
-    // "esm": true,
-    // "experimentalSpecifierResolution": "node"
-  }
+  "files": [
+    "./global.d.ts",
+    "./node_modules/@commander-js/extra-typings/esm.d.mts"
+  ]
 }
