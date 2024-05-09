@@ -5,8 +5,6 @@ import chalk from 'chalk'
 
 const dlc = new Command()
 
-console.log(chalk.green('0.0.1'))
-
 dlc
   .name('dlc-cli')
   .description('study build myself Cli Tool !')

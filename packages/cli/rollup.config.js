@@ -1,7 +1,7 @@
 import { defineConfig } from 'rollup'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
-// import testPlugin from './rollup-plugins/test.js'
+import testPlugin from './rollup-plugins/test.js'
 
 export default defineConfig({
   plugins: [
