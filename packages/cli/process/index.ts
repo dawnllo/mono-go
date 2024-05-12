@@ -8,9 +8,9 @@ import MiddleWare from '../core/middleware'
 const app = new MiddleWare()
 
 // app
-  // .use(confirm) // 确定文件是否存在、确认。
-  // .use(parse) // 解析template为本地、远程。
-  // .use(load)
+// .use(confirm) // 确定文件是否存在、确认。
+// .use(parse) // 解析template为本地、远程。
+// .use(load)
 
 /**
  *
@@ -19,7 +19,7 @@ const app = new MiddleWare()
  * @param {*} options option 对象
  * @param {*} Command Command 对象
  */
-async function excuteQueues(template, project, options, Command) {
+async function excuteQueues(template, project, options) {
   if (template === null || template === '')
     throw new Error(chalk.red('Missing require argument: `tempalte`.'))
 
@@ -39,4 +39,3 @@ async function excuteQueues(template, project, options, Command) {
 }
 
 export default excuteQueues
-

@@ -1,16 +1,17 @@
-import log from '../utils/log.js'
+import log from '../utils/log'
 
 export default class MiddleWare {
-  #queues = []
-  #iterator = null
+  #queues: any[] = []
+  #iterator: Generator<(content: any, middleware: MiddleWare) => void | Promise<void>, string, void>
+  context: any
 
   construction() {
-    this.context = null
+    this.#iterator = this.generator()
   }
 
   use(fn) {
     if (typeof fn !== 'function')
-      throw 'please pass a function'
+      throw new Error('use function must be a function')
     // 考虑是否bind
     this.#queues.push(fn)
     return this
@@ -19,37 +20,36 @@ export default class MiddleWare {
   async run(context) {
     // init context
     this.context = context
-    const _that = this
-    const iterator = (this.#iterator = this.generator())
 
-    let result = iterator.next()
-    await handlerResult()
+    let result = this.#iterator.next()
 
     // tools
-    async function handlerResult() {
+    const handlerResult = async () => {
       if (result.done)
         return
       // 运行func
-      const res = result.value.call(null, _that.context, _that)
+      const res = result.value.call(null, this.context, this)
 
       // Promise
       if (res && typeof res.then === 'function') {
         try {
           await res
-          result = iterator.next()
+          result = this.#iterator.next()
           await handlerResult()
         }
         catch (error) {
-          result = iterator.throw(error)
+          result = this.#iterator.throw(error)
           await handlerResult()
         }
       }
       else {
         // 同步
-        result = iterator.next()
+        result = this.#iterator.next()
         handlerResult()
       }
     }
+
+    await handlerResult()
   }
 
   cancle(str, color) {
@@ -62,15 +62,16 @@ export default class MiddleWare {
       return this.#iterator.return('cancle')
     }
     else {
-      throw 'not execute run !'
+      throw new Error('not execute run !')
     }
   }
 
-  *generator() {
+  *generator(): Generator<(content: any, middleware: MiddleWare) => void | Promise<void>, string, void> {
     const queues = this.#queues
     for (let i = 0; i < queues.length; i++) {
       const fn = queues[i]
       yield fn
     }
+    return 'done'
   }
 }

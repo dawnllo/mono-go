@@ -21,6 +21,7 @@
     "strictPropertyInitialization": true,
     "allowUnreachableCode": false,
     "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": false,
     "noImplicitOverride": true,
     "noImplicitThis": true,
     "noUncheckedIndexedAccess": true,

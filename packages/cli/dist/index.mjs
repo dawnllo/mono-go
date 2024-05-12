@@ -4103,11 +4103,120 @@ Object.defineProperties(createChalk.prototype, styles);
 const chalk = createChalk();
 createChalk({level: stderrColor ? stderrColor.level : 0});
 
-// import excuteQueues from './process/index'
+class MiddleWare {
+  #queues = []
+  #iterator = null
+
+  construction() {
+    this.context = null;
+  }
+
+  use(fn) {
+    if (typeof fn !== 'function')
+      throw 'please pass a function'
+    // 考虑是否bind
+    this.#queues.push(fn);
+    return this
+  }
+
+  async run(context) {
+    // init context
+    this.context = context;
+    const _that = this;
+    const iterator = (this.#iterator = this.generator());
+
+    let result = iterator.next();
+    await handlerResult();
+
+    // tools
+    async function handlerResult() {
+      if (result.done)
+        return
+      // 运行func
+      const res = result.value.call(null, _that.context, _that);
+
+      // Promise
+      if (res && typeof res.then === 'function') {
+        try {
+          await res;
+          result = iterator.next();
+          await handlerResult();
+        }
+        catch (error) {
+          result = iterator.throw(error);
+          await handlerResult();
+        }
+      }
+      else {
+        // 同步
+        result = iterator.next();
+        handlerResult();
+      }
+    }
+  }
+
+  cancle(str, color) {
+    if (this.#iterator) {
+      const _color = color || 'yellow';
+      const _str = str || '';
+      chalk[_color](_str);
+
+      this.#queues.length = 0;
+      return this.#iterator.return('cancle')
+    }
+    else {
+      throw 'not execute run !'
+    }
+  }
+
+  *generator() {
+    const queues = this.#queues;
+    for (let i = 0; i < queues.length; i++) {
+      const fn = queues[i];
+      yield fn;
+    }
+  }
+}
+
+// 流程
+// import parse from './parse'
+// import load from './load'
+// import confirm from './confirm'
+
+const app = new MiddleWare();
+
+// app
+// .use(confirm) // 确定文件是否存在、确认。
+// .use(parse) // 解析template为本地、远程。
+// .use(load)
+
+/**
+ *
+ * @param {*} template add <template> 模板名
+ * @param {*} project [rename] 项目重命名
+ * @param {*} options option 对象
+ * @param {*} Command Command 对象
+ */
+async function excuteQueues(template, project, options, Command) {
+  if (template === null || template === '')
+    throw new Error(chalk.red('Missing require argument: `tempalte`.'))
+
+  // create context
+  const context = {
+    template,
+    project: project || template,
+    options,
+    src: '',
+    dest: '',
+    config: Object.create(null), // 获取模板，读取require
+    answers: Object.create(null),
+    files: [],
+  };
+
+  await app.run(context);
+}
 
 const dlc = new Command();
-
-console.log(chalk.green('0.0.1'));
 
 dlc
   .name('dlc-cli')
@@ -4117,7 +4226,7 @@ dlc
 dlc
   .command('add <template> [rename]')
   .description('add template')
-  .option('-f, --force', 'force overwrite file destination !!!');
-  // .action(excuteQueues)
+  .option('-f, --force', 'force overwrite file destination !!!')
+  .action(excuteQueues);
 
 dlc.parse();

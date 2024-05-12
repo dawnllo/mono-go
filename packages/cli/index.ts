@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from '@commander-js/extra-typings'
 import chalk from 'chalk'
-// import excuteQueues from './process/index'
+import excuteQueues from './process/index'
 
 const dlc = new Command()
 
@@ -14,6 +14,6 @@ dlc
   .command('add <template> [rename]')
   .description('add template')
   .option('-f, --force', 'force overwrite file destination !!!')
-  // .action(excuteQueues)
+  .action(excuteQueues)
 
 dlc.parse()

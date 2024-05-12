@@ -1,14 +1,18 @@
 import { defineConfig } from 'rollup'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
+import typescript from 'rollup-plugin-typescript2'
+
 import testPlugin from './rollup-plugins/test.js'
 
 export default defineConfig({
   plugins: [
     // testPlugin(),
+    typescript(),
     nodeResolve({
       exportConditions: ['node'],
       preferBuiltins: true,
+      extensions: ['.ts', '.tsx'],
     }),
     commonjs({
       defaultIsModuleExports: 'auto',

@@ -29,7 +29,7 @@
   "scripts": {
     "build:vite": "vite build",
     "build:rollup": "rollup -c",
-    "exec": "node --import ./esm-hook.js index.ts"
+    "exec": "node --loader ts-node/esm index.ts"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^12.0.1",
