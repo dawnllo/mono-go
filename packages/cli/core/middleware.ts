@@ -1,10 +1,10 @@
 import log from '../utils/log'
 
-type GeneratorType = Generator<(content: any, middleware: MiddleWare) => void | Promise<void>, string, void>
+type GeneratorType = null | Generator<(content: any, middleware: MiddleWare) => void | Promise<void>, string, void>
 
 export default class MiddleWare {
   #queues: any[] = []
-  #iterator: GeneratorType
+  #iterator: GeneratorType = null
   context: any
 
   construction() {
@@ -23,7 +23,7 @@ export default class MiddleWare {
     // init context
     this.context = context
 
-    let result = this.#iterator.next()
+    let result = this.#iterator!.next()
 
     // tools
     const handlerResult = async () => {
@@ -36,17 +36,17 @@ export default class MiddleWare {
       if (res && typeof res.then === 'function') {
         try {
           await res
-          result = this.#iterator.next()
+          result = this.#iterator!.next()
           await handlerResult()
         }
         catch (error) {
-          result = this.#iterator.throw(error)
+          result = this.#iterator!.throw(error)
           await handlerResult()
         }
       }
       else {
         // 同步
-        result = this.#iterator.next()
+        result = this.#iterator!.next()
         handlerResult()
       }
     }
