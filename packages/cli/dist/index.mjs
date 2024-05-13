@@ -4103,93 +4103,123 @@ Object.defineProperties(createChalk.prototype, styles);
 const chalk = createChalk();
 createChalk({level: stderrColor ? stderrColor.level : 0});
 
+const colors = [
+    'black',
+    'red',
+    'green',
+    'yellow',
+    'blue',
+    'magenta',
+    'cyan',
+    'white',
+    'gray',
+    'redBright',
+    'greenBright',
+    'yellowBright',
+    'blueBright',
+    'magentaBright',
+    'cyanBright',
+    'whiteBright',
+    // bg
+    'bgBlack',
+    'bgRed',
+    'bgGreen',
+    'bgYellow',
+    'bgBlue',
+    'bgMagenta',
+    'bgCyan',
+    'bgWhite',
+    'bgBlackBright',
+    'bgRedBright',
+    'bgGreenBright',
+    'bgYellowBright',
+    'bgBlueBright',
+    'bgMagentaBright',
+    'bgCyanBright',
+    'bgWhiteBright',
+]; // as const 它告诉 TypeScript 将数组中的元素视为字面量类型，而不是普通的 string 类型。
+const log = {};
+colors.forEach((item) => {
+    log[item] = (...strs) => {
+        console.log(chalk[item](...strs));
+    };
+});
+
 class MiddleWare {
-  #queues = []
-  #iterator = null
-
-  construction() {
-    this.context = null;
-  }
-
-  use(fn) {
-    if (typeof fn !== 'function')
-      throw 'please pass a function'
-    // 考虑是否bind
-    this.#queues.push(fn);
-    return this
-  }
-
-  async run(context) {
-    // init context
-    this.context = context;
-    const _that = this;
-    const iterator = (this.#iterator = this.generator());
-
-    let result = iterator.next();
-    await handlerResult();
-
-    // tools
-    async function handlerResult() {
-      if (result.done)
-        return
-      // 运行func
-      const res = result.value.call(null, _that.context, _that);
-
-      // Promise
-      if (res && typeof res.then === 'function') {
-        try {
-          await res;
-          result = iterator.next();
-          await handlerResult();
+    #queues = [];
+    #iterator;
+    context;
+    construction() {
+        this.#iterator = this.generator();
+    }
+    use(fn) {
+        if (typeof fn !== 'function')
+            throw new Error('use function must be a function');
+        // 考虑是否bind
+        this.#queues.push(fn);
+        return this;
+    }
+    async run(context) {
+        // init context
+        this.context = context;
+        let result = this.#iterator.next();
+        // tools
+        const handlerResult = async () => {
+            if (result.done)
+                return;
+            // 运行func
+            const res = result.value.call(null, this.context, this);
+            // Promise
+            if (res && typeof res.then === 'function') {
+                try {
+                    await res;
+                    result = this.#iterator.next();
+                    await handlerResult();
+                }
+                catch (error) {
+                    result = this.#iterator.throw(error);
+                    await handlerResult();
+                }
+            }
+            else {
+                // 同步
+                result = this.#iterator.next();
+                handlerResult();
+            }
+        };
+        await handlerResult();
+    }
+    cancle(str, color) {
+        if (this.#iterator) {
+            const _color = color || 'yellow';
+            const _str = str || '';
+            log[_color](_str);
+            this.#queues.length = 0;
+            return this.#iterator.return('cancle');
         }
-        catch (error) {
-          result = iterator.throw(error);
-          await handlerResult();
+        else {
+            throw new Error('not execute run !');
         }
-      }
-      else {
-        // 同步
-        result = iterator.next();
-        handlerResult();
-      }
     }
-  }
-
-  cancle(str, color) {
-    if (this.#iterator) {
-      const _color = color || 'yellow';
-      const _str = str || '';
-      chalk[_color](_str);
-
-      this.#queues.length = 0;
-      return this.#iterator.return('cancle')
+    *generator() {
+        const queues = this.#queues;
+        for (let i = 0; i < queues.length; i++) {
+            const fn = queues[i];
+            yield fn;
+        }
+        return 'done';
     }
-    else {
-      throw 'not execute run !'
-    }
-  }
-
-  *generator() {
-    const queues = this.#queues;
-    for (let i = 0; i < queues.length; i++) {
-      const fn = queues[i];
-      yield fn;
-    }
-  }
 }
 
 // 流程
 // import parse from './parse'
 // import load from './load'
 // import confirm from './confirm'
-
 const app = new MiddleWare();
-
 // app
 // .use(confirm) // 确定文件是否存在、确认。
 // .use(parse) // 解析template为本地、远程。
 // .use(load)
-
 /**
  *
  * @param {*} template add <template> 模板名
@@ -4197,36 +4227,31 @@ const app = new MiddleWare();
  * @param {*} options option 对象
  * @param {*} Command Command 对象
  */
-async function excuteQueues(template, project, options, Command) {
-  if (template === null || template === '')
-    throw new Error(chalk.red('Missing require argument: `tempalte`.'))
-
-  // create context
-  const context = {
-    template,
-    project: project || template,
-    options,
-    src: '',
-    dest: '',
-    config: Object.create(null), // 获取模板，读取require
-    answers: Object.create(null),
-    files: [],
-  };
-
-  await app.run(context);
+async function excuteQueues(template, project, options) {
+    if (template === null || template === '')
+        throw new Error(chalk.red('Missing require argument: `tempalte`.'));
+    // create context
+    const context = {
+        template,
+        project: project || template,
+        options,
+        src: '',
+        dest: '',
+        config: Object.create(null), // 获取模板，读取require
+        answers: Object.create(null),
+        files: [],
+    };
+    await app.run(context);
 }
 
 const dlc = new Command();
-
 dlc
-  .name('dlc-cli')
-  .description('study build myself Cli Tool !')
-  .version('0.0.1');
-
+    .name('dlc-cli')
+    .description('study build myself Cli Tool !')
+    .version('0.0.1');
 dlc
-  .command('add <template> [rename]')
-  .description('add template')
-  .option('-f, --force', 'force overwrite file destination !!!')
-  .action(excuteQueues);
-
+    .command('add <template> [rename]')
+    .description('add template')
+    .option('-f, --force', 'force overwrite file destination !!!')
+    .action(excuteQueues);
 dlc.parse();

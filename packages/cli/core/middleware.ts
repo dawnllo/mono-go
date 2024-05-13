@@ -1,8 +1,10 @@
 import log from '../utils/log'
 
+type GeneratorType = Generator<(content: any, middleware: MiddleWare) => void | Promise<void>, string, void>
+
 export default class MiddleWare {
   #queues: any[] = []
-  #iterator: Generator<(content: any, middleware: MiddleWare) => void | Promise<void>, string, void>
+  #iterator: GeneratorType
   context: any
 
   construction() {
@@ -66,7 +68,7 @@ export default class MiddleWare {
     }
   }
 
-  *generator(): Generator<(content: any, middleware: MiddleWare) => void | Promise<void>, string, void> {
+  *generator(): GeneratorType {
     const queues = this.#queues
     for (let i = 0; i < queues.length; i++) {
       const fn = queues[i]
