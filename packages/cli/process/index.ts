@@ -1,7 +1,7 @@
 // 流程
 import chalk from 'chalk'
 import MiddleWare from '../core/middleware'
-// import parse from './parse'
+import parse from './parse'
 // import load from './load'
 // import confirm from './confirm'
 
@@ -23,7 +23,6 @@ async function excuteQueues(template, project, options) {
   if (template === null || template === '')
     throw new Error(chalk.red('Missing require argument: `tempalte`.'))
 
-  // create context
   const context = {
     template,
     project: project || template,
@@ -33,7 +32,7 @@ async function excuteQueues(template, project, options) {
     config: Object.create(null), // 获取模板，读取require
     answers: Object.create(null),
     files: [],
-  }
+  } as const
 
   await app.run(context)
 }

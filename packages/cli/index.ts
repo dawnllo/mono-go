@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { Command } from '@commander-js/extra-typings'
-import chalk from 'chalk'
 import excuteQueues from './process/index'
 
 const dlc = new Command()
