@@ -7,11 +7,7 @@
     "rootDir": ".",
     "module": "esnext",
     "moduleResolution": "Bundler",
-    "paths": {},
     "resolveJsonModule": true,
-    "types": [],
-
-    // modules
 
     // type checking
     "strict": true,
@@ -28,17 +24,11 @@
     "noUnusedLocals": true,
     "declaration": true,
     "declarationDir": "./types",
+    "noEmit": true,
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },
   "include": ["*.ts", "packages"],
-  "exclude": [
-    "unocss.config.ts",
-    "node_modules",
-    "**/*.md",
-    "**/dist",
-    "packages/.test",
-    "packages/_docs"
-  ]
+  "exclude": ["node_modules/*"]
 }

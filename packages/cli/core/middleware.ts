@@ -1,7 +1,6 @@
-import log from '../utils/log'
-import type { FuncKeys } from '../utils/log'
+import log, { type FuncKeys } from '../utils/log'
 
-type UseFunction = (content: any) => void | Promise<void>
+type UseFunction = (content: _Global.Context) => void | Promise<void>
 type GeneratorType = Generator<UseFunction, string, void> | null
 
 /**
@@ -10,7 +9,7 @@ type GeneratorType = Generator<UseFunction, string, void> | null
 export default class MiddleWare {
   private queues: UseFunction[] = []
   private iterator: GeneratorType = null
-  context: any
+  context: _Global.Context | null
 
   construction() {
   }
@@ -23,19 +22,17 @@ export default class MiddleWare {
     return this
   }
 
-  async run(context) {
-    // init context iterator
+  async run(context: _Global.Context) {
     this.context = context
     this.iterator = this.generator()
 
     let result = this.iterator!.next()
 
-    // tools
     const handlerResult = async () => {
       if (result.done)
         return
 
-      const res = result.value(this.context)
+      const res = result.value(this.context!)
       if (res && typeof res.then === 'function') {
         try {
           await res
@@ -57,7 +54,7 @@ export default class MiddleWare {
     await handlerResult()
   }
 
-  cancel(str, color: FuncKeys = 'yellow') {
+  cancel(str: string, color: FuncKeys = 'yellow') {
     if (this.iterator) {
       log[color](str)
       return this.iterator.return('cancel')
@@ -71,7 +68,7 @@ export default class MiddleWare {
     const queues = this.queues
     for (let i = 0; i < queues.length; i++) {
       const fn = queues[i]
-      yield fn
+      yield fn!
     }
     return 'done'
   }

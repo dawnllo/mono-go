@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from '@commander-js/extra-typings'
-import excuteQueues from './process/index'
+import addAction from './command/add/index'
 
 const dlc = new Command()
 
@@ -13,6 +13,6 @@ dlc
   .command('add <template> [rename]')
   .description('add template')
   .option('-f, --force', 'force overwrite file destination !!!')
-  .action(excuteQueues)
+  .action(addAction)
 
 dlc.parse()

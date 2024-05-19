@@ -2,9 +2,8 @@ import path from 'node:path'
 import chalk from 'chalk'
 import ora from 'ora'
 
-import * as file from '../core/file.js'
-import config from '../core/config_remote.js'
-import { http } from '../core/http.js'
+import * as file from '../../core/file'
+import config from '../../core/config_remote'
 
 /**
  * 解析template, ctx.src
@@ -13,17 +12,8 @@ import { http } from '../core/http.js'
  * @param {*} ctx 上下文
  */
 export default async function parse(ctx) {
-  // 1.本地
-  const local = await isLocal(ctx.template)
-  if (local) {
-    ctx.src = local
-    return
-  }
-
-  // 2.远端
   const remote = await isRemote(ctx.template)
 
-  // 3.抛错
   if (!remote) {
     throw new Error(
       chalk.red(
@@ -42,35 +32,25 @@ export default async function parse(ctx) {
   ctx.src = path.join(config.paths.cache, hash)
   const exists = await file.isDirectory(ctx.src)
 
-  // 设计为每次都获取新的。如果要使用缓存，添加参数
-  if (ctx.options.offline) {
-    if (exists) {
-      // found cached template
-      return console.log(
-        `Using cached template: \`${file.tildify(ctx.src)}\`.`,
-      )
-    }
-    console.log(`Cache not found: \`${file.tildify(ctx.src)}\`.`)
-  }
-
   // 删缓存对应资源
   exists && (await file.remove(ctx.src))
 
-  // 下载资源，保存在 ctx.src
-  const spinner = ora('Downloading template...').start()
+  // // 下载资源，保存在 ctx.src
+  // const spinner = ora('Downloading template...').start()
   // try {
   //   // 下载zip
-  //   const temp = await http.download(url);
+  //   const temp = await http.download(url)
   //   // 解压到ctx.src
-  //   await file.extract(temp, ctx.src, 1);
+  //   await file.extract(temp, ctx.src, 1)
   //   // 删除zip
-  //   await file.remove(temp);
-  //   spinner.succeed("Download template complete.");
-  // } catch (e) {
-  //   spinner.stop();
+  //   await file.remove(temp)
+  //   spinner.succeed('Download template complete.')
+  // }
+  // catch (e: any) {
+  //   spinner.stop()
   //   throw new Error(
-  //     `Failed to pull \`${ctx.template}\` template: ${e.message}.`
-  //   );
+  //     `Failed to pull \`${ctx.template}\` template: ${e.message}.`,
+  //   )
   // }
 }
 

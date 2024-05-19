@@ -1,18 +1,20 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "target": "ES2022",
-
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "moduleSuffixes": ["", ".js", ".jsx", ".ts", ".tsx"],
-    "allowJs": true,
+
     "strict": true,
     "strictPropertyInitialization": false,
     "noImplicitAny": false,
     "declaration": true
   },
-  "files": [
-    "./global.d.ts",
-    "./node_modules/@commander-js/extra-typings/esm.d.mts"
-  ]
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node",
+    "require": ["tsconfig-paths/register"]
+  },
+  "files": ["./global.d.ts"]
 }

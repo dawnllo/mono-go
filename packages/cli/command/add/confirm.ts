@@ -2,14 +2,15 @@ import path from 'node:path'
 import prompts from 'prompts'
 import chalk from 'chalk'
 import log from '../core/log.js'
-import * as file from '../core/file.js'
+import * as file from '../../core/file.js'
 
 /**
  * 确定文件目标
  * 存在：用户交互，是否重写、或取消重新输入。
  * 不存在：进行下一步。
  */
-export default async (ctx, ware) => {
+export default async function confirm(ctx) => {
+  
   ctx.dest = path.resolve(ctx.project)
   log.green(`目标文件:`, ctx.dest)
 
