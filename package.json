@@ -2,7 +2,7 @@
   "name": "@dawnll/monorepo",
   "type": "module",
   "version": "1.0.0",
-  "packageManager": "pnpm@9.1.0",
+  "packageManager": "pnpm@9.1.1",
   "description": "dawnl monorepo",
   "author": "dawnl",
   "license": "ISC",
@@ -16,6 +16,7 @@
     "build:vite": "pnpm --filter @dawnll/dlc build:vite",
     "build:rollup": "pnpm --filter @dawnll/dlc build:rollup",
     "dlc": "pnpm --filter @dawnll/element-v2 run dlc",
+    "dlc2": "pnpm --filter @dawnll/dlc run dlc",
     "exec": "pnpm --filter @dawnll/dlc run exec"
   },
   "devDependencies": {

@@ -8,15 +8,15 @@ import testPlugin from './rollup-plugins/test.js'
 export default defineConfig({
   plugins: [
     // testPlugin(),
-    typescript(),
     nodeResolve({
       exportConditions: ['node'],
       preferBuiltins: true,
-      extensions: ['.ts', '.tsx'],
+      extensions: ['', '.ts', '.tsx'],
     }),
     commonjs({
       defaultIsModuleExports: 'auto',
     }),
+    typescript({}),
   ],
   input: {
     index: './index.ts',

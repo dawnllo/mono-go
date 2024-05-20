@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-import require$$0 from 'events';
-import require$$1 from 'child_process';
-import require$$2 from 'path';
-import require$$3 from 'fs';
-import require$$4 from 'process';
 import process$1 from 'node:process';
+import require$$0 from 'node:events';
+import require$$1 from 'node:child_process';
+import require$$2 from 'node:path';
+import require$$3 from 'node:fs';
 import os from 'node:os';
 import tty from 'node:tty';
 
@@ -22,7 +21,6 @@ var error = {};
 
 /**
  * CommanderError class
- * @class
  */
 
 let CommanderError$3 = class CommanderError extends Error {
@@ -31,7 +29,6 @@ let CommanderError$3 = class CommanderError extends Error {
    * @param {number} exitCode suggested exit code which could be used with process.exit
    * @param {string} code an id string representing the error
    * @param {string} message human-readable description of the error
-   * @constructor
    */
   constructor(exitCode, code, message) {
     super(message);
@@ -46,13 +43,11 @@ let CommanderError$3 = class CommanderError extends Error {
 
 /**
  * InvalidArgumentError class
- * @class
  */
 let InvalidArgumentError$4 = class InvalidArgumentError extends CommanderError$3 {
   /**
    * Constructs the InvalidArgumentError class
    * @param {string} [message] explanation of why argument is invalid
-   * @constructor
    */
   constructor(message) {
     super(1, 'commander.invalidArgument', message);
@@ -117,7 +112,7 @@ let Argument$3 = class Argument {
   }
 
   /**
-   * @package internal use only
+   * @package
    */
 
   _concatValue(value, previous) {
@@ -165,7 +160,9 @@ let Argument$3 = class Argument {
     this.argChoices = values.slice();
     this.parseArg = (arg, previous) => {
       if (!this.argChoices.includes(arg)) {
-        throw new InvalidArgumentError$3(`Allowed choices are ${this.argChoices.join(', ')}.`);
+        throw new InvalidArgumentError$3(
+          `Allowed choices are ${this.argChoices.join(', ')}.`,
+        );
       }
       if (this.variadic) {
         return this._concatValue(arg, previous);
@@ -177,6 +174,8 @@ let Argument$3 = class Argument {
 
   /**
    * Make argument required.
+   *
+   * @returns {Argument}
    */
   argRequired() {
     this.required = true;
@@ -185,6 +184,8 @@ let Argument$3 = class Argument {
 
   /**
    * Make argument optional.
+   *
+   * @returns {Argument}
    */
   argOptional() {
     this.required = false;
@@ -203,9 +204,7 @@ let Argument$3 = class Argument {
 function humanReadableArgName$2(arg) {
   const nameOutput = arg.name() + (arg.variadic === true ? '...' : '');
 
-  return arg.required
-    ? '<' + nameOutput + '>'
-    : '[' + nameOutput + ']';
+  return arg.required ? '<' + nameOutput + '>' : '[' + nameOutput + ']';
 }
 
 argument.Argument = Argument$3;
@@ -242,14 +241,14 @@ let Help$3 = class Help {
    */
 
   visibleCommands(cmd) {
-    const visibleCommands = cmd.commands.filter(cmd => !cmd._hidden);
+    const visibleCommands = cmd.commands.filter((cmd) => !cmd._hidden);
     const helpCommand = cmd._getHelpCommand();
     if (helpCommand && !helpCommand._hidden) {
       visibleCommands.push(helpCommand);
     }
     if (this.sortSubcommands) {
       visibleCommands.sort((a, b) => {
-        // @ts-ignore: overloaded return type
+        // @ts-ignore: because overloaded return type
         return a.name().localeCompare(b.name());
       });
     }
@@ -261,12 +260,14 @@ let Help$3 = class Help {
    *
    * @param {Option} a
    * @param {Option} b
-   * @returns number
+   * @returns {number}
    */
   compareOptions(a, b) {
     const getSortKey = (option) => {
       // WYSIWYG for order displayed in help. Short used for comparison if present. No special handling for negated.
-      return option.short ? option.short.replace(/^-/, '') : option.long.replace(/^--/, '');
+      return option.short
+        ? option.short.replace(/^-/, '')
+        : option.long.replace(/^--/, '');
     };
     return getSortKey(a).localeCompare(getSortKey(b));
   }
@@ -289,9 +290,13 @@ let Help$3 = class Help {
       if (!removeShort && !removeLong) {
         visibleOptions.push(helpOption); // no changes needed
       } else if (helpOption.long && !removeLong) {
-        visibleOptions.push(cmd.createOption(helpOption.long, helpOption.description));
+        visibleOptions.push(
+          cmd.createOption(helpOption.long, helpOption.description),
+        );
       } else if (helpOption.short && !removeShort) {
-        visibleOptions.push(cmd.createOption(helpOption.short, helpOption.description));
+        visibleOptions.push(
+          cmd.createOption(helpOption.short, helpOption.description),
+        );
       }
     }
     if (this.sortOptions) {
@@ -311,8 +316,14 @@ let Help$3 = class Help {
     if (!this.showGlobalOptions) return [];
 
     const globalOptions = [];
-    for (let ancestorCmd = cmd.parent; ancestorCmd; ancestorCmd = ancestorCmd.parent) {
-      const visibleOptions = ancestorCmd.options.filter((option) => !option.hidden);
+    for (
+      let ancestorCmd = cmd.parent;
+      ancestorCmd;
+      ancestorCmd = ancestorCmd.parent
+    ) {
+      const visibleOptions = ancestorCmd.options.filter(
+        (option) => !option.hidden,
+      );
       globalOptions.push(...visibleOptions);
     }
     if (this.sortOptions) {
@@ -331,13 +342,14 @@ let Help$3 = class Help {
   visibleArguments(cmd) {
     // Side effect! Apply the legacy descriptions before the arguments are displayed.
     if (cmd._argsDescription) {
-      cmd.registeredArguments.forEach(argument => {
-        argument.description = argument.description || cmd._argsDescription[argument.name()] || '';
+      cmd.registeredArguments.forEach((argument) => {
+        argument.description =
+          argument.description || cmd._argsDescription[argument.name()] || '';
       });
     }
 
     // If there are any arguments with a description then return all the arguments.
-    if (cmd.registeredArguments.find(argument => argument.description)) {
+    if (cmd.registeredArguments.find((argument) => argument.description)) {
       return cmd.registeredArguments;
     }
     return [];
@@ -352,11 +364,15 @@ let Help$3 = class Help {
 
   subcommandTerm(cmd) {
     // Legacy. Ignores custom usage string, and nested commands.
-    const args = cmd.registeredArguments.map(arg => humanReadableArgName$1(arg)).join(' ');
-    return cmd._name +
+    const args = cmd.registeredArguments
+      .map((arg) => humanReadableArgName$1(arg))
+      .join(' ');
+    return (
+      cmd._name +
       (cmd._aliases[0] ? '|' + cmd._aliases[0] : '') +
       (cmd.options.length ? ' [options]' : '') + // simplistic check for non-help option
-      (args ? ' ' + args : '');
+      (args ? ' ' + args : '')
+    );
   }
 
   /**
@@ -451,7 +467,11 @@ let Help$3 = class Help {
       cmdName = cmdName + '|' + cmd._aliases[0];
     }
     let ancestorCmdNames = '';
-    for (let ancestorCmd = cmd.parent; ancestorCmd; ancestorCmd = ancestorCmd.parent) {
+    for (
+      let ancestorCmd = cmd.parent;
+      ancestorCmd;
+      ancestorCmd = ancestorCmd.parent
+    ) {
       ancestorCmdNames = ancestorCmd.name() + ' ' + ancestorCmdNames;
     }
     return ancestorCmdNames + cmdName + ' ' + cmd.usage();
@@ -465,7 +485,7 @@ let Help$3 = class Help {
    */
 
   commandDescription(cmd) {
-    // @ts-ignore: overloaded return type
+    // @ts-ignore: because overloaded return type
     return cmd.description();
   }
 
@@ -478,7 +498,7 @@ let Help$3 = class Help {
    */
 
   subcommandDescription(cmd) {
-    // @ts-ignore: overloaded return type
+    // @ts-ignore: because overloaded return type
     return cmd.summary() || cmd.description();
   }
 
@@ -495,15 +515,20 @@ let Help$3 = class Help {
     if (option.argChoices) {
       extraInfo.push(
         // use stringify to match the display of the default value
-        `choices: ${option.argChoices.map((choice) => JSON.stringify(choice)).join(', ')}`);
+        `choices: ${option.argChoices.map((choice) => JSON.stringify(choice)).join(', ')}`,
+      );
     }
     if (option.defaultValue !== undefined) {
       // default for boolean and negated more for programmer than end user,
       // but show true/false for boolean option as may be for hand-rolled env or config processing.
-      const showDefault = option.required || option.optional ||
+      const showDefault =
+        option.required ||
+        option.optional ||
         (option.isBoolean() && typeof option.defaultValue === 'boolean');
       if (showDefault) {
-        extraInfo.push(`default: ${option.defaultValueDescription || JSON.stringify(option.defaultValue)}`);
+        extraInfo.push(
+          `default: ${option.defaultValueDescription || JSON.stringify(option.defaultValue)}`,
+        );
       }
     }
     // preset for boolean and negated are more for programmer than end user
@@ -532,10 +557,13 @@ let Help$3 = class Help {
     if (argument.argChoices) {
       extraInfo.push(
         // use stringify to match the display of the default value
-        `choices: ${argument.argChoices.map((choice) => JSON.stringify(choice)).join(', ')}`);
+        `choices: ${argument.argChoices.map((choice) => JSON.stringify(choice)).join(', ')}`,
+      );
     }
     if (argument.defaultValue !== undefined) {
-      extraInfo.push(`default: ${argument.defaultValueDescription || JSON.stringify(argument.defaultValue)}`);
+      extraInfo.push(
+        `default: ${argument.defaultValueDescription || JSON.stringify(argument.defaultValue)}`,
+      );
     }
     if (extraInfo.length > 0) {
       const extraDescripton = `(${extraInfo.join(', ')})`;
@@ -563,7 +591,11 @@ let Help$3 = class Help {
     function formatItem(term, description) {
       if (description) {
         const fullText = `${term.padEnd(termWidth + itemSeparatorWidth)}${description}`;
-        return helper.wrap(fullText, helpWidth - itemIndentWidth, termWidth + itemSeparatorWidth);
+        return helper.wrap(
+          fullText,
+          helpWidth - itemIndentWidth,
+          termWidth + itemSeparatorWidth,
+        );
       }
       return term;
     }
@@ -577,12 +609,18 @@ let Help$3 = class Help {
     // Description
     const commandDescription = helper.commandDescription(cmd);
     if (commandDescription.length > 0) {
-      output = output.concat([helper.wrap(commandDescription, helpWidth, 0), '']);
+      output = output.concat([
+        helper.wrap(commandDescription, helpWidth, 0),
+        '',
+      ]);
     }
 
     // Arguments
     const argumentList = helper.visibleArguments(cmd).map((argument) => {
-      return formatItem(helper.argumentTerm(argument), helper.argumentDescription(argument));
+      return formatItem(
+        helper.argumentTerm(argument),
+        helper.argumentDescription(argument),
+      );
     });
     if (argumentList.length > 0) {
       output = output.concat(['Arguments:', formatList(argumentList), '']);
@@ -590,24 +628,39 @@ let Help$3 = class Help {
 
     // Options
     const optionList = helper.visibleOptions(cmd).map((option) => {
-      return formatItem(helper.optionTerm(option), helper.optionDescription(option));
+      return formatItem(
+        helper.optionTerm(option),
+        helper.optionDescription(option),
+      );
     });
     if (optionList.length > 0) {
       output = output.concat(['Options:', formatList(optionList), '']);
     }
 
     if (this.showGlobalOptions) {
-      const globalOptionList = helper.visibleGlobalOptions(cmd).map((option) => {
-        return formatItem(helper.optionTerm(option), helper.optionDescription(option));
-      });
+      const globalOptionList = helper
+        .visibleGlobalOptions(cmd)
+        .map((option) => {
+          return formatItem(
+            helper.optionTerm(option),
+            helper.optionDescription(option),
+          );
+        });
       if (globalOptionList.length > 0) {
-        output = output.concat(['Global Options:', formatList(globalOptionList), '']);
+        output = output.concat([
+          'Global Options:',
+          formatList(globalOptionList),
+          '',
+        ]);
       }
     }
 
     // Commands
     const commandList = helper.visibleCommands(cmd).map((cmd) => {
-      return formatItem(helper.subcommandTerm(cmd), helper.subcommandDescription(cmd));
+      return formatItem(
+        helper.subcommandTerm(cmd),
+        helper.subcommandDescription(cmd),
+      );
     });
     if (commandList.length > 0) {
       output = output.concat(['Commands:', formatList(commandList), '']);
@@ -629,7 +682,7 @@ let Help$3 = class Help {
       helper.longestOptionTermLength(cmd, helper),
       helper.longestGlobalOptionTermLength(cmd, helper),
       helper.longestSubcommandTermLength(cmd, helper),
-      helper.longestArgumentTermLength(cmd, helper)
+      helper.longestArgumentTermLength(cmd, helper),
     );
   }
 
@@ -647,7 +700,8 @@ let Help$3 = class Help {
 
   wrap(str, width, indent, minColumnWidth = 40) {
     // Full \s characters, minus the linefeeds.
-    const indents = ' \\f\\t\\v\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff';
+    const indents =
+      ' \\f\\t\\v\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff';
     // Detect manually wrapped and indented strings by searching for line break followed by spaces.
     const manualIndent = new RegExp(`[\\n][${indents}]+`);
     if (str.match(manualIndent)) return str;
@@ -662,12 +716,20 @@ let Help$3 = class Help {
     const breaks = `\\s${zeroWidthSpace}`;
     // Match line end (so empty lines don't collapse),
     // or as much text as will fit in column, or excess text up to first break.
-    const regex = new RegExp(`\n|.{1,${columnWidth - 1}}([${breaks}]|$)|[^${breaks}]+?([${breaks}]|$)`, 'g');
+    const regex = new RegExp(
+      `\n|.{1,${columnWidth - 1}}([${breaks}]|$)|[^${breaks}]+?([${breaks}]|$)`,
+      'g',
+    );
     const lines = columnText.match(regex) || [];
-    return leadingStr + lines.map((line, i) => {
-      if (line === '\n') return ''; // preserve empty lines
-      return ((i > 0) ? indentString : '') + line.trimEnd();
-    }).join('\n');
+    return (
+      leadingStr +
+      lines
+        .map((line, i) => {
+          if (line === '\n') return ''; // preserve empty lines
+          return (i > 0 ? indentString : '') + line.trimEnd();
+        })
+        .join('\n')
+    );
   }
 };
 
@@ -770,7 +832,7 @@ let Option$3 = class Option {
    *   .addOption(new Option('--log', 'write logging information to file'))
    *   .addOption(new Option('--trace', 'log extra details').implies({ log: 'trace.txt' }));
    *
-   * @param {Object} impliedOptionValues
+   * @param {object} impliedOptionValues
    * @return {Option}
    */
   implies(impliedOptionValues) {
@@ -835,7 +897,7 @@ let Option$3 = class Option {
   }
 
   /**
-   * @package internal use only
+   * @package
    */
 
   _concatValue(value, previous) {
@@ -857,7 +919,9 @@ let Option$3 = class Option {
     this.argChoices = values.slice();
     this.parseArg = (arg, previous) => {
       if (!this.argChoices.includes(arg)) {
-        throw new InvalidArgumentError$2(`Allowed choices are ${this.argChoices.join(', ')}.`);
+        throw new InvalidArgumentError$2(
+          `Allowed choices are ${this.argChoices.join(', ')}.`,
+        );
       }
       if (this.variadic) {
         return this._concatValue(arg, previous);
@@ -896,7 +960,7 @@ let Option$3 = class Option {
    *
    * @param {string} arg
    * @return {boolean}
-   * @package internal use only
+   * @package
    */
 
   is(arg) {
@@ -909,7 +973,7 @@ let Option$3 = class Option {
    * Options are one of boolean, negated, required argument, or optional argument.
    *
    * @return {boolean}
-   * @package internal use only
+   * @package
    */
 
   isBoolean() {
@@ -932,7 +996,7 @@ let DualOptions$1 = class DualOptions {
     this.positiveOptions = new Map();
     this.negativeOptions = new Map();
     this.dualOptions = new Set();
-    options.forEach(option => {
+    options.forEach((option) => {
       if (option.negate) {
         this.negativeOptions.set(option.attributeName(), option);
       } else {
@@ -959,7 +1023,7 @@ let DualOptions$1 = class DualOptions {
 
     // Use the value to deduce if (probably) came from the option.
     const preset = this.negativeOptions.get(optionKey).presetArg;
-    const negativeValue = (preset !== undefined) ? preset : false;
+    const negativeValue = preset !== undefined ? preset : false;
     return option.negate === (negativeValue === value);
   }
 };
@@ -990,7 +1054,8 @@ function splitOptionFlags(flags) {
   // Use original very loose parsing to maintain backwards compatibility for now,
   // which allowed for example unintended `-sw, --short-word` [sic].
   const flagParts = flags.split(/[ |,]+/);
-  if (flagParts.length > 1 && !/^[[<]/.test(flagParts[1])) shortFlag = flagParts.shift();
+  if (flagParts.length > 1 && !/^[[<]/.test(flagParts[1]))
+    shortFlag = flagParts.shift();
   longFlag = flagParts.shift();
   // Add support for lone short flag without significantly changing parsing!
   if (!shortFlag && /^-[^-]$/.test(longFlag)) {
@@ -1013,7 +1078,8 @@ function editDistance(a, b) {
   // (Simple implementation.)
 
   // Quick early exit, return worst case.
-  if (Math.abs(a.length - b.length) > maxDistance) return Math.max(a.length, b.length);
+  if (Math.abs(a.length - b.length) > maxDistance)
+    return Math.max(a.length, b.length);
 
   // distance between prefix substrings of a and b
   const d = [];
@@ -1039,7 +1105,7 @@ function editDistance(a, b) {
       d[i][j] = Math.min(
         d[i - 1][j] + 1, // deletion
         d[i][j - 1] + 1, // insertion
-        d[i - 1][j - 1] + cost // substitution
+        d[i - 1][j - 1] + cost, // substitution
       );
       // transposition
       if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
@@ -1067,7 +1133,7 @@ function suggestSimilar$1(word, candidates) {
   const searchingOptions = word.startsWith('--');
   if (searchingOptions) {
     word = word.slice(2);
-    candidates = candidates.map(candidate => candidate.slice(2));
+    candidates = candidates.map((candidate) => candidate.slice(2));
   }
 
   let similar = [];
@@ -1092,7 +1158,7 @@ function suggestSimilar$1(word, candidates) {
 
   similar.sort((a, b) => a.localeCompare(b));
   if (searchingOptions) {
-    similar = similar.map(candidate => `--${candidate}`);
+    similar = similar.map((candidate) => `--${candidate}`);
   }
 
   if (similar.length > 1) {
@@ -1110,7 +1176,7 @@ const EventEmitter = require$$0.EventEmitter;
 const childProcess = require$$1;
 const path = require$$2;
 const fs = require$$3;
-const process = require$$4;
+const process = process$1;
 
 const { Argument: Argument$2, humanReadableArgName } = argument;
 const { CommanderError: CommanderError$2 } = error;
@@ -1168,9 +1234,11 @@ let Command$2 = class Command extends EventEmitter {
     this._outputConfiguration = {
       writeOut: (str) => process.stdout.write(str),
       writeErr: (str) => process.stderr.write(str),
-      getOutHelpWidth: () => process.stdout.isTTY ? process.stdout.columns : undefined,
-      getErrHelpWidth: () => process.stderr.isTTY ? process.stderr.columns : undefined,
-      outputError: (str, write) => write(str)
+      getOutHelpWidth: () =>
+        process.stdout.isTTY ? process.stdout.columns : undefined,
+      getErrHelpWidth: () =>
+        process.stderr.isTTY ? process.stderr.columns : undefined,
+      outputError: (str, write) => write(str),
     };
 
     this._hidden = false;
@@ -1197,7 +1265,8 @@ let Command$2 = class Command extends EventEmitter {
     this._helpConfiguration = sourceCommand._helpConfiguration;
     this._exitCallback = sourceCommand._exitCallback;
     this._storeOptionsAsProperties = sourceCommand._storeOptionsAsProperties;
-    this._combineFlagAndOptionalValue = sourceCommand._combineFlagAndOptionalValue;
+    this._combineFlagAndOptionalValue =
+      sourceCommand._combineFlagAndOptionalValue;
     this._allowExcessArguments = sourceCommand._allowExcessArguments;
     this._enablePositionalOptions = sourceCommand._enablePositionalOptions;
     this._showHelpAfterError = sourceCommand._showHelpAfterError;
@@ -1213,6 +1282,7 @@ let Command$2 = class Command extends EventEmitter {
 
   _getCommandAndAncestors() {
     const result = [];
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     for (let command = this; command; command = command.parent) {
       result.push(command);
     }
@@ -1239,8 +1309,8 @@ let Command$2 = class Command extends EventEmitter {
    *   .command('stop [service]', 'stop named service, or all if no name supplied');
    *
    * @param {string} nameAndArgs - command name and arguments, args are `<required>` or `[optional]` and last may also be `variadic...`
-   * @param {(Object|string)} [actionOptsOrExecDesc] - configuration options (for action), or description (for executable)
-   * @param {Object} [execOpts] - configuration options (for executable)
+   * @param {(object | string)} [actionOptsOrExecDesc] - configuration options (for action), or description (for executable)
+   * @param {object} [execOpts] - configuration options (for executable)
    * @return {Command} returns new command for action handler, or `this` for executable command
    */
 
@@ -1300,8 +1370,8 @@ let Command$2 = class Command extends EventEmitter {
    * You can customise the help by overriding Help properties using configureHelp(),
    * or with a subclass of Help by overriding createHelp().
    *
-   * @param {Object} [configuration] - configuration options
-   * @return {(Command|Object)} `this` command for chaining, or stored configuration
+   * @param {object} [configuration] - configuration options
+   * @return {(Command | object)} `this` command for chaining, or stored configuration
    */
 
   configureHelp(configuration) {
@@ -1326,8 +1396,8 @@ let Command$2 = class Command extends EventEmitter {
    *     // functions based on what is being written out
    *     outputError(str, write) // used for displaying errors, and not used for displaying help
    *
-   * @param {Object} [configuration] - configuration options
-   * @return {(Command|Object)} `this` command for chaining, or stored configuration
+   * @param {object} [configuration] - configuration options
+   * @return {(Command | object)} `this` command for chaining, or stored configuration
    */
 
   configureOutput(configuration) {
@@ -1366,7 +1436,7 @@ let Command$2 = class Command extends EventEmitter {
    * See .command() for creating an attached subcommand which inherits settings from its parent.
    *
    * @param {Command} cmd - new subcommand
-   * @param {Object} [opts] - configuration options
+   * @param {object} [opts] - configuration options
    * @return {Command} `this` command for chaining
    */
 
@@ -1442,9 +1512,12 @@ let Command$2 = class Command extends EventEmitter {
    */
 
   arguments(names) {
-    names.trim().split(/ +/).forEach((detail) => {
-      this.argument(detail);
-    });
+    names
+      .trim()
+      .split(/ +/)
+      .forEach((detail) => {
+        this.argument(detail);
+      });
     return this;
   }
 
@@ -1457,10 +1530,18 @@ let Command$2 = class Command extends EventEmitter {
   addArgument(argument) {
     const previousArgument = this.registeredArguments.slice(-1)[0];
     if (previousArgument && previousArgument.variadic) {
-      throw new Error(`only the last argument can be variadic '${previousArgument.name()}'`);
+      throw new Error(
+        `only the last argument can be variadic '${previousArgument.name()}'`,
+      );
     }
-    if (argument.required && argument.defaultValue !== undefined && argument.parseArg === undefined) {
-      throw new Error(`a default value for a required argument is never used: '${argument.name()}'`);
+    if (
+      argument.required &&
+      argument.defaultValue !== undefined &&
+      argument.parseArg === undefined
+    ) {
+      throw new Error(
+        `a default value for a required argument is never used: '${argument.name()}'`,
+      );
     }
     this.registeredArguments.push(argument);
     return this;
@@ -1469,6 +1550,7 @@ let Command$2 = class Command extends EventEmitter {
   /**
    * Customise or override default help command. By default a help command is automatically added if your command has subcommands.
    *
+   * @example
    *    program.helpCommand('help [cmd]');
    *    program.helpCommand('help [cmd]', 'show help');
    *    program.helpCommand(false); // suppress default help command
@@ -1527,8 +1609,11 @@ let Command$2 = class Command extends EventEmitter {
    * @package
    */
   _getHelpCommand() {
-    const hasImplicitHelpCommand = this._addImplicitHelpCommand ??
-      (this.commands.length && !this._actionHandler && !this._findCommand('help'));
+    const hasImplicitHelpCommand =
+      this._addImplicitHelpCommand ??
+      (this.commands.length &&
+        !this._actionHandler &&
+        !this._findCommand('help'));
 
     if (hasImplicitHelpCommand) {
       if (this._helpCommand === undefined) {
@@ -1674,14 +1759,18 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * Register option if no conflicts found, or throw on conflict.
    *
    * @param {Option} option
-   * @api private
+   * @private
    */
 
   _registerOption(option) {
-    const matchingOption = (option.short && this._findOption(option.short)) ||
+    const matchingOption =
+      (option.short && this._findOption(option.short)) ||
       (option.long && this._findOption(option.long));
     if (matchingOption) {
-      const matchingFlag = (option.long && this._findOption(option.long)) ? option.long : option.short;
+      const matchingFlag =
+        option.long && this._findOption(option.long)
+          ? option.long
+          : option.short;
       throw new Error(`Cannot add option '${option.flags}'${this._name && ` to command '${this._name}'`} due to conflicting flag '${matchingFlag}'
 -  already used by option '${matchingOption.flags}'`);
     }
@@ -1694,7 +1783,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * Register command if no conflicts found, or throw on conflict.
    *
    * @param {Command} command
-   * @api private
+   * @private
    */
 
   _registerCommand(command) {
@@ -1702,11 +1791,15 @@ Expecting one of '${allowedValues.join("', '")}'`);
       return [cmd.name()].concat(cmd.aliases());
     };
 
-    const alreadyUsed = knownBy(command).find((name) => this._findCommand(name));
+    const alreadyUsed = knownBy(command).find((name) =>
+      this._findCommand(name),
+    );
     if (alreadyUsed) {
       const existingCmd = knownBy(this._findCommand(alreadyUsed)).join('|');
       const newCmd = knownBy(command).join('|');
-      throw new Error(`cannot add command '${newCmd}' as already have command '${existingCmd}'`);
+      throw new Error(
+        `cannot add command '${newCmd}' as already have command '${existingCmd}'`,
+      );
     }
 
     this.commands.push(command);
@@ -1729,7 +1822,11 @@ Expecting one of '${allowedValues.join("', '")}'`);
       // --no-foo is special and defaults foo to true, unless a --foo option is already defined
       const positiveLongFlag = option.long.replace(/^--no-/, '--');
       if (!this._findOption(positiveLongFlag)) {
-        this.setOptionValueWithSource(name, option.defaultValue === undefined ? true : option.defaultValue, 'default');
+        this.setOptionValueWithSource(
+          name,
+          option.defaultValue === undefined ? true : option.defaultValue,
+          'default',
+        );
       }
     } else if (option.defaultValue !== undefined) {
       this.setOptionValueWithSource(name, option.defaultValue, 'default');
@@ -1782,11 +1879,14 @@ Expecting one of '${allowedValues.join("', '")}'`);
   /**
    * Internal implementation shared by .option() and .requiredOption()
    *
+   * @return {Command} `this` command for chaining
    * @private
    */
   _optionEx(config, flags, description, fn, defaultValue) {
     if (typeof flags === 'object' && flags instanceof Option$2) {
-      throw new Error('To add an Option object use addOption() instead of option() or requiredOption()');
+      throw new Error(
+        'To add an Option object use addOption() instead of option() or requiredOption()',
+      );
     }
     const option = this.createOption(flags, description);
     option.makeOptionMandatory(!!config.mandatory);
@@ -1834,20 +1934,26 @@ Expecting one of '${allowedValues.join("', '")}'`);
   }
 
   /**
-  * Add a required option which must have a value after parsing. This usually means
-  * the option must be specified on the command line. (Otherwise the same as .option().)
-  *
-  * The `flags` string contains the short and/or long flags, separated by comma, a pipe or space.
-  *
-  * @param {string} flags
-  * @param {string} [description]
-  * @param {(Function|*)} [parseArg] - custom option processing function or default value
-  * @param {*} [defaultValue]
-  * @return {Command} `this` command for chaining
-  */
+   * Add a required option which must have a value after parsing. This usually means
+   * the option must be specified on the command line. (Otherwise the same as .option().)
+   *
+   * The `flags` string contains the short and/or long flags, separated by comma, a pipe or space.
+   *
+   * @param {string} flags
+   * @param {string} [description]
+   * @param {(Function|*)} [parseArg] - custom option processing function or default value
+   * @param {*} [defaultValue]
+   * @return {Command} `this` command for chaining
+   */
 
   requiredOption(flags, description, parseArg, defaultValue) {
-    return this._optionEx({ mandatory: true }, flags, description, parseArg, defaultValue);
+    return this._optionEx(
+      { mandatory: true },
+      flags,
+      description,
+      parseArg,
+      defaultValue,
+    );
   }
 
   /**
@@ -1858,7 +1964,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * program.combineFlagAndOptionalValue(true);  // `-f80` is treated like `--flag=80`, this is the default behaviour
    * program.combineFlagAndOptionalValue(false) // `-fb` is treated like `-f -b`
    *
-   * @param {boolean} [combine=true] - if `true` or omitted, an optional value can be specified directly after the flag.
+   * @param {boolean} [combine] - if `true` or omitted, an optional value can be specified directly after the flag.
+   * @return {Command} `this` command for chaining
    */
   combineFlagAndOptionalValue(combine = true) {
     this._combineFlagAndOptionalValue = !!combine;
@@ -1868,8 +1975,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
   /**
    * Allow unknown options on the command line.
    *
-   * @param {boolean} [allowUnknown=true] - if `true` or omitted, no error will be thrown
-   * for unknown options.
+   * @param {boolean} [allowUnknown] - if `true` or omitted, no error will be thrown for unknown options.
+   * @return {Command} `this` command for chaining
    */
   allowUnknownOption(allowUnknown = true) {
     this._allowUnknownOption = !!allowUnknown;
@@ -1879,8 +1986,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
   /**
    * Allow excess command-arguments on the command line. Pass false to make excess arguments an error.
    *
-   * @param {boolean} [allowExcess=true] - if `true` or omitted, no error will be thrown
-   * for excess arguments.
+   * @param {boolean} [allowExcess] - if `true` or omitted, no error will be thrown for excess arguments.
+   * @return {Command} `this` command for chaining
    */
   allowExcessArguments(allowExcess = true) {
     this._allowExcessArguments = !!allowExcess;
@@ -1892,7 +1999,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * subcommands reuse the same option names, and also enables subcommands to turn on passThroughOptions.
    * The default behaviour is non-positional and global options may appear anywhere on the command line.
    *
-   * @param {boolean} [positional=true]
+   * @param {boolean} [positional]
+   * @return {Command} `this` command for chaining
    */
   enablePositionalOptions(positional = true) {
     this._enablePositionalOptions = !!positional;
@@ -1905,8 +2013,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * positional options to have been enabled on the program (parent commands).
    * The default behaviour is non-positional and options may appear before or after command-arguments.
    *
-   * @param {boolean} [passThrough=true]
-   * for unknown options.
+   * @param {boolean} [passThrough] for unknown options.
+   * @return {Command} `this` command for chaining
    */
   passThroughOptions(passThrough = true) {
     this._passThroughOptions = !!passThrough;
@@ -1919,25 +2027,33 @@ Expecting one of '${allowedValues.join("', '")}'`);
    */
 
   _checkForBrokenPassThrough() {
-    if (this.parent && this._passThroughOptions && !this.parent._enablePositionalOptions) {
-      throw new Error(`passThroughOptions cannot be used for '${this._name}' without turning on enablePositionalOptions for parent command(s)`);
+    if (
+      this.parent &&
+      this._passThroughOptions &&
+      !this.parent._enablePositionalOptions
+    ) {
+      throw new Error(
+        `passThroughOptions cannot be used for '${this._name}' without turning on enablePositionalOptions for parent command(s)`,
+      );
     }
   }
 
   /**
-    * Whether to store option values as properties on command object,
-    * or store separately (specify false). In both cases the option values can be accessed using .opts().
-    *
-    * @param {boolean} [storeAsProperties=true]
-    * @return {Command} `this` command for chaining
-    */
+   * Whether to store option values as properties on command object,
+   * or store separately (specify false). In both cases the option values can be accessed using .opts().
+   *
+   * @param {boolean} [storeAsProperties=true]
+   * @return {Command} `this` command for chaining
+   */
 
   storeOptionsAsProperties(storeAsProperties = true) {
     if (this.options.length) {
       throw new Error('call .storeOptionsAsProperties() before adding options');
     }
     if (Object.keys(this._optionValues).length) {
-      throw new Error('call .storeOptionsAsProperties() before setting option values');
+      throw new Error(
+        'call .storeOptionsAsProperties() before setting option values',
+      );
     }
     this._storeOptionsAsProperties = !!storeAsProperties;
     return this;
@@ -1947,7 +2063,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * Retrieve option value.
    *
    * @param {string} key
-   * @return {Object} value
+   * @return {object} value
    */
 
   getOptionValue(key) {
@@ -1961,7 +2077,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * Store option value.
    *
    * @param {string} key
-   * @param {Object} value
+   * @param {object} value
    * @return {Command} `this` command for chaining
    */
 
@@ -1970,13 +2086,13 @@ Expecting one of '${allowedValues.join("', '")}'`);
   }
 
   /**
-    * Store option value and where the value came from.
-    *
-    * @param {string} key
-    * @param {Object} value
-    * @param {string} source - expected values are default/config/env/cli/implied
-    * @return {Command} `this` command for chaining
-    */
+   * Store option value and where the value came from.
+   *
+   * @param {string} key
+   * @param {object} value
+   * @param {string} source - expected values are default/config/env/cli/implied
+   * @return {Command} `this` command for chaining
+   */
 
   setOptionValueWithSource(key, value, source) {
     if (this._storeOptionsAsProperties) {
@@ -1989,24 +2105,24 @@ Expecting one of '${allowedValues.join("', '")}'`);
   }
 
   /**
-    * Get source of option value.
-    * Expected values are default | config | env | cli | implied
-    *
-    * @param {string} key
-    * @return {string}
-    */
+   * Get source of option value.
+   * Expected values are default | config | env | cli | implied
+   *
+   * @param {string} key
+   * @return {string}
+   */
 
   getOptionValueSource(key) {
     return this._optionValueSources[key];
   }
 
   /**
-    * Get source of option value. See also .optsWithGlobals().
-    * Expected values are default | config | env | cli | implied
-    *
-    * @param {string} key
-    * @return {string}
-    */
+   * Get source of option value. See also .optsWithGlobals().
+   * Expected values are default | config | env | cli | implied
+   *
+   * @param {string} key
+   * @return {string}
+   */
 
   getOptionValueSourceWithGlobals(key) {
     // global overwrites local, like optsWithGlobals
@@ -2032,17 +2148,30 @@ Expecting one of '${allowedValues.join("', '")}'`);
     }
     parseOptions = parseOptions || {};
 
-    // Default to using process.argv
-    if (argv === undefined) {
-      argv = process.argv;
-      // @ts-ignore: unknown property
-      if (process.versions && process.versions.electron) {
+    // auto-detect argument conventions if nothing supplied
+    if (argv === undefined && parseOptions.from === undefined) {
+      if (process.versions?.electron) {
         parseOptions.from = 'electron';
       }
+      // check node specific options for scenarios where user CLI args follow executable without scriptname
+      const execArgv = process.execArgv ?? [];
+      if (
+        execArgv.includes('-e') ||
+        execArgv.includes('--eval') ||
+        execArgv.includes('-p') ||
+        execArgv.includes('--print')
+      ) {
+        parseOptions.from = 'eval'; // internal usage, not documented
+      }
+    }
+
+    // default to using process.argv
+    if (argv === undefined) {
+      argv = process.argv;
     }
     this.rawArgs = argv.slice();
 
-    // make it a little easier for callers by supporting various argv conventions
+    // extract the user args and scriptPath
     let userArgs;
     switch (parseOptions.from) {
       case undefined:
@@ -2051,7 +2180,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
         userArgs = argv.slice(2);
         break;
       case 'electron':
-        // @ts-ignore: unknown property
+        // @ts-ignore: because defaultApp is an unknown property
         if (process.defaultApp) {
           this._scriptPath = argv[1];
           userArgs = argv.slice(2);
@@ -2062,12 +2191,18 @@ Expecting one of '${allowedValues.join("', '")}'`);
       case 'user':
         userArgs = argv.slice(0);
         break;
+      case 'eval':
+        userArgs = argv.slice(1);
+        break;
       default:
-        throw new Error(`unexpected parse option { from: '${parseOptions.from}' }`);
+        throw new Error(
+          `unexpected parse option { from: '${parseOptions.from}' }`,
+        );
     }
 
     // Find default name for program from arguments.
-    if (!this._name && this._scriptPath) this.nameFromFilename(this._scriptPath);
+    if (!this._name && this._scriptPath)
+      this.nameFromFilename(this._scriptPath);
     this._name = this._name || 'program';
 
     return userArgs;
@@ -2076,16 +2211,22 @@ Expecting one of '${allowedValues.join("', '")}'`);
   /**
    * Parse `argv`, setting options and invoking commands when defined.
    *
-   * The default expectation is that the arguments are from node and have the application as argv[0]
-   * and the script being run in argv[1], with user parameters after that.
+   * Use parseAsync instead of parse if any of your action handlers are async.
+   *
+   * Call with no parameters to parse `process.argv`. Detects Electron and special node options like `node --eval`. Easy mode!
+   *
+   * Or call with an array of strings to parse, and optionally where the user arguments start by specifying where the arguments are `from`:
+   * - `'node'`: default, `argv[0]` is the application and `argv[1]` is the script being run, with user arguments after that
+   * - `'electron'`: `argv[0]` is the application and `argv[1]` varies depending on whether the electron application is packaged
+   * - `'user'`: just user arguments
    *
    * @example
-   * program.parse(process.argv);
-   * program.parse(); // implicitly use process.argv and auto-detect node vs electron conventions
+   * program.parse(); // parse process.argv and auto-detect electron and special node flags
+   * program.parse(process.argv); // assume argv[0] is app and argv[1] is script
    * program.parse(my-args, { from: 'user' }); // just user supplied arguments, nothing special about argv[0]
    *
    * @param {string[]} [argv] - optional, defaults to process.argv
-   * @param {Object} [parseOptions] - optionally specify style of options with from: node/user/electron
+   * @param {object} [parseOptions] - optionally specify style of options with from: node/user/electron
    * @param {string} [parseOptions.from] - where the args are from: 'node', 'user', 'electron'
    * @return {Command} `this` command for chaining
    */
@@ -2100,18 +2241,20 @@ Expecting one of '${allowedValues.join("', '")}'`);
   /**
    * Parse `argv`, setting options and invoking commands when defined.
    *
-   * Use parseAsync instead of parse if any of your action handlers are async. Returns a Promise.
+   * Call with no parameters to parse `process.argv`. Detects Electron and special node options like `node --eval`. Easy mode!
    *
-   * The default expectation is that the arguments are from node and have the application as argv[0]
-   * and the script being run in argv[1], with user parameters after that.
+   * Or call with an array of strings to parse, and optionally where the user arguments start by specifying where the arguments are `from`:
+   * - `'node'`: default, `argv[0]` is the application and `argv[1]` is the script being run, with user arguments after that
+   * - `'electron'`: `argv[0]` is the application and `argv[1]` varies depending on whether the electron application is packaged
+   * - `'user'`: just user arguments
    *
    * @example
-   * await program.parseAsync(process.argv);
-   * await program.parseAsync(); // implicitly use process.argv and auto-detect node vs electron conventions
+   * await program.parseAsync(); // parse process.argv and auto-detect electron and special node flags
+   * await program.parseAsync(process.argv); // assume argv[0] is app and argv[1] is script
    * await program.parseAsync(my-args, { from: 'user' }); // just user supplied arguments, nothing special about argv[0]
    *
    * @param {string[]} [argv]
-   * @param {Object} [parseOptions]
+   * @param {object} [parseOptions]
    * @param {string} parseOptions.from - where the args are from: 'node', 'user', 'electron'
    * @return {Promise}
    */
@@ -2143,7 +2286,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
       if (sourceExt.includes(path.extname(baseName))) return undefined;
 
       // Try all the extensions.
-      const foundExt = sourceExt.find(ext => fs.existsSync(`${localBin}${ext}`));
+      const foundExt = sourceExt.find((ext) =>
+        fs.existsSync(`${localBin}${ext}`),
+      );
       if (foundExt) return `${localBin}${foundExt}`;
 
       return undefined;
@@ -2154,7 +2299,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
     this._checkForConflictingOptions();
 
     // executableFile and executableDir might be full path, or just a name
-    let executableFile = subcommand._executableFile || `${this._name}-${subcommand._name}`;
+    let executableFile =
+      subcommand._executableFile || `${this._name}-${subcommand._name}`;
     let executableDir = this._executableDir || '';
     if (this._scriptPath) {
       let resolvedScriptPath; // resolve possible symlink for installed npm binary
@@ -2163,7 +2309,10 @@ Expecting one of '${allowedValues.join("', '")}'`);
       } catch (err) {
         resolvedScriptPath = this._scriptPath;
       }
-      executableDir = path.resolve(path.dirname(resolvedScriptPath), executableDir);
+      executableDir = path.resolve(
+        path.dirname(resolvedScriptPath),
+        executableDir,
+      );
     }
 
     // Look for a local file in preference to a command in PATH.
@@ -2172,9 +2321,15 @@ Expecting one of '${allowedValues.join("', '")}'`);
 
       // Legacy search using prefix of script name instead of command name
       if (!localFile && !subcommand._executableFile && this._scriptPath) {
-        const legacyName = path.basename(this._scriptPath, path.extname(this._scriptPath));
+        const legacyName = path.basename(
+          this._scriptPath,
+          path.extname(this._scriptPath),
+        );
         if (legacyName !== this._name) {
-          localFile = findFile(executableDir, `${legacyName}-${subcommand._name}`);
+          localFile = findFile(
+            executableDir,
+            `${legacyName}-${subcommand._name}`,
+          );
         }
       }
       executableFile = localFile || executableFile;
@@ -2200,12 +2355,13 @@ Expecting one of '${allowedValues.join("', '")}'`);
       proc = childProcess.spawn(process.execPath, args, { stdio: 'inherit' });
     }
 
-    if (!proc.killed) { // testing mainly to avoid leak warnings during unit tests with mocked spawn
+    if (!proc.killed) {
+      // testing mainly to avoid leak warnings during unit tests with mocked spawn
       const signals = ['SIGUSR1', 'SIGUSR2', 'SIGTERM', 'SIGINT', 'SIGHUP'];
       signals.forEach((signal) => {
-        // @ts-ignore
         process.on(signal, () => {
           if (proc.killed === false && proc.exitCode === null) {
+            // @ts-ignore because signals not typed to known strings
             proc.kill(signal);
           }
         });
@@ -2214,16 +2370,22 @@ Expecting one of '${allowedValues.join("', '")}'`);
 
     // By default terminate process when spawned process terminates.
     const exitCallback = this._exitCallback;
-    proc.on('close', (code, _signal) => {
+    proc.on('close', (code) => {
       code = code ?? 1; // code is null if spawned process terminated due to a signal
       if (!exitCallback) {
         process.exit(code);
       } else {
-        exitCallback(new CommanderError$2(code, 'commander.executeSubCommandAsync', '(close)'));
+        exitCallback(
+          new CommanderError$2(
+            code,
+            'commander.executeSubCommandAsync',
+            '(close)',
+          ),
+        );
       }
     });
     proc.on('error', (err) => {
-      // @ts-ignore
+      // @ts-ignore: because err.code is an unknown property
       if (err.code === 'ENOENT') {
         const executableDirMessage = executableDir
           ? `searched for local subcommand relative to directory '${executableDir}'`
@@ -2233,14 +2395,18 @@ Expecting one of '${allowedValues.join("', '")}'`);
  - if the default executable name is not suitable, use the executableFile option to supply a custom name or path
  - ${executableDirMessage}`;
         throw new Error(executableMissing);
-      // @ts-ignore
+        // @ts-ignore: because err.code is an unknown property
       } else if (err.code === 'EACCES') {
         throw new Error(`'${executableFile}' not executable`);
       }
       if (!exitCallback) {
         process.exit(1);
       } else {
-        const wrappedError = new CommanderError$2(1, 'commander.executeSubCommandAsync', '(error)');
+        const wrappedError = new CommanderError$2(
+          1,
+          'commander.executeSubCommandAsync',
+          '(error)',
+        );
         wrappedError.nestedError = err;
         exitCallback(wrappedError);
       }
@@ -2259,7 +2425,11 @@ Expecting one of '${allowedValues.join("', '")}'`);
     if (!subCommand) this.help({ error: true });
 
     let promiseChain;
-    promiseChain = this._chainOrCallSubCommandHook(promiseChain, subCommand, 'preSubcommand');
+    promiseChain = this._chainOrCallSubCommandHook(
+      promiseChain,
+      subCommand,
+      'preSubcommand',
+    );
     promiseChain = this._chainOrCall(promiseChain, () => {
       if (subCommand._executableHandler) {
         this._executeSubCommand(subCommand, operands.concat(unknown));
@@ -2287,9 +2457,11 @@ Expecting one of '${allowedValues.join("', '")}'`);
     }
 
     // Fallback to parsing the help flag to invoke the help.
-    return this._dispatchSubcommand(subcommandName, [], [
-      this._getHelpOption()?.long ?? this._getHelpOption()?.short ?? '--help'
-    ]);
+    return this._dispatchSubcommand(
+      subcommandName,
+      [],
+      [this._getHelpOption()?.long ?? this._getHelpOption()?.short ?? '--help'],
+    );
   }
 
   /**
@@ -2306,7 +2478,10 @@ Expecting one of '${allowedValues.join("', '")}'`);
       }
     });
     // too many
-    if (this.registeredArguments.length > 0 && this.registeredArguments[this.registeredArguments.length - 1].variadic) {
+    if (
+      this.registeredArguments.length > 0 &&
+      this.registeredArguments[this.registeredArguments.length - 1].variadic
+    ) {
       return;
     }
     if (this.args.length > this.registeredArguments.length) {
@@ -2326,7 +2501,12 @@ Expecting one of '${allowedValues.join("', '")}'`);
       let parsedValue = value;
       if (value !== null && argument.parseArg) {
         const invalidValueMessage = `error: command-argument value '${value}' is invalid for argument '${argument.name()}'.`;
-        parsedValue = this._callParseArg(argument, value, previous, invalidValueMessage);
+        parsedValue = this._callParseArg(
+          argument,
+          value,
+          previous,
+          invalidValueMessage,
+        );
       }
       return parsedValue;
     };
@@ -2391,8 +2571,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
     const hooks = [];
     this._getCommandAndAncestors()
       .reverse()
-      .filter(cmd => cmd._lifeCycleHooks[event] !== undefined)
-      .forEach(hookedCommand => {
+      .filter((cmd) => cmd._lifeCycleHooks[event] !== undefined)
+      .forEach((hookedCommand) => {
         hookedCommand._lifeCycleHooks[event].forEach((callback) => {
           hooks.push({ hookedCommand, callback });
         });
@@ -2448,14 +2628,26 @@ Expecting one of '${allowedValues.join("', '")}'`);
     if (operands && this._findCommand(operands[0])) {
       return this._dispatchSubcommand(operands[0], operands.slice(1), unknown);
     }
-    if (this._getHelpCommand() && operands[0] === this._getHelpCommand().name()) {
+    if (
+      this._getHelpCommand() &&
+      operands[0] === this._getHelpCommand().name()
+    ) {
       return this._dispatchHelpCommand(operands[1]);
     }
     if (this._defaultCommandName) {
       this._outputHelpIfRequested(unknown); // Run the help for default command from parent rather than passing to default command
-      return this._dispatchSubcommand(this._defaultCommandName, operands, unknown);
+      return this._dispatchSubcommand(
+        this._defaultCommandName,
+        operands,
+        unknown,
+      );
     }
-    if (this.commands.length && this.args.length === 0 && !this._actionHandler && !this._defaultCommandName) {
+    if (
+      this.commands.length &&
+      this.args.length === 0 &&
+      !this._actionHandler &&
+      !this._defaultCommandName
+    ) {
       // probably missing subcommand and no handler, user needs help (and exit)
       this.help({ error: true });
     }
@@ -2478,7 +2670,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
 
       let promiseChain;
       promiseChain = this._chainOrCallHooks(promiseChain, 'preAction');
-      promiseChain = this._chainOrCall(promiseChain, () => this._actionHandler(this.processedArgs));
+      promiseChain = this._chainOrCall(promiseChain, () =>
+        this._actionHandler(this.processedArgs),
+      );
       if (this.parent) {
         promiseChain = this._chainOrCall(promiseChain, () => {
           this.parent.emit(commandEvent, operands, unknown); // legacy
@@ -2492,7 +2686,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
       this._processArguments();
       this.parent.emit(commandEvent, operands, unknown); // legacy
     } else if (operands.length) {
-      if (this._findCommand('*')) { // legacy default command
+      if (this._findCommand('*')) {
+        // legacy default command
         return this._dispatchSubcommand('*', operands, unknown);
       }
       if (this.listenerCount('command:*')) {
@@ -2519,10 +2714,13 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * Find matching command.
    *
    * @private
+   * @return {Command | undefined}
    */
   _findCommand(name) {
     if (!name) return undefined;
-    return this.commands.find(cmd => cmd._name === name || cmd._aliases.includes(name));
+    return this.commands.find(
+      (cmd) => cmd._name === name || cmd._aliases.includes(name),
+    );
   }
 
   /**
@@ -2530,11 +2728,11 @@ Expecting one of '${allowedValues.join("', '")}'`);
    *
    * @param {string} arg
    * @return {Option}
-   * @package internal use only
+   * @package
    */
 
   _findOption(arg) {
-    return this.options.find(option => option.is(arg));
+    return this.options.find((option) => option.is(arg));
   }
 
   /**
@@ -2548,7 +2746,10 @@ Expecting one of '${allowedValues.join("', '")}'`);
     // Walk up hierarchy so can call in subcommand after checking for displaying help.
     this._getCommandAndAncestors().forEach((cmd) => {
       cmd.options.forEach((anOption) => {
-        if (anOption.mandatory && (cmd.getOptionValue(anOption.attributeName()) === undefined)) {
+        if (
+          anOption.mandatory &&
+          cmd.getOptionValue(anOption.attributeName()) === undefined
+        ) {
           cmd.missingMandatoryOptionValue(anOption);
         }
       });
@@ -2561,23 +2762,21 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * @private
    */
   _checkForConflictingLocalOptions() {
-    const definedNonDefaultOptions = this.options.filter(
-      (option) => {
-        const optionKey = option.attributeName();
-        if (this.getOptionValue(optionKey) === undefined) {
-          return false;
-        }
-        return this.getOptionValueSource(optionKey) !== 'default';
+    const definedNonDefaultOptions = this.options.filter((option) => {
+      const optionKey = option.attributeName();
+      if (this.getOptionValue(optionKey) === undefined) {
+        return false;
       }
-    );
+      return this.getOptionValueSource(optionKey) !== 'default';
+    });
 
     const optionsWithConflicting = definedNonDefaultOptions.filter(
-      (option) => option.conflictsWith.length > 0
+      (option) => option.conflictsWith.length > 0,
     );
 
     optionsWithConflicting.forEach((option) => {
       const conflictingAndDefined = definedNonDefaultOptions.find((defined) =>
-        option.conflictsWith.includes(defined.attributeName())
+        option.conflictsWith.includes(defined.attributeName()),
       );
       if (conflictingAndDefined) {
         this._conflictingOption(option, conflictingAndDefined);
@@ -2657,7 +2856,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
               value = args.shift();
             }
             this.emit(`option:${option.name()}`, value);
-          } else { // boolean flag
+          } else {
+            // boolean flag
             this.emit(`option:${option.name()}`);
           }
           activeVariadicOption = option.variadic ? option : null;
@@ -2669,7 +2869,10 @@ Expecting one of '${allowedValues.join("', '")}'`);
       if (arg.length > 2 && arg[0] === '-' && arg[1] !== '-') {
         const option = this._findOption(`-${arg[1]}`);
         if (option) {
-          if (option.required || (option.optional && this._combineFlagAndOptionalValue)) {
+          if (
+            option.required ||
+            (option.optional && this._combineFlagAndOptionalValue)
+          ) {
             // option with value following in same argument
             this.emit(`option:${option.name()}`, arg.slice(2));
           } else {
@@ -2700,12 +2903,19 @@ Expecting one of '${allowedValues.join("', '")}'`);
       }
 
       // If using positionalOptions, stop processing our options at subcommand.
-      if ((this._enablePositionalOptions || this._passThroughOptions) && operands.length === 0 && unknown.length === 0) {
+      if (
+        (this._enablePositionalOptions || this._passThroughOptions) &&
+        operands.length === 0 &&
+        unknown.length === 0
+      ) {
         if (this._findCommand(arg)) {
           operands.push(arg);
           if (args.length > 0) unknown.push(...args);
           break;
-        } else if (this._getHelpCommand() && arg === this._getHelpCommand().name()) {
+        } else if (
+          this._getHelpCommand() &&
+          arg === this._getHelpCommand().name()
+        ) {
           operands.push(arg);
           if (args.length > 0) operands.push(...args);
           break;
@@ -2733,7 +2943,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
   /**
    * Return an object containing local option values as key-value pairs.
    *
-   * @return {Object}
+   * @return {object}
    */
   opts() {
     if (this._storeOptionsAsProperties) {
@@ -2743,7 +2953,8 @@ Expecting one of '${allowedValues.join("', '")}'`);
 
       for (let i = 0; i < len; i++) {
         const key = this.options[i].attributeName();
-        result[key] = key === this._versionOptionName ? this._version : this[key];
+        result[key] =
+          key === this._versionOptionName ? this._version : this[key];
       }
       return result;
     }
@@ -2754,13 +2965,13 @@ Expecting one of '${allowedValues.join("', '")}'`);
   /**
    * Return an object containing merged local and global option values as key-value pairs.
    *
-   * @return {Object}
+   * @return {object}
    */
   optsWithGlobals() {
     // globals overwrite locals
     return this._getCommandAndAncestors().reduce(
       (combinedOptions, cmd) => Object.assign(combinedOptions, cmd.opts()),
-      {}
+      {},
     );
   }
 
@@ -2768,13 +2979,16 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * Display error message and exit (or call exitOverride).
    *
    * @param {string} message
-   * @param {Object} [errorOptions]
+   * @param {object} [errorOptions]
    * @param {string} [errorOptions.code] - an id string representing the error
    * @param {number} [errorOptions.exitCode] - used with process.exit
    */
   error(message, errorOptions) {
     // output handling
-    this._outputConfiguration.outputError(`${message}\n`, this._outputConfiguration.writeErr);
+    this._outputConfiguration.outputError(
+      `${message}\n`,
+      this._outputConfiguration.writeErr,
+    );
     if (typeof this._showHelpAfterError === 'string') {
       this._outputConfiguration.writeErr(`${this._showHelpAfterError}\n`);
     } else if (this._showHelpAfterError) {
@@ -2800,11 +3014,18 @@ Expecting one of '${allowedValues.join("', '")}'`);
       if (option.envVar && option.envVar in process.env) {
         const optionKey = option.attributeName();
         // Priority check. Do not overwrite cli or options from unknown source (client-code).
-        if (this.getOptionValue(optionKey) === undefined || ['default', 'config', 'env'].includes(this.getOptionValueSource(optionKey))) {
-          if (option.required || option.optional) { // option can take a value
+        if (
+          this.getOptionValue(optionKey) === undefined ||
+          ['default', 'config', 'env'].includes(
+            this.getOptionValueSource(optionKey),
+          )
+        ) {
+          if (option.required || option.optional) {
+            // option can take a value
             // keep very simple, optional always takes value
             this.emit(`optionEnv:${option.name()}`, process.env[option.envVar]);
-          } else { // boolean
+          } else {
+            // boolean
             // keep very simple, only care that envVar defined and not the value
             this.emit(`optionEnv:${option.name()}`);
           }
@@ -2821,17 +3042,30 @@ Expecting one of '${allowedValues.join("', '")}'`);
   _parseOptionsImplied() {
     const dualHelper = new DualOptions(this.options);
     const hasCustomOptionValue = (optionKey) => {
-      return this.getOptionValue(optionKey) !== undefined && !['default', 'implied'].includes(this.getOptionValueSource(optionKey));
+      return (
+        this.getOptionValue(optionKey) !== undefined &&
+        !['default', 'implied'].includes(this.getOptionValueSource(optionKey))
+      );
     };
     this.options
-      .filter(option => (option.implied !== undefined) &&
-        hasCustomOptionValue(option.attributeName()) &&
-        dualHelper.valueFromOption(this.getOptionValue(option.attributeName()), option))
+      .filter(
+        (option) =>
+          option.implied !== undefined &&
+          hasCustomOptionValue(option.attributeName()) &&
+          dualHelper.valueFromOption(
+            this.getOptionValue(option.attributeName()),
+            option,
+          ),
+      )
       .forEach((option) => {
         Object.keys(option.implied)
-          .filter(impliedKey => !hasCustomOptionValue(impliedKey))
-          .forEach(impliedKey => {
-            this.setOptionValueWithSource(impliedKey, option.implied[impliedKey], 'implied');
+          .filter((impliedKey) => !hasCustomOptionValue(impliedKey))
+          .forEach((impliedKey) => {
+            this.setOptionValueWithSource(
+              impliedKey,
+              option.implied[impliedKey],
+              'implied',
+            );
           });
       });
   }
@@ -2885,12 +3119,18 @@ Expecting one of '${allowedValues.join("', '")}'`);
     const findBestOptionFromValue = (option) => {
       const optionKey = option.attributeName();
       const optionValue = this.getOptionValue(optionKey);
-      const negativeOption = this.options.find(target => target.negate && optionKey === target.attributeName());
-      const positiveOption = this.options.find(target => !target.negate && optionKey === target.attributeName());
-      if (negativeOption && (
-        (negativeOption.presetArg === undefined && optionValue === false) ||
-        (negativeOption.presetArg !== undefined && optionValue === negativeOption.presetArg)
-      )) {
+      const negativeOption = this.options.find(
+        (target) => target.negate && optionKey === target.attributeName(),
+      );
+      const positiveOption = this.options.find(
+        (target) => !target.negate && optionKey === target.attributeName(),
+      );
+      if (
+        negativeOption &&
+        ((negativeOption.presetArg === undefined && optionValue === false) ||
+          (negativeOption.presetArg !== undefined &&
+            optionValue === negativeOption.presetArg))
+      ) {
         return negativeOption;
       }
       return positiveOption || option;
@@ -2924,11 +3164,14 @@ Expecting one of '${allowedValues.join("', '")}'`);
     if (flag.startsWith('--') && this._showSuggestionAfterError) {
       // Looping to pick up the global options too
       let candidateFlags = [];
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       let command = this;
       do {
-        const moreFlags = command.createHelp().visibleOptions(command)
-          .filter(option => option.long)
-          .map(option => option.long);
+        const moreFlags = command
+          .createHelp()
+          .visibleOptions(command)
+          .filter((option) => option.long)
+          .map((option) => option.long);
         candidateFlags = candidateFlags.concat(moreFlags);
         command = command.parent;
       } while (command && !command._enablePositionalOptions);
@@ -2950,7 +3193,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
     if (this._allowExcessArguments) return;
 
     const expected = this.registeredArguments.length;
-    const s = (expected === 1) ? '' : 's';
+    const s = expected === 1 ? '' : 's';
     const forSubcommand = this.parent ? ` for '${this.name()}'` : '';
     const message = `error: too many arguments${forSubcommand}. Expected ${expected} argument${s} but got ${receivedArgs.length}.`;
     this.error(message, { code: 'commander.excessArguments' });
@@ -2968,11 +3211,13 @@ Expecting one of '${allowedValues.join("', '")}'`);
 
     if (this._showSuggestionAfterError) {
       const candidateNames = [];
-      this.createHelp().visibleCommands(this).forEach((command) => {
-        candidateNames.push(command.name());
-        // just visible alias
-        if (command.alias()) candidateNames.push(command.alias());
-      });
+      this.createHelp()
+        .visibleCommands(this)
+        .forEach((command) => {
+          candidateNames.push(command.name());
+          // just visible alias
+          if (command.alias()) candidateNames.push(command.alias());
+        });
       suggestion = suggestSimilar(unknownName, candidateNames);
     }
 
@@ -3013,11 +3258,12 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * Set the description.
    *
    * @param {string} [str]
-   * @param {Object} [argsDescription]
+   * @param {object} [argsDescription]
    * @return {(string|Command)}
    */
   description(str, argsDescription) {
-    if (str === undefined && argsDescription === undefined) return this._description;
+    if (str === undefined && argsDescription === undefined)
+      return this._description;
     this._description = str;
     if (argsDescription) {
       this._argsDescription = argsDescription;
@@ -3050,18 +3296,27 @@ Expecting one of '${allowedValues.join("', '")}'`);
     if (alias === undefined) return this._aliases[0]; // just return first, for backwards compatibility
 
     /** @type {Command} */
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let command = this;
-    if (this.commands.length !== 0 && this.commands[this.commands.length - 1]._executableHandler) {
+    if (
+      this.commands.length !== 0 &&
+      this.commands[this.commands.length - 1]._executableHandler
+    ) {
       // assume adding alias for last added executable subcommand, rather than this
       command = this.commands[this.commands.length - 1];
     }
 
-    if (alias === command._name) throw new Error('Command alias can\'t be the same as its name');
+    if (alias === command._name)
+      throw new Error("Command alias can't be the same as its name");
     const matchingCommand = this.parent?._findCommand(alias);
     if (matchingCommand) {
       // c.f. _registerCommand
-      const existingCmd = [matchingCommand.name()].concat(matchingCommand.aliases()).join('|');
-      throw new Error(`cannot add alias '${alias}' to command '${this.name()}' as already have command '${existingCmd}'`);
+      const existingCmd = [matchingCommand.name()]
+        .concat(matchingCommand.aliases())
+        .join('|');
+      throw new Error(
+        `cannot add alias '${alias}' to command '${this.name()}' as already have command '${existingCmd}'`,
+      );
     }
 
     command._aliases.push(alias);
@@ -3099,11 +3354,13 @@ Expecting one of '${allowedValues.join("', '")}'`);
       const args = this.registeredArguments.map((arg) => {
         return humanReadableArgName(arg);
       });
-      return [].concat(
-        (this.options.length || (this._helpOption !== null) ? '[options]' : []),
-        (this.commands.length ? '[command]' : []),
-        (this.registeredArguments.length ? args : [])
-      ).join(' ');
+      return []
+        .concat(
+          this.options.length || this._helpOption !== null ? '[options]' : [],
+          this.commands.length ? '[command]' : [],
+          this.registeredArguments.length ? args : [],
+        )
+        .join(' ');
     }
 
     this._usage = str;
@@ -3170,7 +3427,10 @@ Expecting one of '${allowedValues.join("', '")}'`);
   helpInformation(contextOptions) {
     const helper = this.createHelp();
     if (helper.helpWidth === undefined) {
-      helper.helpWidth = (contextOptions && contextOptions.error) ? this._outputConfiguration.getErrHelpWidth() : this._outputConfiguration.getOutHelpWidth();
+      helper.helpWidth =
+        contextOptions && contextOptions.error
+          ? this._outputConfiguration.getErrHelpWidth()
+          : this._outputConfiguration.getOutHelpWidth();
     }
     return helper.formatHelp(this, helper);
   }
@@ -3209,13 +3469,18 @@ Expecting one of '${allowedValues.join("', '")}'`);
     }
     const context = this._getHelpContext(contextOptions);
 
-    this._getCommandAndAncestors().reverse().forEach(command => command.emit('beforeAllHelp', context));
+    this._getCommandAndAncestors()
+      .reverse()
+      .forEach((command) => command.emit('beforeAllHelp', context));
     this.emit('beforeHelp', context);
 
     let helpInformation = this.helpInformation(context);
     if (deprecatedCallback) {
       helpInformation = deprecatedCallback(helpInformation);
-      if (typeof helpInformation !== 'string' && !Buffer.isBuffer(helpInformation)) {
+      if (
+        typeof helpInformation !== 'string' &&
+        !Buffer.isBuffer(helpInformation)
+      ) {
         throw new Error('outputHelp callback must return a string or a Buffer');
       }
     }
@@ -3225,7 +3490,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
       this.emit(this._getHelpOption().long); // deprecated
     }
     this.emit('afterHelp', context);
-    this._getCommandAndAncestors().forEach(command => command.emit('afterAllHelp', context));
+    this._getCommandAndAncestors().forEach((command) =>
+      command.emit('afterAllHelp', context),
+    );
   }
 
   /**
@@ -3265,7 +3532,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
    * Returns null if has been disabled with .helpOption(false).
    *
    * @returns {(Option | null)} the help option
-   * @package internal use only
+   * @package
    */
   _getHelpOption() {
     // Lazy create help option on demand.
@@ -3298,7 +3565,12 @@ Expecting one of '${allowedValues.join("', '")}'`);
   help(contextOptions) {
     this.outputHelp(contextOptions);
     let exitCode = process.exitCode || 0;
-    if (exitCode === 0 && contextOptions && typeof contextOptions !== 'function' && contextOptions.error) {
+    if (
+      exitCode === 0 &&
+      contextOptions &&
+      typeof contextOptions !== 'function' &&
+      contextOptions.error
+    ) {
       exitCode = 1;
     }
     // message: do not have all displayed text available so only passing placeholder.
@@ -3346,7 +3618,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
 
   _outputHelpIfRequested(args) {
     const helpOption = this._getHelpOption();
-    const helpRequested = helpOption && args.find(arg => helpOption.is(arg));
+    const helpRequested = helpOption && args.find((arg) => helpOption.is(arg));
     if (helpRequested) {
       this.outputHelp();
       // (Do not have all displayed text available so only passing placeholder.)
@@ -3379,7 +3651,9 @@ function incrementNodeInspectorPort(args) {
     if ((match = arg.match(/^(--inspect(-brk)?)$/)) !== null) {
       // e.g. --inspect
       debugOption = match[1];
-    } else if ((match = arg.match(/^(--inspect(-brk|-port)?)=([^:]+)$/)) !== null) {
+    } else if (
+      (match = arg.match(/^(--inspect(-brk|-port)?)=([^:]+)$/)) !== null
+    ) {
       debugOption = match[1];
       if (/^\d+$/.test(match[3])) {
         // e.g. --inspect=1234
@@ -3388,7 +3662,9 @@ function incrementNodeInspectorPort(args) {
         // e.g. --inspect=localhost
         debugHost = match[3];
       }
-    } else if ((match = arg.match(/^(--inspect(-brk|-port)?)=([^:]+):(\d+)$/)) !== null) {
+    } else if (
+      (match = arg.match(/^(--inspect(-brk|-port)?)=([^:]+):(\d+)$/)) !== null
+    ) {
       // e.g. --inspect=localhost:1234
       debugOption = match[1];
       debugHost = match[3];
@@ -3432,8 +3708,6 @@ commander.InvalidOptionArgumentError = InvalidArgumentError$1; // Deprecated
 (function (module, exports) {
 	const commander$1 = commander;
 
-	// @ts-check
-
 	exports = module.exports = {};
 
 	// Return a different global program than commander,
@@ -3456,8 +3730,10 @@ commander.InvalidOptionArgumentError = InvalidArgumentError$1; // Deprecated
 	// methods on the global program due to the (deprecated) legacy default export.
 	// Here we roll our own, the way Commander might in future.
 	exports.createCommand = (name) => new commander$1.Command(name);
-	exports.createOption = (flags, description) => new commander$1.Option(flags, description);
-	exports.createArgument = (name, description) => new commander$1.Argument(name, description); 
+	exports.createOption = (flags, description) =>
+	  new commander$1.Option(flags, description);
+	exports.createArgument = (name, description) =>
+	  new commander$1.Argument(name, description); 
 } (extraTypings, extraTypings.exports));
 
 var extraTypingsExports = extraTypings.exports;
@@ -3475,7 +3751,7 @@ const {
   Command,
   Argument,
   Option,
-  Help
+  Help,
 } = extraTypingsCommander;
 
 const ANSI_BACKGROUND_OFFSET = 10;
@@ -4145,64 +4421,59 @@ colors.forEach((item) => {
     };
 });
 
+/**
+ * 先注册功能函数串联起来, 每次run从头迭代.
+ */
 class MiddleWare {
-    #queues = [];
-    #iterator;
+    queues = [];
+    iterator = null;
     context;
     construction() {
-        this.#iterator = this.generator();
     }
     use(fn) {
         if (typeof fn !== 'function')
-            throw new Error('use function must be a function');
-        // 考虑是否bind
-        this.#queues.push(fn);
+            throw new Error('param must be a function');
+        this.queues.push(fn.bind(this));
         return this;
     }
     async run(context) {
-        // init context
         this.context = context;
-        let result = this.#iterator.next();
-        // tools
+        this.iterator = this.generator();
+        let result = this.iterator.next();
         const handlerResult = async () => {
             if (result.done)
                 return;
-            // 运行func
-            const res = result.value.call(null, this.context, this);
-            // Promise
+            const res = result.value(this.context);
             if (res && typeof res.then === 'function') {
                 try {
                     await res;
-                    result = this.#iterator.next();
+                    result = this.iterator.next();
                     await handlerResult();
                 }
                 catch (error) {
-                    result = this.#iterator.throw(error);
+                    result = this.iterator.throw(error);
                     await handlerResult();
                 }
             }
             else {
                 // 同步
-                result = this.#iterator.next();
+                result = this.iterator.next();
                 handlerResult();
             }
         };
         await handlerResult();
     }
-    cancle(str, color) {
-        if (this.#iterator) {
-            const _color = color || 'yellow';
-            const _str = str || '';
-            log[_color](_str);
-            this.#queues.length = 0;
-            return this.#iterator.return('cancle');
+    cancel(str, color = 'yellow') {
+        if (this.iterator) {
+            log[color](str);
+            return this.iterator.return('cancel');
         }
         else {
             throw new Error('not execute run !');
         }
     }
     *generator() {
-        const queues = this.#queues;
+        const queues = this.queues;
         for (let i = 0; i < queues.length; i++) {
             const fn = queues[i];
             yield fn;
@@ -4211,26 +4482,60 @@ class MiddleWare {
     }
 }
 
-// 流程
-// import parse from './parse'
-// import load from './load'
-// import confirm from './confirm'
+async function parse(ctx) {
+    try {
+        const temp = await fetch('http://baidu.com');
+        log.green(temp);
+    }
+    catch (e) {
+        throw new Error(`Failed to pull \`${ctx.template}\` template: ${e.message}.`);
+    }
+}
+// async function isLocal(template) {
+//   if (!/^[./]|^[a-zA-Z]:|^~[/\\]/.test(template))
+//     return false
+//   const localStr = path.resolve(file.untildify(template))
+//   const type = await file.exists(localStr)
+//   // 暂考虑dir
+//   if (type === 'dir') {
+//     return localStr
+//   }
+//   else {
+//     throw new Error(
+//       `Local template not found: \`${template}\` is not a directory`,
+//     )
+//   }
+// }
+// async function isRemote(template) {
+//   // 4
+//   if (/^https?:/.test(template))
+//     return template
+//   // 1.2.3
+//   if (
+//     /^https?:/.test(template)
+//     || /^https?:/.test(template)
+//     || /^https?:/.test(template)
+//   ) {
+//     const [fullname, maybeBranch] = template.split('#')
+//     const [maybeOwner, maybeName] = fullname.split('/')
+//     const isEmpty = input => input == null || input === ''
+//     const owner = isEmpty(maybeName) ? config.official : maybeOwner
+//     const branch = isEmpty(maybeBranch) ? config.branch : maybeBranch
+//     const name = isEmpty(maybeName) ? maybeOwner : maybeName
+//     const data = { owner, name, branch }
+//     // config.registry = "https://github.com/{owner}/{name}/archive/refs/heads/{branch}.zip"
+//     return config.registry.replace(/{(\w+)}/g, (_, key) => data[key])
+//   }
+//   return false
+// }
+
 const app = new MiddleWare();
-// app
-// .use(confirm) // 确定文件是否存在、确认。
-// .use(parse) // 解析template为本地、远程。
-// .use(load)
-/**
- *
- * @param {*} template add <template> 模板名
- * @param {*} project [rename] 项目重命名
- * @param {*} options option 对象
- * @param {*} Command Command 对象
- */
-async function excuteQueues(template, project, options) {
-    if (template === null || template === '')
+app
+    .use(parse);
+async function addAction(template, project, options) {
+    log.green(template, project, options);
+    if (!template)
         throw new Error(chalk.red('Missing require argument: `tempalte`.'));
-    // create context
     const context = {
         template,
         project: project || template,
@@ -4253,5 +4558,5 @@ dlc
     .command('add <template> [rename]')
     .description('add template')
     .option('-f, --force', 'force overwrite file destination !!!')
-    .action(excuteQueues);
-dlc.parse();
+    .action(addAction);
+dlc.parse(process$1.argv);

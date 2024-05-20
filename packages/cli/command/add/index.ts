@@ -1,13 +1,16 @@
 import chalk from 'chalk'
 import MiddleWare from '../../core/middleware'
+import log from '../../utils/log'
 import parse from './parse'
 
 const app = new MiddleWare()
 
-// app
+app
   .use(parse)
 
 async function addAction(template, project, options) {
+  log.green(template, project, options)
+
   if (!template)
     throw new Error(chalk.red('Missing require argument: `tempalte`.'))
 
