@@ -8,6 +8,7 @@ var require$$2 = require('node:path');
 var require$$3 = require('node:fs');
 var os = require('node:os');
 var tty = require('node:tty');
+var download = require('download-git-repo');
 
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -4485,9 +4486,15 @@ class MiddleWare {
 }
 
 async function parse(ctx) {
+    log.yellow(123);
+    log.yellow(process$1.cwd());
+    const dest = process$1.cwd();
     try {
-        const temp = await fetch('http://baidu.com');
-        log.green(temp);
+        download('direct:https://gitee.com/Dofw/vs-theme.git', dest, { clone: false }, (err) => {
+            if (err)
+                return log.red('executeDownload error ==', err);
+            log.green('success');
+        });
     }
     catch (e) {
         throw new Error(`Failed to pull \`${ctx.template}\` template: ${e.message}.`);

@@ -1,9 +1,18 @@
+import path from 'node:path'
+import { cwd } from 'node:process'
+import download from 'download-git-repo'
 import log from '../../utils/log'
 
 export default async function parse(ctx: _Global.Context) {
+  log.yellow(123)
+  log.yellow(cwd())
+  const dest = cwd()
   try {
-    const temp = await fetch('http://baidu.com')
-    log.green(temp)
+    download('direct:https://gitee.com/Dofw/vs-theme.git', dest, { clone: false }, (err) => {
+      if (err)
+        return log.red('executeDownload error ==', err)
+      log.green('success')
+    })
   }
   catch (e: any) {
     throw new Error(

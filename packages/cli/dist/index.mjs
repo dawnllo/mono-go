@@ -1,11 +1,12 @@
 #!/usr/bin/env node
-import process$1 from 'node:process';
+import process$1, { cwd } from 'node:process';
 import require$$0 from 'node:events';
 import require$$1 from 'node:child_process';
 import require$$2 from 'node:path';
 import require$$3 from 'node:fs';
 import os from 'node:os';
 import tty from 'node:tty';
+import download from 'download-git-repo';
 
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -4483,9 +4484,15 @@ class MiddleWare {
 }
 
 async function parse(ctx) {
+    log.yellow(123);
+    log.yellow(cwd());
+    const dest = cwd();
     try {
-        const temp = await fetch('http://baidu.com');
-        log.green(temp);
+        download('direct:https://gitee.com/Dofw/vs-theme.git', dest, { clone: false }, (err) => {
+            if (err)
+                return log.red('executeDownload error ==', err);
+            log.green('success');
+        });
     }
     catch (e) {
         throw new Error(`Failed to pull \`${ctx.template}\` template: ${e.message}.`);
