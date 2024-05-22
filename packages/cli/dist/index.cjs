@@ -26,7 +26,6 @@ var require$$6 = require('string_decoder');
 var require$$1$5 = require('zlib');
 var require$$6$1 = require('querystring');
 var require$$1$6 = require('punycode');
-var require$$26 = require('electron');
 var require$$0$8 = require('child_process');
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -20851,6 +20850,36 @@ errors$1.UnsupportedProtocolError = class extends GotError {
 
 errors$1.CancelError = PCancelable$1.CancelError;
 
+var electron;
+var hasRequiredElectron;
+
+function requireElectron () {
+	if (hasRequiredElectron) return electron;
+	hasRequiredElectron = 1;
+	const fs = require$$0$2;
+	const path = require$$1$1;
+
+	const pathFile = path.join(__dirname, 'path.txt');
+
+	function getElectronPath () {
+	  let executablePath;
+	  if (fs.existsSync(pathFile)) {
+	    executablePath = fs.readFileSync(pathFile, 'utf-8');
+	  }
+	  if (process.env.ELECTRON_OVERRIDE_DIST_PATH) {
+	    return path.join(process.env.ELECTRON_OVERRIDE_DIST_PATH, executablePath || 'electron');
+	  }
+	  if (executablePath) {
+	    return path.join(__dirname, 'dist', executablePath);
+	  } else {
+	    throw new Error('Electron failed to install correctly, please delete node_modules/electron and try installing again');
+	  }
+	}
+
+	electron = getElectronPath();
+	return electron;
+}
+
 const EventEmitter = require$$4;
 const http = require$$1$2;
 const https = require$$3$2;
@@ -20940,7 +20969,7 @@ function requestAsEventEmitter(opts) {
 		}
 
 		if (opts.useElectronNet && process.versions.electron) {
-			const electron = require$$26;
+			const electron = requireElectron();
 			fn = electron.net || electron.remote.net;
 		}
 
