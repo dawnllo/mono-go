@@ -6,13 +6,14 @@ import log from '../../utils/log'
 export default async function parse(ctx: _Global.Context) {
   log.yellow(123)
   log.yellow(cwd())
-  const dest = cwd()
+  log.green(download)
+  // const dest = cwd()
   try {
-    download('direct:https://gitee.com/Dofw/vs-theme.git', dest, { clone: false }, (err) => {
-      if (err)
-        return log.red('executeDownload error ==', err)
-      log.green('success')
-    })
+    // download('direct:https://gitee.com/Dofw/vs-theme.git', dest, { clone: false }, (err) => {
+    //   if (err)
+    //     return log.red('executeDownload error ==', err)
+    //   log.green('success')
+    // })
   }
   catch (e: any) {
     throw new Error(

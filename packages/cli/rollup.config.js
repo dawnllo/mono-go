@@ -1,6 +1,7 @@
 import { defineConfig } from 'rollup'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
+import json from '@rollup/plugin-json'
 import typescript from 'rollup-plugin-typescript2'
 
 import testPlugin from './rollup-plugins/test.js'
@@ -8,15 +9,15 @@ import testPlugin from './rollup-plugins/test.js'
 export default defineConfig({
   plugins: [
     // testPlugin(),
+    json(),
     nodeResolve({
       exportConditions: ['node'],
       preferBuiltins: true,
-      extensions: ['', '.ts', '.tsx'],
     }),
     commonjs({
       defaultIsModuleExports: 'auto',
     }),
-    typescript({}),
+    typescript(),
   ],
   input: {
     index: './index.ts',
