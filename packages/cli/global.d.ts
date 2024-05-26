@@ -11,4 +11,16 @@ declare namespace _Global {
     answers: any
     files: string[]
   }
+
+  const enum GitFetchType {
+    branches = 'branches',
+    contents = 'contents',
+  }
+
+  interface Config {
+    owner: string
+    repo: string
+    type: GitFetchType
+  }
+
 }
