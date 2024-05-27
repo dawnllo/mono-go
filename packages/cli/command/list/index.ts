@@ -12,17 +12,15 @@ export default async function getListAction() {
   const config = {
     owner: 'Dofw',
     repo: 'vs-theme',
-    type: _Global.GitFetchType.contents,
+    type: _Global.GitFetchType.trees,
+    branch: 'master',
+    recursive: true,
   }
 
   const res = await http.git(config)
   const json = await res.json()
 
-  function recurse(json) {
-
-  }
-
   const tempDest = path.join(cwd(), 'temp.json')
-  await fs.writeFileSync(tempDest, JSON.stringify(json))
+  fs.writeFileSync(tempDest, JSON.stringify(json))
   spinner.succeed(chalk.green('fetching success'))
 }

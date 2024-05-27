@@ -40528,7 +40528,13 @@ const urlStrategy = {
         return `https://api.github.com/repos/${config.owner}/${config.repo}/contents`;
     },
     ["branches" /* _Global.GitFetchType.branches */]: (config) => {
-        return `https://api.github.com/repos/${config.owner}/${config.repo}/branches/master`;
+        return `https://api.github.com/repos/${config.owner}/${config.repo}/branches`;
+    },
+    ["trees" /* _Global.GitFetchType.trees */]: (config) => {
+        return `https://api.github.com/repos/${config.owner}/${config.repo}/git/trees/${config.branch}`;
+    },
+    ["blobs" /* _Global.GitFetchType.blobs */]: (config) => {
+        return `https://api.github.com/repos/${config.owner}/${config.repo}/git/blobs/${config.sha}`;
     },
 };
 async function git(config) {
@@ -40536,6 +40542,9 @@ async function git(config) {
     const generate = urlStrategy[config.type];
     if (generate)
         url = generate(config);
+    return await gitUrl(url);
+}
+async function gitUrl(url) {
     if (!url)
         throw new Error(chalk.red('urlStrategy not found, please check config.type!'));
     const options = new Request(url, {
@@ -40548,6 +40557,7 @@ async function git(config) {
 }
 const http = {
     git,
+    gitUrl,
 };
 
 async function getListAction() {
@@ -40559,6 +40569,22 @@ async function getListAction() {
     };
     const res = await http.git(config);
     const json = await res.json();
+    // for (let i = 0; i < json.length; i++) {
+    //   const element = json[i]
+    //   if (element.type === 'dir')
+    //     element.children = await recurse(element)
+    // }
+    // async function recurse(element) {
+    //   const url = element._links.self
+    //   const res = await http.gitUrl(url)
+    //   const json = await res.json()
+    //   for (let i = 0; i < json.length; i++) {
+    //     const element = json[i]
+    //     if (element.type === 'dir')
+    //       element.children = await recurse(element)
+    //   }
+    //   return json
+    // }
     const tempDest = path$c.join(cwd$1(), 'temp.json');
     await require$$3$1.writeFileSync(tempDest, JSON.stringify(json));
     spinner.succeed(chalk.green('fetching success'));

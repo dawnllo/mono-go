@@ -15,12 +15,17 @@ declare namespace _Global {
   const enum GitFetchType {
     branches = 'branches',
     contents = 'contents',
+    trees = 'trees',
+    blobs = 'blobs',
   }
 
   interface Config {
     owner: string
     repo: string
     type: GitFetchType
+    sha?: string
+    branch?: string
+    recursive?: boolean
   }
 
 }
