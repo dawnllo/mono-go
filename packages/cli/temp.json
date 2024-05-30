@@ -1,146 +1,109 @@
-[
-  {
-    "name": ".gitattributes",
-    "path": ".gitattributes",
-    "sha": "70e63fff5954e1ebe10ab3a83eae928279d2d293",
-    "size": 76,
-    "url": "https://api.github.com/repos/Dofw/vs-theme/contents/.gitattributes?ref=master",
-    "html_url": "https://github.com/Dofw/vs-theme/blob/master/.gitattributes",
-    "git_url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/70e63fff5954e1ebe10ab3a83eae928279d2d293",
-    "download_url": "https://raw.githubusercontent.com/Dofw/vs-theme/master/.gitattributes",
-    "type": "file",
-    "_links": {
-      "self": "https://api.github.com/repos/Dofw/vs-theme/contents/.gitattributes?ref=master",
-      "git": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/70e63fff5954e1ebe10ab3a83eae928279d2d293",
-      "html": "https://github.com/Dofw/vs-theme/blob/master/.gitattributes"
+{
+  "sha": "3c83226dafddd0bfd789b21a1a7453eb6491b039",
+  "url": "https://api.github.com/repos/Dofw/vs-theme/git/trees/3c83226dafddd0bfd789b21a1a7453eb6491b039",
+  "tree": [
+    {
+      "path": ".gitattributes",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "70e63fff5954e1ebe10ab3a83eae928279d2d293",
+      "size": 76,
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/70e63fff5954e1ebe10ab3a83eae928279d2d293"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aeee7322bf81b5079801ed77c8c5c1bf813821c7",
+      "size": 20,
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/aeee7322bf81b5079801ed77c8c5c1bf813821c7"
+    },
+    {
+      "path": ".vscode",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b97d7a12d396764b32211b434d32a0a87218f000",
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/trees/b97d7a12d396764b32211b434d32a0a87218f000"
+    },
+    {
+      "path": ".vscode/launch.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0e191b59295d1365ccca24701bc6a35a21e250c9",
+      "size": 540,
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/0e191b59295d1365ccca24701bc6a35a21e250c9"
+    },
+    {
+      "path": ".vscodeignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f369b5e55b684e5c99d8446581a52ab2d7fc0437",
+      "size": 66,
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/f369b5e55b684e5c99d8446581a52ab2d7fc0437"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "53140a3a2834468984bfe6be9415e68d23000d28",
+      "size": 243,
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/53140a3a2834468984bfe6be9415e68d23000d28"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5de08a297483a913b30d4731f209b0c1ba08bcdc",
+      "size": 600,
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/5de08a297483a913b30d4731f209b0c1ba08bcdc"
+    },
+    {
+      "path": "package.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cce2b3a639891e512c06c0ad848fc7b04dc4264d",
+      "size": 487,
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/cce2b3a639891e512c06c0ad848fc7b04dc4264d"
+    },
+    {
+      "path": "themes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ebaaad6fe98d0b7376f833e0b95a6c5c3d460b7f",
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/trees/ebaaad6fe98d0b7376f833e0b95a6c5c3d460b7f"
+    },
+    {
+      "path": "themes/color.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c116d93063669508b6695c7eae0d64d7eaac2f4a",
+      "size": 36,
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/c116d93063669508b6695c7eae0d64d7eaac2f4a"
+    },
+    {
+      "path": "themes/dofw-dark-theme.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1b1c297970f4a55f98bd98d344efe3753f7f82ff",
+      "size": 18635,
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/1b1c297970f4a55f98bd98d344efe3753f7f82ff"
+    },
+    {
+      "path": "themes/dofw-light-theme.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bc0eb8637635266cb748ef9679a37247725978dc",
+      "size": 6663,
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/bc0eb8637635266cb748ef9679a37247725978dc"
+    },
+    {
+      "path": "vsc-extension-quickstart.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9614940a616d4baf7fba940ab77eb2543564ebef",
+      "size": 1825,
+      "url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/9614940a616d4baf7fba940ab77eb2543564ebef"
     }
-  },
-  {
-    "name": ".gitignore",
-    "path": ".gitignore",
-    "sha": "aeee7322bf81b5079801ed77c8c5c1bf813821c7",
-    "size": 20,
-    "url": "https://api.github.com/repos/Dofw/vs-theme/contents/.gitignore?ref=master",
-    "html_url": "https://github.com/Dofw/vs-theme/blob/master/.gitignore",
-    "git_url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/aeee7322bf81b5079801ed77c8c5c1bf813821c7",
-    "download_url": "https://raw.githubusercontent.com/Dofw/vs-theme/master/.gitignore",
-    "type": "file",
-    "_links": {
-      "self": "https://api.github.com/repos/Dofw/vs-theme/contents/.gitignore?ref=master",
-      "git": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/aeee7322bf81b5079801ed77c8c5c1bf813821c7",
-      "html": "https://github.com/Dofw/vs-theme/blob/master/.gitignore"
-    }
-  },
-  {
-    "name": ".vscode",
-    "path": ".vscode",
-    "sha": "b97d7a12d396764b32211b434d32a0a87218f000",
-    "size": 0,
-    "url": "https://api.github.com/repos/Dofw/vs-theme/contents/.vscode?ref=master",
-    "html_url": "https://github.com/Dofw/vs-theme/tree/master/.vscode",
-    "git_url": "https://api.github.com/repos/Dofw/vs-theme/git/trees/b97d7a12d396764b32211b434d32a0a87218f000",
-    "download_url": null,
-    "type": "dir",
-    "_links": {
-      "self": "https://api.github.com/repos/Dofw/vs-theme/contents/.vscode?ref=master",
-      "git": "https://api.github.com/repos/Dofw/vs-theme/git/trees/b97d7a12d396764b32211b434d32a0a87218f000",
-      "html": "https://github.com/Dofw/vs-theme/tree/master/.vscode"
-    }
-  },
-  {
-    "name": ".vscodeignore",
-    "path": ".vscodeignore",
-    "sha": "f369b5e55b684e5c99d8446581a52ab2d7fc0437",
-    "size": 66,
-    "url": "https://api.github.com/repos/Dofw/vs-theme/contents/.vscodeignore?ref=master",
-    "html_url": "https://github.com/Dofw/vs-theme/blob/master/.vscodeignore",
-    "git_url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/f369b5e55b684e5c99d8446581a52ab2d7fc0437",
-    "download_url": "https://raw.githubusercontent.com/Dofw/vs-theme/master/.vscodeignore",
-    "type": "file",
-    "_links": {
-      "self": "https://api.github.com/repos/Dofw/vs-theme/contents/.vscodeignore?ref=master",
-      "git": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/f369b5e55b684e5c99d8446581a52ab2d7fc0437",
-      "html": "https://github.com/Dofw/vs-theme/blob/master/.vscodeignore"
-    }
-  },
-  {
-    "name": "CHANGELOG.md",
-    "path": "CHANGELOG.md",
-    "sha": "53140a3a2834468984bfe6be9415e68d23000d28",
-    "size": 243,
-    "url": "https://api.github.com/repos/Dofw/vs-theme/contents/CHANGELOG.md?ref=master",
-    "html_url": "https://github.com/Dofw/vs-theme/blob/master/CHANGELOG.md",
-    "git_url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/53140a3a2834468984bfe6be9415e68d23000d28",
-    "download_url": "https://raw.githubusercontent.com/Dofw/vs-theme/master/CHANGELOG.md",
-    "type": "file",
-    "_links": {
-      "self": "https://api.github.com/repos/Dofw/vs-theme/contents/CHANGELOG.md?ref=master",
-      "git": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/53140a3a2834468984bfe6be9415e68d23000d28",
-      "html": "https://github.com/Dofw/vs-theme/blob/master/CHANGELOG.md"
-    }
-  },
-  {
-    "name": "README.md",
-    "path": "README.md",
-    "sha": "5de08a297483a913b30d4731f209b0c1ba08bcdc",
-    "size": 600,
-    "url": "https://api.github.com/repos/Dofw/vs-theme/contents/README.md?ref=master",
-    "html_url": "https://github.com/Dofw/vs-theme/blob/master/README.md",
-    "git_url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/5de08a297483a913b30d4731f209b0c1ba08bcdc",
-    "download_url": "https://raw.githubusercontent.com/Dofw/vs-theme/master/README.md",
-    "type": "file",
-    "_links": {
-      "self": "https://api.github.com/repos/Dofw/vs-theme/contents/README.md?ref=master",
-      "git": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/5de08a297483a913b30d4731f209b0c1ba08bcdc",
-      "html": "https://github.com/Dofw/vs-theme/blob/master/README.md"
-    }
-  },
-  {
-    "name": "package.json",
-    "path": "package.json",
-    "sha": "cce2b3a639891e512c06c0ad848fc7b04dc4264d",
-    "size": 487,
-    "url": "https://api.github.com/repos/Dofw/vs-theme/contents/package.json?ref=master",
-    "html_url": "https://github.com/Dofw/vs-theme/blob/master/package.json",
-    "git_url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/cce2b3a639891e512c06c0ad848fc7b04dc4264d",
-    "download_url": "https://raw.githubusercontent.com/Dofw/vs-theme/master/package.json",
-    "type": "file",
-    "_links": {
-      "self": "https://api.github.com/repos/Dofw/vs-theme/contents/package.json?ref=master",
-      "git": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/cce2b3a639891e512c06c0ad848fc7b04dc4264d",
-      "html": "https://github.com/Dofw/vs-theme/blob/master/package.json"
-    }
-  },
-  {
-    "name": "themes",
-    "path": "themes",
-    "sha": "ebaaad6fe98d0b7376f833e0b95a6c5c3d460b7f",
-    "size": 0,
-    "url": "https://api.github.com/repos/Dofw/vs-theme/contents/themes?ref=master",
-    "html_url": "https://github.com/Dofw/vs-theme/tree/master/themes",
-    "git_url": "https://api.github.com/repos/Dofw/vs-theme/git/trees/ebaaad6fe98d0b7376f833e0b95a6c5c3d460b7f",
-    "download_url": null,
-    "type": "dir",
-    "_links": {
-      "self": "https://api.github.com/repos/Dofw/vs-theme/contents/themes?ref=master",
-      "git": "https://api.github.com/repos/Dofw/vs-theme/git/trees/ebaaad6fe98d0b7376f833e0b95a6c5c3d460b7f",
-      "html": "https://github.com/Dofw/vs-theme/tree/master/themes"
-    }
-  },
-  {
-    "name": "vsc-extension-quickstart.md",
-    "path": "vsc-extension-quickstart.md",
-    "sha": "9614940a616d4baf7fba940ab77eb2543564ebef",
-    "size": 1825,
-    "url": "https://api.github.com/repos/Dofw/vs-theme/contents/vsc-extension-quickstart.md?ref=master",
-    "html_url": "https://github.com/Dofw/vs-theme/blob/master/vsc-extension-quickstart.md",
-    "git_url": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/9614940a616d4baf7fba940ab77eb2543564ebef",
-    "download_url": "https://raw.githubusercontent.com/Dofw/vs-theme/master/vsc-extension-quickstart.md",
-    "type": "file",
-    "_links": {
-      "self": "https://api.github.com/repos/Dofw/vs-theme/contents/vsc-extension-quickstart.md?ref=master",
-      "git": "https://api.github.com/repos/Dofw/vs-theme/git/blobs/9614940a616d4baf7fba940ab77eb2543564ebef",
-      "html": "https://github.com/Dofw/vs-theme/blob/master/vsc-extension-quickstart.md"
-    }
-  }
-]
+  ],
+  "truncated": false
+}
