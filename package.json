@@ -2,13 +2,13 @@
   "name": "@dawnll/monorepo",
   "type": "module",
   "version": "1.0.0",
-  "packageManager": "pnpm@9.1.2",
+  "packageManager": "pnpm@9.1.4",
   "description": "dawnl monorepo",
   "author": "dawnl",
   "license": "ISC",
   "keywords": [],
   "engines": {
-    "node": ">=21.1.0"
+    "node": ">=20.14.0"
   },
   "scripts": {
     "lint": "eslint .",

@@ -3,7 +3,7 @@ import { cwd } from 'node:process'
 import download from 'download-git-repo'
 import ora from 'ora'
 import chalk from 'chalk'
-import log from '../../utils/log'
+import { log } from '../../utils'
 
 export default async function load(_ctx: _Global.Context) {
   const dest = path.resolve(cwd(), 'templates')

@@ -1,5 +1,4 @@
-import chalk from 'chalk'
-import log from '../utils/log'
+import { log } from '.'
 
 // 策略
 const urlStrategy = {
@@ -17,7 +16,7 @@ const urlStrategy = {
   },
 }
 
-export async function git(config: _Global.Config) {
+async function git(config: _Global.Config) {
   let url
   const generate = urlStrategy[config.type]
   if (generate)
@@ -25,9 +24,9 @@ export async function git(config: _Global.Config) {
 
   return await gitUrl(url)
 }
-export async function gitUrl(url) {
+async function gitUrl(url) {
   if (!url)
-    throw new Error(chalk.red('urlStrategy not found, please check config.type!'))
+    throw new Error(log._red('urlStrategy not found, please check config.type!'))
 
   const options = new Request(url, {
     headers: {
@@ -35,12 +34,11 @@ export async function gitUrl(url) {
       'Accept': 'application/vnd.github.v3+json',
     },
   })
+
   return await fetch(options)
 }
 
-const http = {
+export const http = {
   git,
   gitUrl,
 }
-
-export default http

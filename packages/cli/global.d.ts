@@ -1,5 +1,3 @@
-declare module 'chalk'
-
 declare namespace _Global {
   interface Context {
     template: string

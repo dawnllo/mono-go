@@ -1,3 +1,4 @@
+import type { ChalkInstance } from 'chalk'
 import chalk from 'chalk'
 
 const colors = [
@@ -43,12 +44,23 @@ type Log = {
   [key in FuncKeys]: (...strs: any[]) => void
 }
 
-const log: Log = {} as Log
+type Chalk<T> = {
+  -readonly[K in keyof T as `_${string & K}`]: T[K] extends (...args: infer A) => infer R ? (...args: A) => R : never;
+}
 
+const log: Log & Chalk<ChalkInstance> = {} as Log & Chalk<ChalkInstance>
+
+// log
 colors.forEach((item) => {
   log[item] = (...strs) => {
     console.log(chalk[item](...strs))
   }
 })
+// chalk
+colors.forEach((item) => {
+  log[`_${item}`] = chalk[item]
+})
 
-export default log
+export {
+  log,
+}

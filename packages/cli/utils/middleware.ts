@@ -1,4 +1,4 @@
-import log, { type FuncKeys } from '../utils/log'
+import { type FuncKeys, log } from '../utils'
 
 type UseFunction = (content: _Global.Context) => void | Promise<void>
 type GeneratorType = Generator<UseFunction, string, void> | null
