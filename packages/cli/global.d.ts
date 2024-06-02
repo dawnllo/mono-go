@@ -25,5 +25,13 @@ declare namespace _Global {
     branch?: string
     recursive?: boolean
   }
+  // api.github.com, tree API
+  interface CatalogItem {
+    path: string
+    url: string
+    type: 'file' | 'dir'
+    size: number
+    sha: string
+  }
 
 }

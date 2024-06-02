@@ -5,6 +5,8 @@ export * from './log'
 export type * from './log'
 export * from './http'
 export type * from './http'
+export * from './file'
+export type * from './file'
 
 export function delay(timeout: number): Promise<void> {
   return new Promise((resolve) => {
@@ -14,36 +16,25 @@ export function delay(timeout: number): Promise<void> {
   })
 }
 
-interface CatalogItem {
-  fileName: string
-  url: string
-  type: 'file' | 'dir'
-  size: number
-  children?: CatalogItem[]
-}
-export function generateCatalog(data, optionKeys = { fileName: 'path', url: 'url' }): CatalogItem[] {
+export function generateCatalog(data, optionKeys = { path: 'path', url: 'url' }): _Global.CatalogItem[] {
   if (!data)
     return []
 
   // 生成目录
-  function generate(data, optionKeys): CatalogItem[] {
-    const catalog: CatalogItem[] = []
+  const catalog: _Global.CatalogItem[] = []
 
-    for (const item of data) {
-      const ele: CatalogItem = {} as CatalogItem
-      if (item.children)
-        ele.children = generate(item.children, optionKeys)
-
-      catalog.push({
-        type: item.type === 'blob' ? 'file' : 'dir',
-        fileName: item[optionKeys.fileName],
-        size: item.size,
-        url: item.url,
-      })
+  for (const item of data) {
+    const ele: _Global.CatalogItem = {
+      path: item[optionKeys.path],
+      url: item[optionKeys.url],
+      type: item.type === 'blob' ? 'file' : 'dir',
+      size: item.size,
+      sha: item.sha,
     }
-    return catalog
+    catalog.push(ele)
   }
-  return generate(data, optionKeys)
+
+  return catalog
 }
 
 export async function oraWrapper(cb, param?, start = log._yellow('loading...'), end = log._green('success')) {

@@ -3,13 +3,13 @@ import { log } from '.'
 // 策略
 const urlStrategy = {
   [_Global.GitFetchType.contents]: (config: _Global.Config) => {
-    return `https://api.github.com/repos/${config.owner}/${config.repo}/contents`
+    return `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.sha}${config.branch ? `?ref=${config.branch}` : ''}`
   },
   [_Global.GitFetchType.branches]: (config: _Global.Config) => {
     return `https://api.github.com/repos/${config.owner}/${config.repo}/branches`
   },
   [_Global.GitFetchType.trees]: (config: _Global.Config) => {
-    return `https://api.github.com/repos/${config.owner}/${config.repo}/git/trees/${config.branch}${config.recursive ? '?recursive=1' : ''}`
+    return `https://api.github.com/repos/${config.owner}/${config.repo}/git/trees/${config.sha}${config.recursive ? '?recursive=1' : ''}`
   },
   [_Global.GitFetchType.blobs]: (config: _Global.Config) => {
     return `https://api.github.com/repos/${config.owner}/${config.repo}/git/blobs/${config.sha}`
