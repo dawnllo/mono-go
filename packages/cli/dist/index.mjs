@@ -3,7 +3,7 @@ import require$$0$2 from 'node:events';
 import require$$1 from 'node:child_process';
 import path$c from 'node:path';
 import fs$c from 'node:fs';
-import process$3, { cwd as cwd$1, exit } from 'node:process';
+import process$3, { cwd as cwd$1 } from 'node:process';
 import os from 'node:os';
 import tty from 'node:tty';
 import { Buffer as Buffer$6 } from 'node:buffer';
@@ -13796,6 +13796,12 @@ var prompts =
 
 var prompts$1 = /*@__PURE__*/getDefaultExportFromCjs(prompts);
 
+/**
+ * 生成文件
+ * @param filePath
+ * @param content
+ * @returns 返回文件路径,或则重名后的文件路径
+ */
 async function writeSyncFile(filePath, content) {
     if (fs$c.existsSync(filePath)) {
         const file = path$c.basename(filePath);
@@ -13821,31 +13827,41 @@ async function writeSyncFile(filePath, content) {
             // 重命名
             const extname = path$c.extname(filePath);
             const newFilePath = path$c.join(path$c.dirname(filePath), result.renames + extname);
-            fs$c.renameSync(filePath, newFilePath);
             filePath = newFilePath;
         }
         else {
-            // 退出
-            exit(0);
-            throw new Error(log._yellow('process exit!'));
+            throw new Error('file already exists, rename is empty!!!');
         }
     }
     const dir = path$c.dirname(filePath);
     if (!fs$c.existsSync(dir))
         fs$c.mkdirSync(dir, { recursive: true });
     fs$c.writeFileSync(filePath, content);
+    return filePath;
 }
 // 下载
 // file-blob
 async function fileBlob(catalogItem) {
     const { url, path } = catalogItem;
+    const spinner = ora(log._green(`template/${path}`)).start();
     const res = await http$4.gitUrl(url);
-    const filePath = `${cwd$1()}/template/${path}`;
     const data = await res.json();
+    spinner.stop();
+    const filePath = `${cwd$1()}/template/${path}`;
     const buf = Buffer$6.from(data.content, 'base64');
-    await writeSyncFile(filePath, buf);
+    let finishPath;
+    try {
+        finishPath = await writeSyncFile(filePath, buf);
+    }
+    catch (error) {
+        throw new Error('writeSyncFile error.');
+    }
+    spinner.succeed(log._green(`template/${path}, success.`));
+    return finishPath;
 }
+let _level = 0; // 递归层级
 async function trees(catalogItem) {
+    _level++;
     const { sha, path } = catalogItem;
     // 循环下载
     const config = {
@@ -13857,19 +13873,34 @@ async function trees(catalogItem) {
     const res = await http$4.git(config);
     const json = await res.json();
     const catalog = generateCatalog(json.tree);
+    const finishPath = [];
     try {
         for (const item of catalog) {
             item.path = `${path}/${item.path}`; // tree 获取的不带 父目录.这里拼接上
-            if (item.type === 'file')
-                await oraWrapper(fileBlob, item, log._green(`CWD: ${item.path}`));
-            else if (item.type === 'dir')
-                await trees(item);
+            if (item.type === 'file') {
+                const finish = await fileBlob(item);
+                finishPath.push(finish);
+            }
+            else if (item.type === 'dir') {
+                const finishs = await trees(item);
+                finishPath.push(...finishs);
+            }
         }
     }
     catch (error) {
         // 任何一个递归文件失败, 删除该目录
-        fs$c.rmSync(`${cwd$1()}/template/${path}`);
+        for (const path of finishPath) {
+            fs$c.rmSync(`${path}`);
+            log.red(`delete ${path}`);
+        }
+        // 起始层, 不需要报错,删除即可.
+        if (_level > 1)
+            throw new Error('download trees error.');
     }
+    finally {
+        _level--; // 执行完一层减1, 回归init
+    }
+    return finishPath;
 }
 const download$3 = {
     fileBlob,
