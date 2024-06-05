@@ -7,6 +7,8 @@ export * from './http'
 export type * from './http'
 export * from './file'
 export type * from './file'
+export * from './prompts'
+export type * from './prompts'
 
 export function delay(timeout: number): Promise<void> {
   return new Promise((resolve) => {

@@ -1,10 +1,9 @@
 import fs from 'node:fs'
 import { Buffer } from 'node:buffer'
-import { cwd, exit } from 'node:process'
+import { cwd } from 'node:process'
 import path from 'node:path'
-import prompts from 'prompts'
 import ora from 'ora'
-import { generateCatalog, http, log, oraWrapper } from '../utils'
+import { generateCatalog, http, log, pro } from '../utils'
 
 /**
  * 生成文件
@@ -15,31 +14,16 @@ import { generateCatalog, http, log, oraWrapper } from '../utils'
 export async function writeSyncFile(filePath: string, content): Promise<string> {
   if (fs.existsSync(filePath)) {
     const file = path.basename(filePath)
-    // TODO prompt
-    const promptsConfig = [{
-      type: 'confirm',
-      name: 'override',
-      message: log._red(`${file} already exists, override?`),
-      initial: false,
-    }, {
-      type: (confirm) => {
-        return confirm ? 'text' : null
-      },
-      name: 'renames',
-      validate(input) {
-        return input === '' ? 'rename is required' : true
-      },
-      message: `enter rename !`,
-    }]
     // 交互
-    const result = await prompts(promptsConfig)
+    const result = await pro.confirm_text(log._red(`${file} already exists, rename?`))
 
-    if (result.override && result.renames) {
+    if (result.confirm && result.name) {
       // 重命名
       const extname = path.extname(filePath)
-      const newFilePath = path.join(path.dirname(filePath), result.renames + extname)
+      const newFilePath = path.join(path.dirname(filePath), result.name + extname)
       filePath = newFilePath
     }
+
     else {
       throw new Error('file already exists, exit!!!')
     }
