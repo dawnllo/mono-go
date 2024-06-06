@@ -3,6 +3,9 @@ import { Command } from '@commander-js/extra-typings'
 import addAction from './command/add/index'
 import getListAction from './command/list/index'
 
+globalThis._test = 123
+console.log('cli-index', globalThis._test)
+
 const dlc = new Command()
 
 dlc

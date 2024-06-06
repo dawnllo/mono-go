@@ -1,10 +1,16 @@
 import fs from 'node:fs'
-import { Buffer } from 'node:buffer'
-import { cwd } from 'node:process'
 import path from 'node:path'
-import ora from 'ora'
-import { generateCatalog, http, log, pro } from '../utils'
+import { log, pro } from '../utils'
 
+const file_config: _Global.FileConfig = {
+  removeWhiteList: [],
+}
+
+export function init(configFile) {
+  Object.keys(file_config).forEach((key) => {
+    file_config[key] = configFile[key]
+  })
+}
 /**
  * 生成文件
  * @param filePath
@@ -23,7 +29,6 @@ export async function writeSyncFile(filePath: string, content): Promise<string> 
       const newFilePath = path.join(path.dirname(filePath), result.name + extname)
       filePath = newFilePath
     }
-
     else {
       throw new Error('file already exists, exit!!!')
     }
@@ -38,80 +43,59 @@ export async function writeSyncFile(filePath: string, content): Promise<string> 
   return filePath
 }
 
-// 下载
-// file-blob
-async function fileBlob(catalogItem: _Global.CatalogItem) {
-  const { url, path } = catalogItem
+/**
+ * 删除文件
+ * @param filePath
+ * @returns
+ */
+export async function rmSyncFile(filePath: string) {
+  console.log('rmSyncFile', filePath)
 
-  const spinner = ora(log._green(`template/${path}`)).start()
-  const res = await http.gitUrl(url)
-  const data = await res.json()
-  spinner.stop()
-
-  const filePath = `${cwd()}/template/${path}`
-  const buf = Buffer.from(data.content, 'base64')
-  let finishPath
-  try {
-    finishPath = await writeSyncFile(filePath, buf)
+  // 1.验证是否满足白名单
+  if (!file_config.removeWhiteList.includes(filePath))
+    return log._red('file path not in whiteList, exit!!!')
+  if (fs.existsSync(filePath)) {
+    // 2.交互提示文件路径, 并confirm.
+    const result = await pro.confirm(log._red(`delete file or directory, ${filePath}?`))
+    result.confirm && fs.rmSync(filePath, { recursive: true })
   }
-  catch (error) {
-    throw new Error('writeSyncFile error.')
-  }
-
-  spinner.succeed(log._green(`template/${path}, success.`))
-  return finishPath
 }
 
-let _level = 0 // 递归层级
-async function trees(catalogItem: _Global.CatalogItem): Promise<string[]> {
-  _level++
-  const { sha, path } = catalogItem
-  // 循环下载
-  const config = {
-    owner: 'Dofw',
-    repo: 'vs-theme',
-    type: _Global.GitFetchType.trees,
-    sha,
-  }
-  const res = await http.git(config)
-  const json = await res.json()
+/**
+ * 删除当前文件夹下的空文件夹
+ * @param curDir
+ * @returns
+ */
+export async function rmEmptyDir(curDir: string) {
+  // 1.验证是否满足白名单
+  if (!file_config.removeWhiteList.includes(curDir))
+    return log._red('file path not in whiteList, exit!!!')
 
-  const catalog = generateCatalog(json.tree)
-  const finishPath: string[] = []
-  try {
-    for (const item of catalog) {
-      item.path = `${path}/${item.path}` // tree 获取的不带 父目录.这里拼接上
-      if (item.type === 'file') {
-        const finish = await fileBlob(item)
-        finishPath.push(finish)
-      }
+  // 2.不存在退出
+  if (!fs.existsSync(curDir))
+    return
 
-      else if (item.type === 'dir') {
-        const finishs = await trees(item)
-        finishPath.push(...finishs)
-      }
-    }
-  }
-  catch (error) {
-    // TODO: fs 删除操作, 封装安全🚫. 例如: 指定可删除的项目目录前缀,其余一律throw.
-    // 任何一个递归已经下载的文件
-    for (const filePath of finishPath) {
-      fs.rmSync(`${filePath}`)
-      log.red(`delete ${filePath}`)
-    }
-    // 起始层, 不需要报错; // TODO: 同时将空文件夹删除.
-    if (_level > 1)
-      throw new Error('download trees error.')
-  }
-  finally {
-    _level-- // 执行完一层减1, 回归init
+  // 3.不是文件夹退出
+  if (!fs.statSync(curDir).isDirectory())
+    return
+
+  // 4.操作当前文件
+  const curDirFiles = fs.readdirSync(curDir)
+
+  for (const file of curDirFiles) {
+    const nextPath = path.join(curDir, file)
+    if (fs.statSync(nextPath).isDirectory())
+      await rmEmptyDir(nextPath)
   }
 
-  return finishPath
+  // 5.从内层向外删除.
+  if (curDirFiles.length === 0)
+    return fs.rmSync(curDir)
 }
 
-const download = {
-  fileBlob,
-  trees,
+export const file = {
+  init,
+  writeSyncFile,
+  rmSyncFile,
+  rmEmptyDir,
 }
-export { download }

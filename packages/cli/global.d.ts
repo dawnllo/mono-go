@@ -1,4 +1,8 @@
 declare namespace _Global {
+  interface FileConfig {
+    removeWhiteList: string[]
+  }
+
   interface Context {
     template: string
     project: string
