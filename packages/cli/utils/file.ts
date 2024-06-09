@@ -10,17 +10,6 @@ const file_config: FileConf = {
 }
 
 /**
- * 读取项目root路径
- */
-export function getRootPath() {
-  const filePath = path.join(cwd(), 'config.json')
-  if (!fs.existsSync(filePath))
-    return {}
-
-  return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
-}
-
-/**
  * 初始化文件操作系统 - 需要的配置内容
  * @param configFile 全局配置文件
  */

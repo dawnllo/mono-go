@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer'
+import path from 'node:path'
 import { cwd } from 'node:process'
 import ora from 'ora'
 import { file, http, log } from '../utils'
@@ -26,15 +27,16 @@ export function generateCatalog(data, optionKeys = { path: 'path', url: 'url' })
 
 // 下载
 // file-blob
-async function fileBlob(catalogItem: _Global.CatalogItem): Promise<string> {
-  const { url, path } = catalogItem
+async function fileBlob(catalogItem: _Global.CatalogItem, configFile: _Global.ConfigFile): Promise<string> {
+  const { url, path: itemPath } = catalogItem
+  const downloadRelativePath = path.join(configFile.downloadRelativePath, itemPath)
 
-  const spinner = ora(log._green(`template/${path}`)).start()
+  const spinner = ora(log._green(downloadRelativePath)).start()
   const res = await http.gitUrl(url)
   const data = await res.json()
   spinner.stop()
 
-  const filePath = `${cwd()}/template/${path}`
+  const filePath = path.resolve(cwd(), downloadRelativePath)
   const buf = Buffer.from(data.content, 'base64')
   let finishPath
   try {
@@ -44,18 +46,17 @@ async function fileBlob(catalogItem: _Global.CatalogItem): Promise<string> {
     throw new Error('writeSyncFile error.')
   }
 
-  spinner.succeed(log._green(`template/${path}, success.`))
+  spinner.succeed(log._green(`${downloadRelativePath}, success.`))
   return finishPath
 }
 
 let _level = 0 // 递归层级
-async function trees(catalogItem: _Global.CatalogItem): Promise<string[]> {
+async function trees(catalogItem: _Global.CatalogItem, configFile: _Global.ConfigFile): Promise<string[]> {
   _level++
   const { sha, path } = catalogItem
   // 循环下载
   const config = {
-    owner: 'Dofw',
-    repo: 'vs-theme',
+    ...configFile.git,
     type: _Global.GitFetchType.trees,
     sha,
   }
@@ -68,12 +69,12 @@ async function trees(catalogItem: _Global.CatalogItem): Promise<string[]> {
     for (const item of catalog) {
       item.path = `${path}/${item.path}` // tree 获取的不带 父目录.这里拼接上
       if (item.type === 'file') {
-        const finish = await fileBlob(item)
+        const finish = await fileBlob(item, configFile)
         finishPath.push(finish)
       }
 
       else if (item.type === 'dir') {
-        const finishs = await trees(item)
+        const finishs = await trees(item, configFile)
         finishPath.push(...finishs)
       }
     }
@@ -99,8 +100,8 @@ async function trees(catalogItem: _Global.CatalogItem): Promise<string[]> {
 }
 
 interface DownloadType {
-  fileBlob: (catalogItem: _Global.CatalogItem) => Promise<string>
-  trees: (catalogItem: _Global.CatalogItem) => Promise<string[]>
+  fileBlob: (catalogItem: _Global.CatalogItem, configFile: _Global.ConfigFile) => Promise<string>
+  trees: (catalogItem: _Global.CatalogItem, configFile: _Global.ConfigFile) => Promise<string[]>
 }
 
 export const download: DownloadType = {

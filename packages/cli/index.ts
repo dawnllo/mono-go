@@ -5,7 +5,7 @@ import getListAction from './command/list/index'
 import { initConfig } from './config'
 
 // 初始化配置
-await initConfig()
+const config = await initConfig()
 
 const dlc = new Command()
 
@@ -23,6 +23,6 @@ dlc
 dlc
   .command('list-remote')
   .description('view the remote template list')
-  .action(getListAction)
+  .action((...args) => { getListAction(config, args) })
 
 dlc.parse()

@@ -8,6 +8,11 @@ export const defaultConfig: _Global.ConfigFile = {
   root: '.',
   rootAP: '', // 运行时,init
   removeWhitePath: [],
+  downloadRelativePath: '.',
+  git: {
+    owner: 'Dofw',
+    repo: 'vs-theme',
+  },
 }
 
 // 获取配置文件名
@@ -15,7 +20,7 @@ export function getConfigFileName() {
   return CNONFIG_FILE_DEFAULT
 }
 
-// 配置归一化
+// 配置归一化 TODO: 对配置进行合法校验.
 export function normalizeConfig(mergeConfig: _Global.ConfigFile, rootAP: string) {
   const keys = Object.keys(defaultConfig)
   const configKeys = Object.keys(mergeConfig)

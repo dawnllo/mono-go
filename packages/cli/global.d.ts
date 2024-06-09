@@ -4,6 +4,13 @@ declare namespace _Global {
     root: string
     rootAP: string
     removeWhitePath: string[] // 移除文件时, 白名单
+    downloadRelativePath: string
+    git: ConfigFile_Git
+  }
+
+  interface ConfigFile_Git {
+    owner: string
+    repo: string
   }
 
   interface Context {
@@ -24,10 +31,9 @@ declare namespace _Global {
     blobs = 'blobs',
   }
 
-  interface Config {
-    owner: string
-    repo: string
-    type: GitFetchType
+  // sha 的含义见http模块
+  interface GitHttpOption extends ConfigFile_Git {
+    type: keyof typeof GitFetchType
     sha?: string
     branch?: string
     recursive?: boolean
@@ -40,5 +46,4 @@ declare namespace _Global {
     size: number
     sha: string
   }
-
 }

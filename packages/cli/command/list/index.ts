@@ -1,10 +1,13 @@
 import { cwd } from 'node:process'
+import path from 'node:path'
 import { download, generateCatalog, http, log, oraWrapper, pro } from '../../utils'
 
-export default async function getListAction() {
+export default async function getListAction(configFile, _args?: any) {
+  const { downloadRelativePath, git } = configFile
+
+  // TODO: 先获取内容, content 有分支参数. trees 没有.
   const config = {
-    owner: 'Dofw',
-    repo: 'vs-theme',
+    ...git,
     type: _Global.GitFetchType.trees,
     sha: 'master',
     recursive: false,
@@ -44,7 +47,7 @@ export default async function getListAction() {
 
   const step1 = await pro.autoMultiselect(choices, '', suggest, onState)
 
-  const downloadPath = `${cwd()}/template`
+  const downloadPath = path.resolve(cwd(), downloadRelativePath)
   const step2 = step1.selects?.length > 0
     ? await pro.confirm(`Download path: ${downloadPath}
   can you confirm ?`)
@@ -79,15 +82,15 @@ export default async function getListAction() {
 
   // 下载
   for (const fileOption of renameMap)
-    dowanloadFunc(fileOption)
+    dowanloadFunc(fileOption, configFile)
 
-  async function dowanloadFunc(fileOption) {
+  async function dowanloadFunc(fileOption, configFile) {
     const { type } = fileOption
     if (type === 'file') {
-      await download.fileBlob(fileOption)
+      await download.fileBlob(fileOption, configFile)
       return
     }
     if (type === 'dir')
-      await download.trees(fileOption)
+      await download.trees(fileOption, configFile)
   }
 }

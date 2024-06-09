@@ -4522,6 +4522,7 @@ async function rmSyncFile(input) {
     // 2.交互提示文件路径, 并confirm.
     const result = await pro.confirm(log._red(`delete file or directory, ${input}?`));
     result.confirm && fs$1.rmSync(input, { recursive: true });
+    log.green('delete success');
 }
 /**
  * 删除空文件夹
@@ -13952,7 +13953,6 @@ function ora(options) {
 	return new Ora(options);
 }
 
-// TODO: 下载一半, 删除之前下载的文件. 重新设计,下载前判断是否存在.
 function generateCatalog(data, optionKeys = { path: 'path', url: 'url' }) {
     if (!data)
         return [];
@@ -14019,11 +14019,11 @@ async function trees(catalogItem) {
         }
     }
     catch (error) {
-        // 任何一个递归已经下载的文件
         for (const filePath of finishPath)
-            await file.rmSyncFile(`${filePath}`);
+            await file.rmSyncFile(`${filePath}`); // 删除whitepath
         // 同时删除当前文件夹下的空文件夹.
         await file.rmSyncEmptyDir(path);
+        log.white('-- quit --');
         // 起始层, 不需要报错;
         if (_level > 1)
             throw new Error('download trees error.');
@@ -14140,7 +14140,8 @@ async function addAction(template, project, options) {
     await app.run(context);
 }
 
-async function getListAction() {
+async function getListAction(configFile, ...args) {
+    console.log(configFile, args);
     const config = {
         owner: 'Dofw',
         repo: 'vs-theme',
@@ -14178,7 +14179,7 @@ async function getListAction() {
         });
     };
     const step1 = await pro.autoMultiselect(choices, '', suggest, onState);
-    const downloadPath = `${cwd()}/template`;
+    const downloadPath = path$1.resolve(cwd(), 'template');
     const step2 = step1.selects?.length > 0
         ? await pro.confirm(`Download path: ${downloadPath}
   can you confirm ?`)
@@ -14514,6 +14515,7 @@ const defaultConfig = {
     root: '.',
     rootAP: '', // 运行时,init
     removeWhitePath: [],
+    downloadRealtivePath: '.',
 };
 // 获取配置文件名
 function getConfigFileName() {
@@ -14565,7 +14567,7 @@ async function initConfig() {
 }
 
 // 初始化配置
-await initConfig();
+const config = await initConfig();
 const dlc = new Command();
 dlc
     .name('dlc-cli')
@@ -14579,5 +14581,5 @@ dlc
 dlc
     .command('list-remote')
     .description('view the remote template list')
-    .action(getListAction);
+    .action((...args) => { getListAction(config, ...args); });
 dlc.parse();
