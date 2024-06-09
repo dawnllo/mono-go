@@ -5,7 +5,7 @@ import { download, generateCatalog, http, log, oraWrapper, pro } from '../../uti
 export default async function getListAction(configFile, _args?: any) {
   const { downloadRelativePath, git } = configFile
 
-  // TODO: 先获取内容, content 有分支参数. trees 没有.
+  // TODO: 先获取内容, content 路径+分支. trees 只能分支, 获取全部
   const config = {
     ...git,
     type: _Global.GitFetchType.trees,
