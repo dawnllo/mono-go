@@ -7,13 +7,6 @@
   "author": "dawnl",
   "license": "ISC",
   "keywords": [],
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    },
-    "./*": "./*"
-  },
   "main": "./index.ts",
   "module": "./index.ts",
   "types": "./index.d.ts",
@@ -29,7 +22,7 @@
   "scripts": {
     "build:vite": "vite build",
     "build:rollup": "rollup -c",
-    "dlc": "NODE_OPTIONS='--trace-deprecation' node ./dist/index.cjs",
+    "dlc": "NODE_OPTIONS='--trace-deprecation' node ./dist/index.mjs",
     "exec": " node --experimental-specifier-resolution=node --loader=ts-node/esm index.ts"
   },
   "dependencies": {
@@ -41,6 +34,7 @@
     "crypto-js": "^4.2.0",
     "download-git-repo": "^3.0.2",
     "electron": "^30.0.6",
+    "find-up": "^7.0.0",
     "ora": "^8.0.1",
     "prompts": "^2.4.2"
   }

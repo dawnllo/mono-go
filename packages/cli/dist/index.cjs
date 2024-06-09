@@ -29,6 +29,7 @@ var require$$1$5 = require('zlib');
 var require$$6$1 = require('querystring');
 var require$$1$6 = require('punycode');
 var require$$0$a = require('child_process');
+var node_url = require('node:url');
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -4490,8 +4491,12 @@ const http$4 = {
 };
 
 const file_config = {
-    removeWhiteList: [],
+    removeWhitePath: [path$c.resolve(process$3.cwd())],
 };
+/**
+ * 初始化文件操作系统 - 需要的配置内容
+ * @param configFile 全局配置文件
+ */
 function init(configFile) {
     Object.keys(file_config).forEach((key) => {
         file_config[key] = configFile[key];
@@ -4526,51 +4531,63 @@ async function writeSyncFile(filePath, content) {
 }
 /**
  * 删除文件
- * @param filePath
+ * @param input
  * @returns
  */
-async function rmSyncFile(filePath) {
-    // 1.验证是否满足白名单
-    if (!file_config.removeWhiteList.includes(filePath))
-        return log._red('file path not in whiteList, exit!!!');
-    console.log('rmSyncFile', filePath);
-    if (fs$c.existsSync(filePath)) {
-        // 2.交互提示文件路径, 并confirm.
-        const result = await pro.confirm(log._red(`delete file or directory, ${filePath}?`));
-        result.confirm && fs$c.rmSync(filePath, { recursive: true });
-    }
+async function rmSyncFile(input) {
+    if (!rmSyncValidate(input))
+        return;
+    // 2.交互提示文件路径, 并confirm.
+    const result = await pro.confirm(log._red(`delete file or directory, ${input}?`));
+    result.confirm && fs$c.rmSync(input, { recursive: true });
 }
 /**
- * 删除当前文件夹下的空文件夹
- * @param curDir
+ * 删除空文件夹
+ * @param input
  * @returns
  */
-async function rmEmptyDir(curDir) {
-    // 1.验证是否满足白名单
-    if (!file_config.removeWhiteList.includes(curDir))
-        return log._red('file path not in whiteList, exit!!!');
-    // 2.不存在退出
-    if (!fs$c.existsSync(curDir))
+async function rmSyncEmptyDir(input) {
+    if (!rmSyncValidate(input))
         return;
-    // 3.不是文件夹退出
-    if (!fs$c.statSync(curDir).isDirectory())
+    if (!fs$c.statSync(input).isDirectory())
         return;
-    // 4.操作当前文件
-    const curDirFiles = fs$c.readdirSync(curDir);
+    const curDirFiles = fs$c.readdirSync(input);
     for (const file of curDirFiles) {
-        const nextPath = path$c.join(curDir, file);
+        const nextPath = path$c.join(input, file);
         if (fs$c.statSync(nextPath).isDirectory())
-            await rmEmptyDir(nextPath);
+            await rmSyncEmptyDir(nextPath);
     }
-    // 5.从内层向外删除.
+    // 从内层向外删除.
     if (curDirFiles.length === 0)
-        return fs$c.rmSync(curDir);
+        return fs$c.rmSync(input);
+}
+/**
+ * 删除验证
+ * @param input
+ * @returns boolean
+ */
+function rmSyncValidate(input) {
+    const whiteList = file_config.removeWhitePath;
+    let isPass = false;
+    for (const white of whiteList) {
+        if (input.startsWith(white)) {
+            isPass = true;
+            break;
+        }
+    }
+    if (!isPass) {
+        log._red('file path not in whiteList, exit!!!');
+        return false;
+    }
+    if (!fs$c.existsSync(input))
+        return false;
+    return true;
 }
 const file = {
     init,
     writeSyncFile,
     rmSyncFile,
-    rmEmptyDir,
+    rmSyncEmptyDir,
 };
 
 var prompts$3 = {};
@@ -13952,6 +13969,7 @@ function ora(options) {
 	return new Ora(options);
 }
 
+// TODO: 下载一半, 删除之前下载的文件. 重新设计,下载前判断是否存在.
 function generateCatalog(data, optionKeys = { path: 'path', url: 'url' }) {
     if (!data)
         return [];
@@ -14019,12 +14037,10 @@ async function trees(catalogItem) {
     }
     catch (error) {
         // 任何一个递归已经下载的文件
-        for (const filePath of finishPath) {
+        for (const filePath of finishPath)
             await file.rmSyncFile(`${filePath}`);
-            log.green(`delete ${filePath}`);
-        }
         // 同时删除当前文件夹下的空文件夹.
-        await file.rmEmptyDir(path);
+        await file.rmSyncEmptyDir(path);
         // 起始层, 不需要报错;
         if (_level > 1)
             throw new Error('download trees error.');
@@ -47167,8 +47183,305 @@ async function getListAction() {
     }
 }
 
-globalThis._test = 123;
-console.log('cli-index', globalThis._test);
+/*
+How it works:
+`this.#head` is an instance of `Node` which keeps track of its current value and nests another instance of `Node` that keeps the value that comes after it. When a value is provided to `.enqueue()`, the code needs to iterate through `this.#head`, going deeper and deeper to find the last value. However, iterating through every single item is slow. This problem is solved by saving a reference to the last value as `this.#tail` so that it can reference it to add a new value.
+*/
+
+class Node {
+	value;
+	next;
+
+	constructor(value) {
+		this.value = value;
+	}
+}
+
+class Queue {
+	#head;
+	#tail;
+	#size;
+
+	constructor() {
+		this.clear();
+	}
+
+	enqueue(value) {
+		const node = new Node(value);
+
+		if (this.#head) {
+			this.#tail.next = node;
+			this.#tail = node;
+		} else {
+			this.#head = node;
+			this.#tail = node;
+		}
+
+		this.#size++;
+	}
+
+	dequeue() {
+		const current = this.#head;
+		if (!current) {
+			return;
+		}
+
+		this.#head = this.#head.next;
+		this.#size--;
+		return current.value;
+	}
+
+	clear() {
+		this.#head = undefined;
+		this.#tail = undefined;
+		this.#size = 0;
+	}
+
+	get size() {
+		return this.#size;
+	}
+
+	* [Symbol.iterator]() {
+		let current = this.#head;
+
+		while (current) {
+			yield current.value;
+			current = current.next;
+		}
+	}
+}
+
+function pLimit(concurrency) {
+	if (!((Number.isInteger(concurrency) || concurrency === Number.POSITIVE_INFINITY) && concurrency > 0)) {
+		throw new TypeError('Expected `concurrency` to be a number from 1 and up');
+	}
+
+	const queue = new Queue();
+	let activeCount = 0;
+
+	const next = () => {
+		activeCount--;
+
+		if (queue.size > 0) {
+			queue.dequeue()();
+		}
+	};
+
+	const run = async (fn, resolve, args) => {
+		activeCount++;
+
+		const result = (async () => fn(...args))();
+
+		resolve(result);
+
+		try {
+			await result;
+		} catch {}
+
+		next();
+	};
+
+	const enqueue = (fn, resolve, args) => {
+		queue.enqueue(run.bind(undefined, fn, resolve, args));
+
+		(async () => {
+			// This function needs to wait until the next microtask before comparing
+			// `activeCount` to `concurrency`, because `activeCount` is updated asynchronously
+			// when the run function is dequeued and called. The comparison in the if-statement
+			// needs to happen asynchronously as well to get an up-to-date value for `activeCount`.
+			await Promise.resolve();
+
+			if (activeCount < concurrency && queue.size > 0) {
+				queue.dequeue()();
+			}
+		})();
+	};
+
+	const generator = (fn, ...args) => new Promise(resolve => {
+		enqueue(fn, resolve, args);
+	});
+
+	Object.defineProperties(generator, {
+		activeCount: {
+			get: () => activeCount,
+		},
+		pendingCount: {
+			get: () => queue.size,
+		},
+		clearQueue: {
+			value: () => {
+				queue.clear();
+			},
+		},
+	});
+
+	return generator;
+}
+
+class EndError extends Error {
+	constructor(value) {
+		super();
+		this.value = value;
+	}
+}
+
+// The input can also be a promise, so we await it.
+const testElement = async (element, tester) => tester(await element);
+
+// The input can also be a promise, so we `Promise.all()` them both.
+const finder = async element => {
+	const values = await Promise.all(element);
+	if (values[1] === true) {
+		throw new EndError(values[0]);
+	}
+
+	return false;
+};
+
+async function pLocate(
+	iterable,
+	tester,
+	{
+		concurrency = Number.POSITIVE_INFINITY,
+		preserveOrder = true,
+	} = {},
+) {
+	const limit = pLimit(concurrency);
+
+	// Start all the promises concurrently with optional limit.
+	const items = [...iterable].map(element => [element, limit(testElement, element, tester)]);
+
+	// Check the promises either serially or concurrently.
+	const checkLimit = pLimit(preserveOrder ? 1 : Number.POSITIVE_INFINITY);
+
+	try {
+		await Promise.all(items.map(element => checkLimit(finder, element)));
+	} catch (error) {
+		if (error instanceof EndError) {
+			return error.value;
+		}
+
+		throw error;
+	}
+}
+
+const typeMappings = {
+	directory: 'isDirectory',
+	file: 'isFile',
+};
+
+function checkType(type) {
+	if (Object.hasOwnProperty.call(typeMappings, type)) {
+		return;
+	}
+
+	throw new Error(`Invalid type specified: ${type}`);
+}
+
+const matchType = (type, stat) => stat[typeMappings[type]]();
+
+const toPath$1 = urlOrPath => urlOrPath instanceof URL ? node_url.fileURLToPath(urlOrPath) : urlOrPath;
+
+async function locatePath(
+	paths,
+	{
+		cwd = process$3.cwd(),
+		type = 'file',
+		allowSymlinks = true,
+		concurrency,
+		preserveOrder,
+	} = {},
+) {
+	checkType(type);
+	cwd = toPath$1(cwd);
+
+	const statFunction = allowSymlinks ? fs$c.promises.stat : fs$c.promises.lstat;
+
+	return pLocate(paths, async path_ => {
+		try {
+			const stat = await statFunction(path$c.resolve(cwd, path_));
+			return matchType(type, stat);
+		} catch {
+			return false;
+		}
+	}, {concurrency, preserveOrder});
+}
+
+function toPath(urlOrPath) {
+	return urlOrPath instanceof URL ? node_url.fileURLToPath(urlOrPath) : urlOrPath;
+}
+
+const findUpStop = Symbol('findUpStop');
+
+async function findUpMultiple(name, options = {}) {
+	let directory = path$c.resolve(toPath(options.cwd) ?? '');
+	const {root} = path$c.parse(directory);
+	const stopAt = path$c.resolve(directory, toPath(options.stopAt ?? root));
+	const limit = options.limit ?? Number.POSITIVE_INFINITY;
+	const paths = [name].flat();
+
+	const runMatcher = async locateOptions => {
+		if (typeof name !== 'function') {
+			return locatePath(paths, locateOptions);
+		}
+
+		const foundPath = await name(locateOptions.cwd);
+		if (typeof foundPath === 'string') {
+			return locatePath([foundPath], locateOptions);
+		}
+
+		return foundPath;
+	};
+
+	const matches = [];
+	// eslint-disable-next-line no-constant-condition
+	while (true) {
+		// eslint-disable-next-line no-await-in-loop
+		const foundPath = await runMatcher({...options, cwd: directory});
+
+		if (foundPath === findUpStop) {
+			break;
+		}
+
+		if (foundPath) {
+			matches.push(path$c.resolve(directory, foundPath));
+		}
+
+		if (directory === stopAt || matches.length >= limit) {
+			break;
+		}
+
+		directory = path$c.dirname(directory);
+	}
+
+	return matches;
+}
+
+async function findUp(name, options = {}) {
+	const matches = await findUpMultiple(name, {...options, limit: 1});
+	return matches[0];
+}
+
+// const root = file.
+const defaultConfig = {
+    configFile: 'dlc.config.js',
+    removeWhitePath: [],
+};
+async function getRootPath() {
+    return await findUp(['package.json'], { type: 'directory' });
+}
+async function initConfig() {
+    const root = await getRootPath();
+    console.log(root);
+    if (!root)
+        throw new Error(log._red('dlc.config.js not found'));
+    const configFile = path$c.join(root, defaultConfig.configFile);
+    const userConfig = await import(configFile);
+    console.log(userConfig);
+}
+
+// 初始化配置
+initConfig();
 const dlc = new Command();
 dlc
     .name('dlc-cli')

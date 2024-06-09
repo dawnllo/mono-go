@@ -1,5 +1,4 @@
 import { cwd } from 'node:process'
-import chalk from 'chalk'
 import { download, generateCatalog, http, log, oraWrapper, pro } from '../../utils'
 
 export default async function getListAction() {
@@ -45,10 +44,10 @@ export default async function getListAction() {
 
   const step1 = await pro.autoMultiselect(choices, '', suggest, onState)
 
+  const downloadPath = `${cwd()}/template`
   const step2 = step1.selects?.length > 0
-    ? await pro.confirm(`${chalk.green('Download path:')}
-  ${chalk.yellow(`${cwd()}/template`)}
-  can you confirm download!`)
+    ? await pro.confirm(`Download path: ${downloadPath}
+  can you confirm ?`)
     : { confirm: false }
 
   const validate = (input) => {

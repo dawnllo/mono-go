@@ -1,6 +1,9 @@
 declare namespace _Global {
-  interface FileConfig {
-    removeWhiteList: string[]
+
+  interface ConfigFile {
+    root: string
+    rootAP: string
+    removeWhitePath: string[] // 移除文件时, 白名单
   }
 
   interface Context {

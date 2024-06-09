@@ -1,11 +1,29 @@
 import fs from 'node:fs'
+import { cwd } from 'node:process'
 import path from 'node:path'
 import { log, pro } from '../utils'
 
-const file_config: _Global.FileConfig = {
-  removeWhiteList: [],
+type FileConf = Pick<_Global.ConfigFile, 'removeWhitePath' | 'rootAP'>
+const file_config: FileConf = {
+  rootAP: '',
+  removeWhitePath: [],
 }
 
+/**
+ * 读取项目root路径
+ */
+export function getRootPath() {
+  const filePath = path.join(cwd(), 'config.json')
+  if (!fs.existsSync(filePath))
+    return {}
+
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+}
+
+/**
+ * 初始化文件操作系统 - 需要的配置内容
+ * @param configFile 全局配置文件
+ */
 export function init(configFile) {
   Object.keys(file_config).forEach((key) => {
     file_config[key] = configFile[key]
@@ -45,57 +63,72 @@ export async function writeSyncFile(filePath: string, content): Promise<string> 
 
 /**
  * 删除文件
- * @param filePath
+ * @param input
  * @returns
  */
-export async function rmSyncFile(filePath: string) {
-  console.log('rmSyncFile', filePath)
+export async function rmSyncFile(input: string) {
+  if (!rmSyncValidate(input))
+    return
 
-  // 1.验证是否满足白名单
-  if (!file_config.removeWhiteList.includes(filePath))
-    return log._red('file path not in whiteList, exit!!!')
-  if (fs.existsSync(filePath)) {
-    // 2.交互提示文件路径, 并confirm.
-    const result = await pro.confirm(log._red(`delete file or directory, ${filePath}?`))
-    result.confirm && fs.rmSync(filePath, { recursive: true })
-  }
+  // 2.交互提示文件路径, 并confirm.
+  const result = await pro.confirm(log._red(`delete file or directory, ${input}?`))
+  result.confirm && fs.rmSync(input, { recursive: true })
+  log.green('delete success')
 }
 
 /**
- * 删除当前文件夹下的空文件夹
- * @param curDir
+ * 删除空文件夹
+ * @param input
  * @returns
  */
-export async function rmEmptyDir(curDir: string) {
-  // 1.验证是否满足白名单
-  if (!file_config.removeWhiteList.includes(curDir))
-    return log._red('file path not in whiteList, exit!!!')
-
-  // 2.不存在退出
-  if (!fs.existsSync(curDir))
+export async function rmSyncEmptyDir(input: string) {
+  if (!rmSyncValidate(input))
     return
 
-  // 3.不是文件夹退出
-  if (!fs.statSync(curDir).isDirectory())
+  if (!fs.statSync(input).isDirectory())
     return
 
-  // 4.操作当前文件
-  const curDirFiles = fs.readdirSync(curDir)
-
+  const curDirFiles = fs.readdirSync(input)
   for (const file of curDirFiles) {
-    const nextPath = path.join(curDir, file)
+    const nextPath = path.join(input, file)
     if (fs.statSync(nextPath).isDirectory())
-      await rmEmptyDir(nextPath)
+      await rmSyncEmptyDir(nextPath)
   }
 
-  // 5.从内层向外删除.
+  // 从内层向外删除.
   if (curDirFiles.length === 0)
-    return fs.rmSync(curDir)
+    return fs.rmSync(input)
+}
+
+/**
+ * 删除验证
+ * @param input
+ * @returns boolean
+ */
+function rmSyncValidate(input) {
+  const whiteList = file_config.removeWhitePath
+  let isPass = false
+  for (const white of whiteList) {
+    if (input.startsWith(white)) {
+      isPass = true
+      break
+    }
+  }
+
+  if (!isPass) {
+    log._red('file path not in whiteList, exit!!!')
+    return false
+  }
+
+  if (!fs.existsSync(input))
+    return false
+
+  return true
 }
 
 export const file = {
   init,
   writeSyncFile,
   rmSyncFile,
-  rmEmptyDir,
+  rmSyncEmptyDir,
 }

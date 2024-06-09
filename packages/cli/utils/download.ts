@@ -1,10 +1,7 @@
-import fs from 'node:fs'
 import { Buffer } from 'node:buffer'
 import { cwd } from 'node:process'
 import ora from 'ora'
 import { file, http, log } from '../utils'
-
-// TODO: 下载一半, 删除之前下载的文件. 重新设计,下载前判断是否存在.
 
 export function generateCatalog(data, optionKeys = { path: 'path', url: 'url' }): _Global.CatalogItem[] {
   if (!data)
@@ -82,13 +79,13 @@ async function trees(catalogItem: _Global.CatalogItem): Promise<string[]> {
     }
   }
   catch (error) {
-    // 任何一个递归已经下载的文件
-    for (const filePath of finishPath) {
-      await file.rmSyncFile(`${filePath}`)
-      log.green(`delete ${filePath}`)
-    }
+    for (const filePath of finishPath)
+      await file.rmSyncFile(`${filePath}`) // 删除whitepath
+
     // 同时删除当前文件夹下的空文件夹.
-    await file.rmEmptyDir(path)
+    await file.rmSyncEmptyDir(path)
+
+    log.white('-- quit --')
 
     // 起始层, 不需要报错;
     if (_level > 1)

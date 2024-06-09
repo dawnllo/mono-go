@@ -2,9 +2,10 @@
 import { Command } from '@commander-js/extra-typings'
 import addAction from './command/add/index'
 import getListAction from './command/list/index'
+import { initConfig } from './config'
 
-globalThis._test = 123
-console.log('cli-index', globalThis._test)
+// 初始化配置
+await initConfig()
 
 const dlc = new Command()
 

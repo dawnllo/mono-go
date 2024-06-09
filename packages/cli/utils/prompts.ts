@@ -72,6 +72,7 @@ export async function autoMultiselect(choices, message?, suggest?: (input, choic
     initial: 0,
     limit: 50,
     fallback: 'no match!',
+    instructions: false,
     message,
     choices,
     suggest,
