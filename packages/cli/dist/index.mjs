@@ -4435,29 +4435,34 @@ colors.forEach((item) => {
 
 // 策略
 const urlStrategy = {
-    ["contents" /* _Global.GitFetchType.contents */]: (config) => {
-        return `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.sha}${config.branch ? `?ref=${config.branch}` : ''}`;
+    ["contents" /* _Global.GitFetchType.contents */]: (option) => {
+        // .../contents/{path}{?ref} ref: branch, tag, commit
+        const path = option.sha ? `/${option.sha}` : '';
+        const branch = option.branch || 'master';
+        return `https://api.github.com/repos/${option.owner}/${option.repo}/contents${path}?ref=${branch}`;
     },
-    ["branches" /* _Global.GitFetchType.branches */]: (config) => {
-        return `https://api.github.com/repos/${config.owner}/${config.repo}/branches`;
+    ["branches" /* _Global.GitFetchType.branches */]: (option) => {
+        return `https://api.github.com/repos/${option.owner}/${option.repo}/branches`;
     },
-    ["trees" /* _Global.GitFetchType.trees */]: (config) => {
-        return `https://api.github.com/repos/${config.owner}/${config.repo}/git/trees/${config.sha}${config.recursive ? '?recursive=1' : ''}`;
+    ["trees" /* _Global.GitFetchType.trees */]: (option) => {
+        // .../git/trees/{sha}{?recursive=1}, sha: commit or ref(branch, tag)
+        return `https://api.github.com/repos/${option.owner}/${option.repo}/git/trees/${option.sha}${option.recursive ? '?recursive=1' : ''}`;
     },
-    ["blobs" /* _Global.GitFetchType.blobs */]: (config) => {
-        return `https://api.github.com/repos/${config.owner}/${config.repo}/git/blobs/${config.sha}`;
+    ["blobs" /* _Global.GitFetchType.blobs */]: (option) => {
+        // .../git/blobs/{sha} sha: commit;
+        return `https://api.github.com/repos/${option.owner}/${option.repo}/git/blobs/${option.sha}`;
     },
 };
-async function git(config) {
+async function git(option) {
     let url;
-    const generate = urlStrategy[config.type];
+    const generate = urlStrategy[option.type];
     if (generate)
-        url = generate(config);
+        url = generate(option);
     return await gitUrl(url);
 }
 async function gitUrl(url) {
     if (!url)
-        throw new Error(log._red('urlStrategy not found, please check config.type!'));
+        throw new Error(log._red('urlStrategy not found, please check option.type!'));
     const options = new Request(url, {
         headers: {
             'User-Agent': '@dawnll/cli',
@@ -13953,16 +13958,17 @@ function ora(options) {
 	return new Ora(options);
 }
 
-function generateCatalog(data, optionKeys = { path: 'path', url: 'url' }) {
+function generateCatalog(data, type) {
     if (!data)
         return [];
+    const urlKey = type === "contents" /* _Global.GitFetchType.contents */ ? 'git_url' : 'url';
     // 生成目录
     const catalog = [];
     for (const item of data) {
         const ele = {
-            path: item[optionKeys.path],
-            url: item[optionKeys.url],
-            type: item.type === 'blob' ? 'file' : 'dir',
+            path: item.path,
+            url: item[urlKey],
+            type: type === "contents" /* _Global.GitFetchType.contents */ ? item.type : item.type === 'tree' ? 'dir' : 'file',
             size: item.size,
             sha: item.sha,
         };
@@ -13972,13 +13978,14 @@ function generateCatalog(data, optionKeys = { path: 'path', url: 'url' }) {
 }
 // 下载
 // file-blob
-async function fileBlob(catalogItem) {
-    const { url, path } = catalogItem;
-    const spinner = ora(log._green(`template/${path}`)).start();
+async function fileBlob(catalogItem, configFile) {
+    const { url, path: itemPath } = catalogItem;
+    const downloadRelativePath = path$1.join(configFile.downloadRelativePath, itemPath);
+    const spinner = ora(log._green(downloadRelativePath)).start();
     const res = await http.gitUrl(url);
     const data = await res.json();
     spinner.stop();
-    const filePath = `${cwd()}/template/${path}`;
+    const filePath = path$1.resolve(cwd(), downloadRelativePath);
     const buf = Buffer$1.from(data.content, 'base64');
     let finishPath;
     try {
@@ -13987,33 +13994,32 @@ async function fileBlob(catalogItem) {
     catch (error) {
         throw new Error('writeSyncFile error.');
     }
-    spinner.succeed(log._green(`template/${path}, success.`));
+    spinner.succeed(log._green(`${downloadRelativePath}, success.`));
     return finishPath;
 }
 let _level = 0; // 递归层级
-async function trees(catalogItem) {
+async function trees(catalogItem, configFile) {
     _level++;
     const { sha, path } = catalogItem;
     // 循环下载
     const config = {
-        owner: 'Dofw',
-        repo: 'vs-theme',
+        ...configFile.git,
         type: "trees" /* _Global.GitFetchType.trees */,
         sha,
     };
     const res = await http.git(config);
     const json = await res.json();
-    const catalog = generateCatalog(json.tree);
+    const catalog = generateCatalog(json.tree, "trees" /* _Global.GitFetchType.trees */);
     const finishPath = [];
     try {
         for (const item of catalog) {
             item.path = `${path}/${item.path}`; // tree 获取的不带 父目录.这里拼接上
             if (item.type === 'file') {
-                const finish = await fileBlob(item);
+                const finish = await fileBlob(item, configFile);
                 finishPath.push(finish);
             }
             else if (item.type === 'dir') {
-                const finishs = await trees(item);
+                const finishs = await trees(item, configFile);
                 finishPath.push(...finishs);
             }
         }
@@ -14088,7 +14094,7 @@ class MiddleWare {
         };
         await handlerResult();
     }
-    cancel(str, color = 'yellow') {
+    cancel(str = 'cancel', color = 'yellow') {
         if (this.iterator) {
             log[color](str);
             return this.iterator.return('cancel');
@@ -14116,7 +14122,27 @@ async function load(_ctx) {
  * 不存在：进行下一步。
  */
 async function confirm(ctx) {
-    console.log(ctx.template);
+    const { template } = ctx;
+    let answer = {
+        confirm: false,
+        name: '',
+    };
+    answer = await repeatConfirm(template, answer); // 反复确认
+    async function repeatConfirm(name, lastAnswer) {
+        const targetPath = path$1.resolve(cwd(), name);
+        const isExist = fs$1.existsSync(targetPath);
+        let answer = {
+            confirm: false,
+            name: '',
+        };
+        if (isExist)
+            answer = await pro.confirm_text();
+        if (answer.confirm && answer.name)
+            return await repeatConfirm(answer.name, answer);
+        return lastAnswer;
+    }
+    console.log(answer);
+    this.cancel();
 }
 
 const app = new MiddleWare();
@@ -14124,36 +14150,32 @@ const app = new MiddleWare();
 app
     .use(confirm)
     .use(load);
-async function addAction(template, project, options) {
+async function addAction(configFile, _args) {
+    const [template] = _args;
     if (!template)
         throw new Error(chalk.red('Missing require argument: `tempalte`.'));
     const context = {
         template,
-        project: project || template,
-        options,
-        src: '',
-        dest: '',
-        config: Object.create(null), // 获取模板，读取require
         answers: Object.create(null),
-        files: [],
+        configFile,
     };
     await app.run(context);
 }
 
-async function getListAction(configFile, ...args) {
-    console.log(configFile, args);
+async function getListAction(configFile, _args) {
+    const { downloadRelativePath, git } = configFile;
+    const [repPath, branch] = _args;
     const config = {
-        owner: 'Dofw',
-        repo: 'vs-theme',
-        type: "trees" /* _Global.GitFetchType.trees */,
-        sha: 'master',
-        recursive: false,
+        ...git,
+        type: "contents" /* _Global.GitFetchType.contents */,
+        sha: repPath,
+        branch,
     };
     const json = await oraWrapper(async () => {
         const res = await http.git(config);
         return await res.json();
     });
-    const catalog = generateCatalog(json.tree);
+    const catalog = generateCatalog(json, "contents" /* _Global.GitFetchType.contents */);
     // 重命名使用
     let select = [];
     const choices = catalog.map((item) => {
@@ -14179,7 +14201,7 @@ async function getListAction(configFile, ...args) {
         });
     };
     const step1 = await pro.autoMultiselect(choices, '', suggest, onState);
-    const downloadPath = path$1.resolve(cwd(), 'template');
+    const downloadPath = path$1.resolve(cwd(), downloadRelativePath);
     const step2 = step1.selects?.length > 0
         ? await pro.confirm(`Download path: ${downloadPath}
   can you confirm ?`)
@@ -14209,15 +14231,15 @@ async function getListAction(configFile, ...args) {
     });
     // 下载
     for (const fileOption of renameMap)
-        dowanloadFunc(fileOption);
-    async function dowanloadFunc(fileOption) {
+        dowanloadFunc(fileOption, configFile);
+    async function dowanloadFunc(fileOption, configFile) {
         const { type } = fileOption;
         if (type === 'file') {
-            await download.fileBlob(fileOption);
+            await download.fileBlob(fileOption, configFile);
             return;
         }
         if (type === 'dir')
-            await download.trees(fileOption);
+            await download.trees(fileOption, configFile);
     }
 }
 
@@ -14515,13 +14537,17 @@ const defaultConfig = {
     root: '.',
     rootAP: '', // 运行时,init
     removeWhitePath: [],
-    downloadRealtivePath: '.',
+    downloadRelativePath: '.',
+    git: {
+        owner: 'Dofw',
+        repo: 'vs-theme',
+    },
 };
 // 获取配置文件名
 function getConfigFileName() {
     return CNONFIG_FILE_DEFAULT;
 }
-// 配置归一化
+// 配置归一化 TODO: 对配置进行合法校验.
 function normalizeConfig(mergeConfig, rootAP) {
     const keys = Object.keys(defaultConfig);
     const configKeys = Object.keys(mergeConfig);
@@ -14574,12 +14600,14 @@ dlc
     .description('study build myself Cli Tool !')
     .version('0.0.1');
 dlc
-    .command('add <template> [rename]')
+    .command('add')
+    .argument('<template>', 'template to repository')
     .description('add template')
-    .option('-f, --force', 'force overwrite file destination !!!')
-    .action(addAction);
+    .action((...args) => { addAction(config, args); });
 dlc
     .command('list-remote')
+    .argument('[path]', 'path to use', '')
+    .argument('[branch]', 'branch to use', 'master')
     .description('view the remote template list')
-    .action((...args) => { getListAction(config, ...args); });
+    .action((...args) => { getListAction(config, args); });
 dlc.parse();

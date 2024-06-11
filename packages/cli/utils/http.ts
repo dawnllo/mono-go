@@ -4,7 +4,9 @@ import { log } from '.'
 const urlStrategy = {
   [_Global.GitFetchType.contents]: (option: _Global.GitHttpOption) => {
     // .../contents/{path}{?ref} ref: branch, tag, commit
-    return `https://api.github.com/repos/${option.owner}/${option.repo}/contents/${option.sha}${option.branch ? `?ref=${option.branch}` : ''}`
+    const path = option.sha ? `/${option.sha}` : ''
+    const branch = option.branch || 'master'
+    return `https://api.github.com/repos/${option.owner}/${option.repo}/contents${path}?ref=${branch}`
   },
   [_Global.GitFetchType.branches]: (option: _Global.GitHttpOption) => {
     return `https://api.github.com/repos/${option.owner}/${option.repo}/branches`

@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import MiddleWare from '../../utils/middleware'
+import MiddleWare from './middleware'
 import load from './load'
 import confirm from './confirm'
 
@@ -10,19 +10,15 @@ app
   .use(confirm)
   .use(load)
 
-async function addAction(template, project, options) {
+async function addAction(configFile: _Global.ConfigFile, _args) {
+  const [template] = _args
   if (!template)
     throw new Error(chalk.red('Missing require argument: `tempalte`.'))
 
   const context: _Global.Context = {
     template,
-    project: project || template,
-    options,
-    src: '',
-    dest: '',
-    config: Object.create(null), // 获取模板，读取require
     answers: Object.create(null),
-    files: [],
+    configFile,
   }
 
   await app.run(context)

@@ -15,13 +15,15 @@ dlc
   .version('0.0.1')
 
 dlc
-  .command('add <template> [rename]')
+  .command('add')
+  .argument('<template>', 'template to repository')
   .description('add template')
-  .option('-f, --force', 'force overwrite file destination !!!')
-  .action(addAction)
+  .action((...args) => { addAction(config, args) })
 
 dlc
   .command('list-remote')
+  .argument('[path]', 'path to use', '')
+  .argument('[branch]', 'branch to use', 'master')
   .description('view the remote template list')
   .action((...args) => { getListAction(config, args) })
 

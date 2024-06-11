@@ -4,18 +4,20 @@ import { cwd } from 'node:process'
 import ora from 'ora'
 import { file, http, log } from '../utils'
 
-export function generateCatalog(data, optionKeys = { path: 'path', url: 'url' }): _Global.CatalogItem[] {
+export function generateCatalog(data, type: _Global.GitFetchType.trees | _Global.GitFetchType.contents): _Global.CatalogItem[] {
   if (!data)
     return []
+
+  const urlKey = type === _Global.GitFetchType.contents ? 'git_url' : 'url'
 
   // 生成目录
   const catalog: _Global.CatalogItem[] = []
 
   for (const item of data) {
     const ele: _Global.CatalogItem = {
-      path: item[optionKeys.path],
-      url: item[optionKeys.url],
-      type: item.type === 'blob' ? 'file' : 'dir',
+      path: item.path,
+      url: item[urlKey],
+      type: type === _Global.GitFetchType.contents ? item.type : item.type === 'tree' ? 'dir' : 'file',
       size: item.size,
       sha: item.sha,
     }
@@ -62,8 +64,7 @@ async function trees(catalogItem: _Global.CatalogItem, configFile: _Global.Confi
   }
   const res = await http.git(config)
   const json = await res.json()
-
-  const catalog = generateCatalog(json.tree)
+  const catalog = generateCatalog(json.tree, _Global.GitFetchType.trees)
   const finishPath: string[] = []
   try {
     for (const item of catalog) {

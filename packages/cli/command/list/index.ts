@@ -4,22 +4,20 @@ import { download, generateCatalog, http, log, oraWrapper, pro } from '../../uti
 
 export default async function getListAction(configFile, _args?: any) {
   const { downloadRelativePath, git } = configFile
+  const [repPath, branch] = _args
 
-  // TODO: 先获取内容, content 路径+分支. trees 只能分支, 获取全部
   const config = {
     ...git,
-    type: _Global.GitFetchType.trees,
-    sha: 'master',
-    recursive: false,
+    type: _Global.GitFetchType.contents,
+    sha: repPath,
+    branch,
   }
 
   const json = await oraWrapper(async () => {
     const res = await http.git(config)
     return await res.json()
   })
-
-  const catalog = generateCatalog(json.tree)
-
+  const catalog = generateCatalog(json, _Global.GitFetchType.contents)
   // 重命名使用
   let select: any = []
   const choices = catalog.map((item) => {

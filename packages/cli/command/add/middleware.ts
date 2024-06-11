@@ -1,4 +1,4 @@
-import { type FuncKeys, log } from '../utils'
+import { type FuncKeys, log } from '../../utils'
 
 type UseFunction = (content: _Global.Context) => void | Promise<void>
 type GeneratorType = Generator<UseFunction, string, void> | null
@@ -54,7 +54,7 @@ export default class MiddleWare {
     await handlerResult()
   }
 
-  cancel(str: string, color: FuncKeys = 'yellow') {
+  cancel(str: string = 'cancel', color: FuncKeys = 'yellow') {
     if (this.iterator) {
       log[color](str)
       return this.iterator.return('cancel')
