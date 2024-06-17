@@ -4497,9 +4497,13 @@ function init(configFile) {
  */
 async function writeSyncFile(filePath, content) {
     if (fs$1.existsSync(filePath)) {
-        const file = path$1.basename(filePath);
         // 交互
-        const result = await pro.confirm_text(log._red(`${file} already exists, rename?`));
+        const initAnswer = {
+            confirm: false,
+            name: '',
+        };
+        const repeat_confirm_text = pro.repeatFactory(log._red(`file already exists, rename?`));
+        const result = await repeat_confirm_text(filePath, initAnswer);
         if (result.confirm && result.name) {
             // 重命名
             const extname = path$1.extname(filePath);
@@ -10910,12 +10914,31 @@ async function confirm_text(confirmMsg, textMsg) {
         ...step2,
     };
 }
+// 工厂函数, inject confirmMsg, textMsg
+function repeatFactory(confirmMsg, textMsg) {
+    // 递归重命名, 不通过返回 initAnswer
+    return async function repeat_confirm_text(name, initAnswer) {
+        const targetPath = path$1.resolve(cwd(), name); // 绝对路径,name覆盖cwd.
+        const isExist = fs$1.existsSync(targetPath);
+        let answer = {
+            confirm: false,
+            name: '',
+        };
+        if (isExist)
+            answer = await confirm_text(confirmMsg, textMsg);
+        if (answer.confirm && answer.name)
+            return await repeat_confirm_text(answer.name, answer);
+        return initAnswer;
+    };
+}
 const pro = {
     confirm: confirm$1,
     text,
     list,
     autoMultiselect,
     confirm_text,
+    repeat_confirm_text: repeatFactory(),
+    repeatFactory,
 };
 
 var onetime$2 = {exports: {}};
@@ -14114,6 +14137,7 @@ class MiddleWare {
 }
 
 async function load(_ctx) {
+    console.log(123, _ctx.answers.confirm);
 }
 
 /**
@@ -14127,22 +14151,11 @@ async function confirm(ctx) {
         confirm: false,
         name: '',
     };
-    answer = await repeatConfirm(template, answer); // 反复确认
-    async function repeatConfirm(name, lastAnswer) {
-        const targetPath = path$1.resolve(cwd(), name);
-        const isExist = fs$1.existsSync(targetPath);
-        let answer = {
-            confirm: false,
-            name: '',
-        };
-        if (isExist)
-            answer = await pro.confirm_text();
-        if (answer.confirm && answer.name)
-            return await repeatConfirm(answer.name, answer);
-        return lastAnswer;
-    }
-    console.log(answer);
-    this.cancel();
+    answer = await pro.repeat_confirm_text(template, answer); // 反复确认
+    if (!answer.confirm)
+        this.cancel();
+    // 确认answer注入的ctx
+    ctx.answers.confirm = answer;
 }
 
 const app = new MiddleWare();

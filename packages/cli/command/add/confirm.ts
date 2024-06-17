@@ -9,31 +9,18 @@ import type MiddleWare from './middleware'
  * 存在：用户交互，是否重写、或取消重新输入。
  * 不存在：进行下一步。
  */
-export default async function confirm(this: MiddleWare, ctx) {
+export default async function confirm(this: MiddleWare, ctx: _Global.Context) {
   const { template } = ctx
 
   let answer = {
     confirm: false,
     name: '',
   }
-  answer = await repeatConfirm(template, answer) // 反复确认
+  answer = await pro.repeat_confirm_text(template, answer) // 反复确认
 
-  async function repeatConfirm(name, lastAnswer) {
-    const targetPath = path.resolve(cwd(), name)
-    const isExist = fs.existsSync(targetPath)
+  if (!answer.confirm)
+    this.cancel()
 
-    let answer = {
-      confirm: false,
-      name: '',
-    }
-    if (isExist)
-      answer = await pro.confirm_text()
-
-    if (answer.confirm && answer.name)
-      return await repeatConfirm(answer.name, answer)
-
-    return lastAnswer
-  }
-  console.log(answer)
-  this.cancel()
+  // 确认answer注入的ctx
+  ctx.answers.confirm = answer
 }

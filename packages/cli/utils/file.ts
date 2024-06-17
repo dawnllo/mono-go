@@ -26,9 +26,13 @@ export function init(configFile) {
  */
 export async function writeSyncFile(filePath: string, content): Promise<string> {
   if (fs.existsSync(filePath)) {
-    const file = path.basename(filePath)
     // 交互
-    const result = await pro.confirm_text(log._red(`${file} already exists, rename?`))
+    const initAnswer = {
+      confirm: false,
+      name: '',
+    }
+    const repeat_confirm_text = pro.repeatFactory(log._red(`file already exists, rename?`))
+    const result = await repeat_confirm_text(filePath, initAnswer)
 
     if (result.confirm && result.name) {
       // 重命名

@@ -1,3 +1,6 @@
+import path from 'node:path'
+import { cwd } from 'node:process'
+import fs from 'node:fs'
 import prompts from 'prompts'
 import { log } from '../utils'
 
@@ -90,6 +93,27 @@ async function confirm_text(confirmMsg?: string, textMsg?: string): Promise<PCon
   }
 }
 
+// 工厂函数, inject confirmMsg, textMsg
+function repeatFactory(confirmMsg?: string, textMsg?: string) {
+  // 递归重命名, 不通过返回 initAnswer
+  return async function repeat_confirm_text(name: string, initAnswer: PConfirm & PText) {
+    const targetPath = path.resolve(cwd(), name) // 绝对路径,name覆盖cwd.
+    const isExist = fs.existsSync(targetPath)
+
+    let answer = {
+      confirm: false,
+      name: '',
+    }
+    if (isExist)
+      answer = await confirm_text(confirmMsg, textMsg)
+
+    if (answer.confirm && answer.name)
+      return await repeat_confirm_text(answer.name, answer)
+
+    return initAnswer
+  }
+}
+
 // 导出
 interface Pro {
   confirm: (message?: string) => Promise<PConfirm>
@@ -97,6 +121,8 @@ interface Pro {
   list: (validate?, message?: string) => Promise<PList>
   autoMultiselect: (choices, message?, suggest?: (input, choices) => Promise<any[]>, onState?: (state: any) => void) => Promise<PAutocompleteMultiselect>
   confirm_text: (confirmMsg?: string, textMsg?: string) => Promise<PConfirm & PText>
+  repeat_confirm_text: (name: string, lastAnswer: PConfirm & PText) => Promise<PConfirm & PText>
+  repeatFactory: (confirmMsg?: string, textMsg?: string) => (name: string, lastAnswer: PConfirm & PText) => Promise<PConfirm & PText>
 }
 
 export const pro: Pro = {
@@ -105,4 +131,6 @@ export const pro: Pro = {
   list,
   autoMultiselect,
   confirm_text,
+  repeat_confirm_text: repeatFactory(),
+  repeatFactory,
 }
