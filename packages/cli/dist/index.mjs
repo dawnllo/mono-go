@@ -2,7 +2,7 @@
 import require$$0$1 from 'node:events';
 import require$$1 from 'node:child_process';
 import path$1 from 'node:path';
-import fs$1, { promises } from 'node:fs';
+import fs$1 from 'node:fs';
 import process$3, { cwd } from 'node:process';
 import os from 'node:os';
 import tty from 'node:tty';
@@ -10,7 +10,6 @@ import require$$0$2 from 'readline';
 import require$$2 from 'events';
 import { Buffer as Buffer$1 } from 'node:buffer';
 import require$$0$3 from 'assert';
-import { fileURLToPath } from 'node:url';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -14137,7 +14136,8 @@ class MiddleWare {
 }
 
 async function load(_ctx) {
-    console.log(123, _ctx.answers.confirm);
+    // 1. 解析且替换模版内容
+    // 2. 下载模版
 }
 
 /**
@@ -14256,294 +14256,6 @@ async function getListAction(configFile, _args) {
     }
 }
 
-/*
-How it works:
-`this.#head` is an instance of `Node` which keeps track of its current value and nests another instance of `Node` that keeps the value that comes after it. When a value is provided to `.enqueue()`, the code needs to iterate through `this.#head`, going deeper and deeper to find the last value. However, iterating through every single item is slow. This problem is solved by saving a reference to the last value as `this.#tail` so that it can reference it to add a new value.
-*/
-
-class Node {
-	value;
-	next;
-
-	constructor(value) {
-		this.value = value;
-	}
-}
-
-class Queue {
-	#head;
-	#tail;
-	#size;
-
-	constructor() {
-		this.clear();
-	}
-
-	enqueue(value) {
-		const node = new Node(value);
-
-		if (this.#head) {
-			this.#tail.next = node;
-			this.#tail = node;
-		} else {
-			this.#head = node;
-			this.#tail = node;
-		}
-
-		this.#size++;
-	}
-
-	dequeue() {
-		const current = this.#head;
-		if (!current) {
-			return;
-		}
-
-		this.#head = this.#head.next;
-		this.#size--;
-		return current.value;
-	}
-
-	clear() {
-		this.#head = undefined;
-		this.#tail = undefined;
-		this.#size = 0;
-	}
-
-	get size() {
-		return this.#size;
-	}
-
-	* [Symbol.iterator]() {
-		let current = this.#head;
-
-		while (current) {
-			yield current.value;
-			current = current.next;
-		}
-	}
-}
-
-function pLimit(concurrency) {
-	if (!((Number.isInteger(concurrency) || concurrency === Number.POSITIVE_INFINITY) && concurrency > 0)) {
-		throw new TypeError('Expected `concurrency` to be a number from 1 and up');
-	}
-
-	const queue = new Queue();
-	let activeCount = 0;
-
-	const next = () => {
-		activeCount--;
-
-		if (queue.size > 0) {
-			queue.dequeue()();
-		}
-	};
-
-	const run = async (fn, resolve, args) => {
-		activeCount++;
-
-		const result = (async () => fn(...args))();
-
-		resolve(result);
-
-		try {
-			await result;
-		} catch {}
-
-		next();
-	};
-
-	const enqueue = (fn, resolve, args) => {
-		queue.enqueue(run.bind(undefined, fn, resolve, args));
-
-		(async () => {
-			// This function needs to wait until the next microtask before comparing
-			// `activeCount` to `concurrency`, because `activeCount` is updated asynchronously
-			// when the run function is dequeued and called. The comparison in the if-statement
-			// needs to happen asynchronously as well to get an up-to-date value for `activeCount`.
-			await Promise.resolve();
-
-			if (activeCount < concurrency && queue.size > 0) {
-				queue.dequeue()();
-			}
-		})();
-	};
-
-	const generator = (fn, ...args) => new Promise(resolve => {
-		enqueue(fn, resolve, args);
-	});
-
-	Object.defineProperties(generator, {
-		activeCount: {
-			get: () => activeCount,
-		},
-		pendingCount: {
-			get: () => queue.size,
-		},
-		clearQueue: {
-			value: () => {
-				queue.clear();
-			},
-		},
-	});
-
-	return generator;
-}
-
-class EndError extends Error {
-	constructor(value) {
-		super();
-		this.value = value;
-	}
-}
-
-// The input can also be a promise, so we await it.
-const testElement = async (element, tester) => tester(await element);
-
-// The input can also be a promise, so we `Promise.all()` them both.
-const finder = async element => {
-	const values = await Promise.all(element);
-	if (values[1] === true) {
-		throw new EndError(values[0]);
-	}
-
-	return false;
-};
-
-async function pLocate(
-	iterable,
-	tester,
-	{
-		concurrency = Number.POSITIVE_INFINITY,
-		preserveOrder = true,
-	} = {},
-) {
-	const limit = pLimit(concurrency);
-
-	// Start all the promises concurrently with optional limit.
-	const items = [...iterable].map(element => [element, limit(testElement, element, tester)]);
-
-	// Check the promises either serially or concurrently.
-	const checkLimit = pLimit(preserveOrder ? 1 : Number.POSITIVE_INFINITY);
-
-	try {
-		await Promise.all(items.map(element => checkLimit(finder, element)));
-	} catch (error) {
-		if (error instanceof EndError) {
-			return error.value;
-		}
-
-		throw error;
-	}
-}
-
-const typeMappings = {
-	directory: 'isDirectory',
-	file: 'isFile',
-};
-
-function checkType(type) {
-	if (Object.hasOwnProperty.call(typeMappings, type)) {
-		return;
-	}
-
-	throw new Error(`Invalid type specified: ${type}`);
-}
-
-const matchType = (type, stat) => stat[typeMappings[type]]();
-
-const toPath$1 = urlOrPath => urlOrPath instanceof URL ? fileURLToPath(urlOrPath) : urlOrPath;
-
-async function locatePath(
-	paths,
-	{
-		cwd = process$3.cwd(),
-		type = 'file',
-		allowSymlinks = true,
-		concurrency,
-		preserveOrder,
-	} = {},
-) {
-	checkType(type);
-	cwd = toPath$1(cwd);
-
-	const statFunction = allowSymlinks ? promises.stat : promises.lstat;
-
-	return pLocate(paths, async path_ => {
-		try {
-			const stat = await statFunction(path$1.resolve(cwd, path_));
-			return matchType(type, stat);
-		} catch {
-			return false;
-		}
-	}, {concurrency, preserveOrder});
-}
-
-function toPath(urlOrPath) {
-	return urlOrPath instanceof URL ? fileURLToPath(urlOrPath) : urlOrPath;
-}
-
-async function pathExists(path) {
-	try {
-		await promises.access(path);
-		return true;
-	} catch {
-		return false;
-	}
-}
-
-const findUpStop = Symbol('findUpStop');
-
-async function findUpMultiple(name, options = {}) {
-	let directory = path$1.resolve(toPath(options.cwd) ?? '');
-	const {root} = path$1.parse(directory);
-	const stopAt = path$1.resolve(directory, toPath(options.stopAt ?? root));
-	const limit = options.limit ?? Number.POSITIVE_INFINITY;
-	const paths = [name].flat();
-
-	const runMatcher = async locateOptions => {
-		if (typeof name !== 'function') {
-			return locatePath(paths, locateOptions);
-		}
-
-		const foundPath = await name(locateOptions.cwd);
-		if (typeof foundPath === 'string') {
-			return locatePath([foundPath], locateOptions);
-		}
-
-		return foundPath;
-	};
-
-	const matches = [];
-	// eslint-disable-next-line no-constant-condition
-	while (true) {
-		// eslint-disable-next-line no-await-in-loop
-		const foundPath = await runMatcher({...options, cwd: directory});
-
-		if (foundPath === findUpStop) {
-			break;
-		}
-
-		if (foundPath) {
-			matches.push(path$1.resolve(directory, foundPath));
-		}
-
-		if (directory === stopAt || matches.length >= limit) {
-			break;
-		}
-
-		directory = path$1.dirname(directory);
-	}
-
-	return matches;
-}
-
-async function findUp(name, options = {}) {
-	const matches = await findUpMultiple(name, {...options, limit: 1});
-	return matches[0];
-}
-
 const CNONFIG_FILE_DEFAULT = 'dlc.config.js';
 // 全局默认配置
 const defaultConfig = {
@@ -14580,20 +14292,29 @@ function normalizeConfig(mergeConfig, rootAP) {
 
 // 获取根目录
 async function getRootPath() {
-    return await findUp(async (directory) => {
-        const isPkg = await pathExists(path$1.join(directory, 'package.json'));
-        const isDlc = await pathExists(path$1.join(directory, getConfigFileName()));
-        return (isPkg && isDlc && directory);
-    }, { type: 'directory' });
+    const packageName = 'package.json';
+    const dlcName = getConfigFileName();
+    let curCwdPath = cwd();
+    while (curCwdPath) {
+        const configFile = path$1.join(curCwdPath, dlcName);
+        const packFile = path$1.join(curCwdPath, packageName);
+        if (fs$1.existsSync(configFile) && fs$1.existsSync(packFile))
+            return curCwdPath;
+        // 到达根目录
+        if (curCwdPath === path$1.dirname(curCwdPath))
+            return undefined;
+        curCwdPath = path$1.dirname(curCwdPath);
+    }
 }
 // 初始化配置 (包块各个模块,依赖全局配置的 init )
 async function initConfig() {
     const rootAP = await getRootPath();
+    console.log('root', rootAP);
     if (!rootAP)
         throw new Error(log._red('config file not found'));
     const configFile = path$1.join(rootAP, getConfigFileName());
     let mergeConfig = {};
-    if (await pathExists(configFile)) {
+    if (fs$1.existsSync(configFile)) {
         const userConfig = await import(configFile);
         mergeConfig = Object.assign(defaultConfig, userConfig.default);
     }
