@@ -11,12 +11,12 @@ app
   .use(load)
 
 async function addAction(configFile: _Global.ConfigFile, _args) {
-  const [template] = _args
-  if (!template)
+  const [path] = _args
+  if (!path)
     throw new Error(chalk.red('Missing require argument: `tempalte`.'))
 
   const context: _Global.Context = {
-    template,
+    path,
     answers: Object.create(null),
     configFile,
   }

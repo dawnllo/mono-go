@@ -10,13 +10,9 @@ import type MiddleWare from './middleware'
  * 不存在：进行下一步。
  */
 export default async function confirm(this: MiddleWare, ctx: _Global.Context) {
-  const { template } = ctx
+  const { path } = ctx
 
-  let answer = {
-    confirm: false,
-    name: '',
-  }
-  answer = await pro.repeat_confirm_text(template, answer) // 反复确认
+  const answer = await pro.repeat_confirm_text(path) // 反复确认
 
   if (!answer.confirm)
     this.cancel()

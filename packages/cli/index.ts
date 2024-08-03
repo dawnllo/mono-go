@@ -16,7 +16,7 @@ dlc
 
 dlc
   .command('add')
-  .argument('<template>', 'template to repository')
+  .argument('<path>', 'file or directory path of template repository.')
   .description('add template')
   .action((...args) => { addAction(config, args) })
 

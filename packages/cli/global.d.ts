@@ -19,7 +19,7 @@ declare namespace _Global {
   }
 
   interface Context {
-    template: string
+    path: string
     configFile: ConfigFile // 获取模板，读取require
     answers: any
   }
