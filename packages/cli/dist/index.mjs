@@ -4432,24 +4432,73 @@ colors.forEach((item) => {
     log[`_${item}`] = chalk[item];
 });
 
+const CNONFIG_FILE_DEFAULT = 'dlc.config.js';
+// 全局默认配置
+const defaultConfig = {
+    root: '.',
+    rootAP: '', // 运行时,init 绝对路径
+    file: {
+        // 文件下载/操作相关
+        removeWhitePath: [],
+        downloadRelativePath: '.',
+    },
+    git: {
+        owner: 'Dofw',
+        repo: 'vs-theme',
+        pafg_token: '',
+    },
+};
+// 获取配置文件名
+function getConfigFileName() {
+    return CNONFIG_FILE_DEFAULT;
+}
+// 配置归一化 TODO: 对配置进行合法校验.
+function normalizeConfig(mergeConfig, rootAP) {
+    const keys = Object.keys(defaultConfig);
+    const configKeys = Object.keys(mergeConfig);
+    configKeys.forEach((key) => {
+        if (!keys.includes(key))
+            throw new Error(log._red(`${key} is invalid key in config`));
+    });
+    // 与路径相关, 相对路径全部转位绝对路径
+    mergeConfig.rootAP = rootAP;
+    mergeConfig.root = path$1.resolve(rootAP, mergeConfig.root);
+    mergeConfig.file.removeWhitePath = mergeConfig.file.removeWhitePath.map((item) => {
+        if (typeof item !== 'string')
+            throw new Error(log._red('removeWhitePath must be string array'));
+        return path$1.resolve(rootAP, item);
+    });
+}
+
+const gitConfig = defaultConfig.git;
+/**
+ * 初始化文件操作系统 - 需要的配置内容
+ * @param configFile 全局配置文件
+ */
+function init$1(configFile) {
+    const dclGitConfig = configFile.git;
+    Object.keys(gitConfig).forEach((key) => {
+        gitConfig[key] = dclGitConfig[key];
+    });
+}
 // 策略
 const urlStrategy = {
     ["contents" /* _Global.GitFetchType.contents */]: (option) => {
         // .../contents/{path}{?ref} ref: branch, tag, commit
-        const path = option.sha ? `/${option.sha}` : '';
+        const path = option.sha ? `${option.sha}` : '';
         const branch = option.branch || 'master';
-        return `https://api.github.com/repos/${option.owner}/${option.repo}/contents${path}?ref=${branch}`;
+        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/contents/${path}?ref=${branch}`;
     },
-    ["branches" /* _Global.GitFetchType.branches */]: (option) => {
-        return `https://api.github.com/repos/${option.owner}/${option.repo}/branches`;
+    ["branches" /* _Global.GitFetchType.branches */]: () => {
+        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/branches`;
     },
     ["trees" /* _Global.GitFetchType.trees */]: (option) => {
         // .../git/trees/{sha}{?recursive=1}, sha: commit or ref(branch, tag)
-        return `https://api.github.com/repos/${option.owner}/${option.repo}/git/trees/${option.sha}${option.recursive ? '?recursive=1' : ''}`;
+        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/trees/${option.sha}${option.recursive ? '?recursive=1' : ''}`;
     },
     ["blobs" /* _Global.GitFetchType.blobs */]: (option) => {
         // .../git/blobs/{sha} sha: commit;
-        return `https://api.github.com/repos/${option.owner}/${option.repo}/git/blobs/${option.sha}`;
+        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/blobs/${option.sha}`;
     },
 };
 async function git(option) {
@@ -4466,26 +4515,30 @@ async function gitUrl(url) {
         headers: {
             'User-Agent': '@dawnll/cli',
             'Accept': 'application/vnd.github.v3+json',
+            'authorization': `Bearer ${gitConfig.pafg_token}`,
         },
     });
-    return await fetch(options);
+    const res = await fetch(options);
+    const json = await res.json();
+    if (json.message)
+        throw new Error(log._red(json.message));
+    return json;
 }
 const http = {
+    init: init$1,
     git,
     gitUrl,
 };
 
-const file_config = {
-    rootAP: '',
-    removeWhitePath: [],
-};
+const fileConfig = defaultConfig.file;
 /**
  * 初始化文件操作系统 - 需要的配置内容
  * @param configFile 全局配置文件
  */
 function init(configFile) {
-    Object.keys(file_config).forEach((key) => {
-        file_config[key] = configFile[key];
+    const dlcFileConfig = configFile.file;
+    Object.keys(fileConfig).forEach((key) => {
+        fileConfig[key] = dlcFileConfig[key];
     });
 }
 /**
@@ -4558,7 +4611,7 @@ async function rmSyncEmptyDir(input) {
  * @returns boolean
  */
 function rmSyncValidate(input) {
-    const whiteList = file_config.removeWhitePath;
+    const whiteList = fileConfig.removeWhitePath;
     let isPass = false;
     for (const white of whiteList) {
         if (input.startsWith(white)) {
@@ -10889,13 +10942,16 @@ async function autoMultiselect(choices, message, suggest, onState) {
             return choice.title.toLowerCase().includes(input.toLowerCase());
         });
     });
-    onState = onState || (() => { });
+    onState = onState || (() => {
+        log.green('--onState--');
+    });
     message = message || 'please select';
     return await prompts$1({
         type: 'autocompleteMultiselect',
         name: 'selects',
         initial: 0,
-        limit: 50,
+        limit: 100,
+        optionsPerPage: 100,
         fallback: 'no match!',
         instructions: false,
         message,
@@ -13980,7 +14036,8 @@ function ora(options) {
 	return new Ora(options);
 }
 
-function generateCatalog(data, type) {
+// 单层目录content/tree格式统一.
+function oneLayerCatalog(data, type) {
     if (!data)
         return [];
     const urlKey = type === "contents" /* _Global.GitFetchType.contents */ ? 'git_url' : 'url';
@@ -13998,20 +14055,42 @@ function generateCatalog(data, type) {
     }
     return catalog;
 }
+// 递归目录
+let treeLevel = 0;
+async function treeLayerCatalog(data, type, level) {
+    const oneLayer = oneLayerCatalog(data, type);
+    treeLevel++;
+    for (let i = 0; i < oneLayer.length; i++) {
+        const element = oneLayer[i];
+        // level 不存在就不限制
+        if (element.type === 'dir' && (!level || treeLevel < level)) {
+            const json = await http.gitUrl(element.url);
+            oneLayer[i].children = await treeLayerCatalog(json.tree, "trees" /* _Global.GitFetchType.trees */, level);
+            // 将路径进行拼接
+            oneLayer[i].children = oneLayer[i].children?.map((item) => {
+                return {
+                    ...item,
+                    relativeInputPath: path$1.join(element.path, item.path),
+                };
+            });
+        }
+    }
+    return oneLayer;
+}
 // 下载
 // file-blob
 async function fileBlob(catalogItem, configFile) {
     const { url, path: itemPath } = catalogItem;
-    const downloadRelativePath = path$1.join(configFile.downloadRelativePath, itemPath);
+    const downloadRelativePath = path$1.join(configFile.file.downloadRelativePath, itemPath);
     const spinner = ora(log._green(downloadRelativePath)).start();
-    const res = await http.gitUrl(url);
-    const data = await res.json();
+    const data = await http.gitUrl(url);
     spinner.stop();
     const filePath = path$1.resolve(cwd(), downloadRelativePath);
     const buf = Buffer$1.from(data.content, 'base64');
     let finishPath;
     try {
         finishPath = await file.writeSyncFile(filePath, buf);
+        // 循环下载
     }
     catch (error) {
         throw new Error('writeSyncFile error.');
@@ -14023,15 +14102,13 @@ let _level = 0; // 递归层级
 async function trees(catalogItem, configFile) {
     _level++;
     const { sha, path } = catalogItem;
-    // 循环下载
     const config = {
         ...configFile.git,
         type: "trees" /* _Global.GitFetchType.trees */,
         sha,
     };
-    const res = await http.git(config);
-    const json = await res.json();
-    const catalog = generateCatalog(json.tree, "trees" /* _Global.GitFetchType.trees */);
+    const json = await http.git(config);
+    const catalog = oneLayerCatalog(json.tree, "trees" /* _Global.GitFetchType.trees */);
     const finishPath = [];
     try {
         for (const item of catalog) {
@@ -14064,6 +14141,8 @@ async function trees(catalogItem, configFile) {
 const download = {
     fileBlob,
     trees,
+    oneLayerCatalog,
+    treeLayerCatalog,
 };
 
 async function oraWrapper(cb, param, start = log._yellow('loading...'), end = log._green('success')) {
@@ -14073,6 +14152,16 @@ async function oraWrapper(cb, param, start = log._yellow('loading...'), end = lo
     spinner.succeed(end);
     return result;
 }
+
+function repeatEmptyStr(num) {
+    let str = '';
+    for (let i = 0; i < num; i++)
+        str += ' ';
+    return str;
+}
+const tools = {
+    repeatEmptyStr,
+};
 
 /**
  * 先注册功能函数串联起来, 每次run从头迭代.
@@ -14138,6 +14227,83 @@ class MiddleWare {
 async function load(_ctx) {
     // 1. 解析且替换模版内容
     // 2. 下载模版
+    // const { downloadRelativePath, git } = configFile
+    // const [repPath, branch] = _args
+    // const config = {
+    //   ...git,
+    //   type: _Global.GitFetchType.contents,
+    //   sha: repPath,
+    //   branch,
+    // }
+    // const json = await oraWrapper(async () => {
+    //   return await http.git(config)
+    // })
+    // const catalog = await download.treeLayerCatalog(json, _Global.GitFetchType.contents)
+    // // 重命名使用
+    // let select: any = []
+    // const choices = catalog.map((item) => {
+    //   return {
+    //     title: item.path,
+    //     value: {
+    //       url: item.url,
+    //       path: item.path,
+    //       size: item.size,
+    //       type: item.type,
+    //       sha: item.sha,
+    //     } as _Global.CatalogItem,
+    //   }
+    // })
+    // const suggest = async (input, choices) => {
+    //   return choices.filter((choice) => {
+    //     return choice.title.toLowerCase().includes(input.toLowerCase())
+    //   })
+    // }
+    // const onState = (state) => {
+    //   select = state.value.filter((element) => {
+    //     return element.selected
+    //   })
+    // }
+    // const step1 = await pro.autoMultiselect(choices, '', suggest, onState)
+    // const downloadPath = path.resolve(cwd(), downloadRelativePath)
+    // const step2 = step1.selects?.length > 0
+    //   ? await pro.confirm(`Download path: ${downloadPath}
+    // can you confirm ?`)
+    //   : { confirm: false }
+    // const validate = (input) => {
+    //   if (input.trim() === '')
+    //     return true
+    //   const inputArr = input.split(',')
+    //   return inputArr.length === select.length ? true : 'Keep the mapping relationship with the selected!'
+    // }
+    // const step3 = step2.confirm ? await pro.list(validate) : { names: [] }
+    // // 交互结果
+    // const result = {
+    //   ...step1,
+    //   ...step2,
+    //   ...step3,
+    // }
+    // const { selects, confirm, names } = result
+    // if (!confirm)
+    //   return log.green('download canceled!')
+    // // 重命名
+    // const renameMap = selects.map((file, index) => {
+    //   return {
+    //     ...file,
+    //     path: names[index]?.trim() || file.path,
+    //   }
+    // })
+    // // 下载
+    // for (const fileOption of renameMap)
+    //   dowanloadFunc(fileOption, configFile)
+    // async function dowanloadFunc(fileOption, configFile) {
+    //   const { type } = fileOption
+    //   if (type === 'file') {
+    //     await download.fileBlob(fileOption, configFile)
+    //     return
+    //   }
+    //   if (type === 'dir')
+    //     await download.trees(fileOption, configFile)
+    // }
 }
 
 /**
@@ -14175,119 +14341,65 @@ async function addAction(configFile, _args) {
     await app.run(context);
 }
 
+let coutLevel = 0;
+/**
+ * 查看件结构
+ * @param configFile 配置文件
+ * @param _args
+ * @returns
+ */
 async function getListAction(configFile, _args) {
-    const { downloadRelativePath, git } = configFile;
-    const [repPath, branch] = _args;
+    const { git } = configFile;
+    const [repPath, branch, { level }] = _args; // level 默认为 3
+    // 通过content获取目录时,如果传入path,那么第一层自动会带上path
     const config = {
         ...git,
         type: "contents" /* _Global.GitFetchType.contents */,
         sha: repPath,
         branch,
     };
-    const json = await oraWrapper(async () => {
-        const res = await http.git(config);
-        return await res.json();
+    const catalog = await oraWrapper(async () => {
+        const json = await http.git(config);
+        return await download.treeLayerCatalog(json, "contents" /* _Global.GitFetchType.contents */, +level);
     });
-    const catalog = generateCatalog(json, "contents" /* _Global.GitFetchType.contents */);
-    // 重命名使用
-    let select = [];
-    const choices = catalog.map((item) => {
-        return {
-            title: item.path,
-            value: {
-                url: item.url,
-                path: item.path,
-                size: item.size,
-                type: item.type,
-                sha: item.sha,
-            },
-        };
-    });
+    const choices = mapChoices(catalog, level);
     const suggest = async (input, choices) => {
         return choices.filter((choice) => {
             return choice.title.toLowerCase().includes(input.toLowerCase());
         });
     };
-    const onState = (state) => {
-        select = state.value.filter((element) => {
-            return element.selected;
-        });
-    };
-    const step1 = await pro.autoMultiselect(choices, '', suggest, onState);
-    const downloadPath = path$1.resolve(cwd(), downloadRelativePath);
-    const step2 = step1.selects?.length > 0
-        ? await pro.confirm(`Download path: ${downloadPath}
-  can you confirm ?`)
-        : { confirm: false };
-    const validate = (input) => {
-        if (input.trim() === '')
-            return true;
-        const inputArr = input.split(',');
-        return inputArr.length === select.length ? true : 'Keep the mapping relationship with the selected!';
-    };
-    const step3 = step2.confirm ? await pro.list(validate) : { names: [] };
-    // 交互结果
-    const result = {
-        ...step1,
-        ...step2,
-        ...step3,
-    };
-    const { selects, confirm, names } = result;
-    if (!confirm)
-        return log.green('download canceled!');
-    // 重命名
-    const renameMap = selects.map((file, index) => {
-        return {
-            ...file,
-            path: names[index]?.trim() || file.path,
-        };
-    });
-    // 下载
-    for (const fileOption of renameMap)
-        dowanloadFunc(fileOption, configFile);
-    async function dowanloadFunc(fileOption, configFile) {
-        const { type } = fileOption;
-        if (type === 'file') {
-            await download.fileBlob(fileOption, configFile);
-            return;
-        }
-        if (type === 'dir')
-            await download.trees(fileOption, configFile);
+    const { selects } = await pro.autoMultiselect(choices, `show ${level} layer catalog.`, suggest);
+    const selects2 = selects || [];
+    if (selects2.length === 0)
+        return;
+    log.yellow(`note: the path is relative to root of repository. selected:`);
+    for (let i = 0; i < selects2.length; i++) {
+        const element = selects2[i];
+        log.green(element.relativeInputPath);
     }
 }
-
-const CNONFIG_FILE_DEFAULT = 'dlc.config.js';
-// 全局默认配置
-const defaultConfig = {
-    root: '.',
-    rootAP: '', // 运行时,init
-    removeWhitePath: [],
-    downloadRelativePath: '.',
-    git: {
-        owner: 'Dofw',
-        repo: 'vs-theme',
-    },
-};
-// 获取配置文件名
-function getConfigFileName() {
-    return CNONFIG_FILE_DEFAULT;
-}
-// 配置归一化 TODO: 对配置进行合法校验.
-function normalizeConfig(mergeConfig, rootAP) {
-    const keys = Object.keys(defaultConfig);
-    const configKeys = Object.keys(mergeConfig);
-    configKeys.forEach((key) => {
-        if (!keys.includes(key))
-            throw new Error(log._red(`${key} is invalid key in config`));
-    });
-    // 与路径相关, 相对路径全部转位绝对路径
-    mergeConfig.rootAP = rootAP;
-    mergeConfig.root = path$1.resolve(rootAP, mergeConfig.root);
-    mergeConfig.removeWhitePath = mergeConfig.removeWhitePath.map((item) => {
-        if (typeof item !== 'string')
-            throw new Error(log._red('removeWhitePath must be string array'));
-        return path$1.resolve(rootAP, item);
-    });
+function mapChoices(data, level) {
+    const result = [];
+    for (let i = 0; i < data.length; i++) {
+        const element = data[i];
+        const markStr = element.type === 'dir' ? '📂' : '📄';
+        const relativeInputPath = element.relativeInputPath ? element.relativeInputPath : element.path;
+        result.push({
+            title: `${tools.repeatEmptyStr(coutLevel * 3)}${markStr} ${element.path}`,
+            value: {
+                path: element.path,
+                type: element.type,
+                relativeInputPath,
+            },
+        });
+        if (element.children && coutLevel < level - 1) {
+            coutLevel++;
+            const childResult = mapChoices(element.children, level);
+            coutLevel--;
+            result.push(...childResult);
+        }
+    }
+    return result;
 }
 
 // 获取根目录
@@ -14309,7 +14421,6 @@ async function getRootPath() {
 // 初始化配置 (包块各个模块,依赖全局配置的 init )
 async function initConfig() {
     const rootAP = await getRootPath();
-    console.log('root', rootAP);
     if (!rootAP)
         throw new Error(log._red('config file not found'));
     const configFile = path$1.join(rootAP, getConfigFileName());
@@ -14323,6 +14434,7 @@ async function initConfig() {
     }
     normalizeConfig(mergeConfig, rootAP);
     file.init(mergeConfig); // file模块初始化
+    http.init(mergeConfig); // http模块初始化
     return mergeConfig;
 }
 
@@ -14342,6 +14454,7 @@ dlc
     .command('list-remote')
     .argument('[path]', 'path to use', '')
     .argument('[branch]', 'branch to use', 'master')
+    .option('-l, --level <num>', 'level layer of catalog ', '3')
     .description('view the remote template list')
     .action((...args) => { getListAction(config, args); });
 dlc.parse();

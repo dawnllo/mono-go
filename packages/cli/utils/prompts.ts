@@ -8,7 +8,7 @@ import { log } from '../utils'
 interface PConfirm {
   confirm: boolean
 }
-export async function confirm(message?: string): Promise<PConfirm> {
+async function confirm(message?: string): Promise<PConfirm> {
   message = message || `file or directory already exists, rename?`
   return await prompts({
     type: 'toggle',
@@ -24,7 +24,7 @@ export async function confirm(message?: string): Promise<PConfirm> {
 interface PText {
   name: string
 }
-export async function text(message?): Promise<PText> {
+async function text(message?): Promise<PText> {
   message = message || 'please input'
   return await prompts({
     type: 'text',
@@ -45,7 +45,7 @@ export async function text(message?): Promise<PText> {
 interface PList {
   names: string[]
 }
-export async function list(validate?, message?: string): Promise<PList> {
+async function list(validate?, message?: string): Promise<PList> {
   message = message || log._yellow(`input rename and must separate with comma!`)
   validate = validate || (() => true)
   return await prompts({
@@ -61,19 +61,22 @@ export async function list(validate?, message?: string): Promise<PList> {
 interface PAutocompleteMultiselect {
   selects: any[]
 }
-export async function autoMultiselect(choices, message?, suggest?: (input, choices) => Promise<any[]>, onState?: (state: any) => void): Promise<PAutocompleteMultiselect> {
+async function autoMultiselect(choices, message?, suggest?: (input, choices) => Promise<any[]>, onState?: (state: any) => void): Promise<PAutocompleteMultiselect> {
   suggest = suggest || (async (input, choices) => {
     return choices.filter((choice) => {
       return choice.title.toLowerCase().includes(input.toLowerCase())
     })
   })
-  onState = onState || (() => {})
+  onState = onState || (() => {
+    log.green('--onState--')
+  })
   message = message || 'please select'
   return await prompts({
     type: 'autocompleteMultiselect',
     name: 'selects',
     initial: 0,
-    limit: 50,
+    limit: 100,
+    optionsPerPage: 100,
     fallback: 'no match!',
     instructions: false,
     message,

@@ -1,21 +1,19 @@
 import fs from 'node:fs'
-import { cwd } from 'node:process'
 import path from 'node:path'
 import { log, pro } from '../utils'
+import { defaultConfig } from '../config/constant'
 
-type FileConf = Pick<_Global.ConfigFile, 'removeWhitePath' | 'rootAP'>
-const file_config: FileConf = {
-  rootAP: '',
-  removeWhitePath: [],
-}
+const fileConfig: _Global.ConfigFile_File = defaultConfig.file
 
 /**
  * 初始化文件操作系统 - 需要的配置内容
  * @param configFile 全局配置文件
  */
-export function init(configFile) {
-  Object.keys(file_config).forEach((key) => {
-    file_config[key] = configFile[key]
+function init(configFile: _Global.ConfigFile) {
+  const dlcFileConfig = configFile.file
+
+  Object.keys(fileConfig).forEach((key) => {
+    fileConfig[key] = dlcFileConfig[key]
   })
 }
 /**
@@ -24,7 +22,7 @@ export function init(configFile) {
  * @param content
  * @returns 返回完整绝对路径,或则重名后的绝对路径
  */
-export async function writeSyncFile(filePath: string, content): Promise<string> {
+async function writeSyncFile(filePath: string, content): Promise<string> {
   if (fs.existsSync(filePath)) {
     // 交互
     const initAnswer = {
@@ -59,7 +57,7 @@ export async function writeSyncFile(filePath: string, content): Promise<string> 
  * @param input
  * @returns
  */
-export async function rmSyncFile(input: string) {
+async function rmSyncFile(input: string) {
   if (!rmSyncValidate(input))
     return
 
@@ -74,7 +72,7 @@ export async function rmSyncFile(input: string) {
  * @param input
  * @returns
  */
-export async function rmSyncEmptyDir(input: string) {
+async function rmSyncEmptyDir(input: string) {
   if (!rmSyncValidate(input))
     return
 
@@ -99,7 +97,7 @@ export async function rmSyncEmptyDir(input: string) {
  * @returns boolean
  */
 function rmSyncValidate(input) {
-  const whiteList = file_config.removeWhitePath
+  const whiteList = fileConfig.removeWhitePath
   let isPass = false
   for (const white of whiteList) {
     if (input.startsWith(white)) {

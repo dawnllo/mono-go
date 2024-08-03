@@ -6,12 +6,16 @@ const CNONFIG_FILE_DEFAULT = 'dlc.config.js'
 // 全局默认配置
 export const defaultConfig: _Global.ConfigFile = {
   root: '.',
-  rootAP: '', // 运行时,init
-  removeWhitePath: [],
-  downloadRelativePath: '.',
+  rootAP: '', // 运行时,init 绝对路径
+  file: {
+    // 文件下载/操作相关
+    removeWhitePath: [],
+    downloadRelativePath: '.',
+  },
   git: {
     owner: 'Dofw',
     repo: 'vs-theme',
+    pafg_token: '',
   },
 }
 
@@ -33,7 +37,7 @@ export function normalizeConfig(mergeConfig: _Global.ConfigFile, rootAP: string)
   // 与路径相关, 相对路径全部转位绝对路径
   mergeConfig.rootAP = rootAP
   mergeConfig.root = path.resolve(rootAP, mergeConfig.root)
-  mergeConfig.removeWhitePath = mergeConfig.removeWhitePath.map((item) => {
+  mergeConfig.file.removeWhitePath = mergeConfig.file.removeWhitePath.map((item) => {
     if (typeof item !== 'string')
       throw new Error(log._red('removeWhitePath must be string array'))
     return path.resolve(rootAP, item)

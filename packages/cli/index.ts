@@ -24,6 +24,7 @@ dlc
   .command('list-remote')
   .argument('[path]', 'path to use', '')
   .argument('[branch]', 'branch to use', 'master')
+  .option('-l, --level <num>', 'level layer of catalog ', '3')
   .description('view the remote template list')
   .action((...args) => { getListAction(config, args) })
 

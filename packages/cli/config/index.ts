@@ -1,7 +1,7 @@
 import { cwd } from 'node:process'
 import path from 'node:path'
 import fs from 'node:fs'
-import { file, log } from '../utils'
+import { file, http, log } from '../utils'
 import { defaultConfig, getConfigFileName, normalizeConfig } from './constant'
 
 // 获取根目录
@@ -47,6 +47,7 @@ export async function initConfig() {
   normalizeConfig(mergeConfig, rootAP)
 
   file.init(mergeConfig) // file模块初始化
+  http.init(mergeConfig) // http模块初始化
 
   return mergeConfig
 }

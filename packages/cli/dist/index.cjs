@@ -13970,7 +13970,7 @@ function ora(options) {
 }
 
 // TODO: 下载一半, 删除之前下载的文件. 重新设计,下载前判断是否存在.
-function generateCatalog(data, optionKeys = { path: 'path', url: 'url' }) {
+function oneLayerCatalog(data, optionKeys = { path: 'path', url: 'url' }) {
     if (!data)
         return [];
     // 生成目录
@@ -14020,7 +14020,7 @@ async function trees(catalogItem) {
     };
     const res = await http$4.git(config);
     const json = await res.json();
-    const catalog = generateCatalog(json.tree);
+    const catalog = oneLayerCatalog(json.tree);
     const finishPath = [];
     try {
         for (const item of catalog) {
@@ -47115,7 +47115,7 @@ async function getListAction() {
         const res = await http$4.git(config);
         return await res.json();
     });
-    const catalog = generateCatalog(json.tree);
+    const catalog = oneLayerCatalog(json.tree);
     // 重命名使用
     let select = [];
     const choices = catalog.map((item) => {

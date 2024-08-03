@@ -13,6 +13,9 @@
   "scripts": {
     "dlc": "dlc"
   },
+  "dependencies": {
+    "vue-demi": "^0.14.8"
+  },
   "devDependencies": {
     "@dawnll/dlc": "workspace:^"
   }

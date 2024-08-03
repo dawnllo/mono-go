@@ -1,11 +1,19 @@
-import { cwd } from 'node:process'
 import path from 'node:path'
-import { download, generateCatalog, http, log, oraWrapper, pro } from '../../utils'
+import { download, http, log, oraWrapper, pro, tools } from '../../utils'
 
+let coutLevel = 0
+
+/**
+ * 查看件结构
+ * @param configFile 配置文件
+ * @param _args
+ * @returns
+ */
 export default async function getListAction(configFile, _args?: any) {
-  const { downloadRelativePath, git } = configFile
-  const [repPath, branch] = _args
+  const { git } = configFile
+  const [repPath, branch, { level }] = _args // level 默认为 3
 
+  // 通过content获取目录时,如果传入path,那么第一层自动会带上path
   const config = {
     ...git,
     type: _Global.GitFetchType.contents,
@@ -13,82 +21,66 @@ export default async function getListAction(configFile, _args?: any) {
     branch,
   }
 
-  const json = await oraWrapper(async () => {
-    const res = await http.git(config)
-    return await res.json()
+  const catalog = await oraWrapper(async () => {
+    const json = await http.git(config)
+    return await download.treeLayerCatalog(json, _Global.GitFetchType.contents, +level)
   })
-  const catalog = generateCatalog(json, _Global.GitFetchType.contents)
-  // 重命名使用
-  let select: any = []
-  const choices = catalog.map((item) => {
-    return {
-      title: item.path,
-      value: {
-        url: item.url,
-        path: item.path,
-        size: item.size,
-        type: item.type,
-        sha: item.sha,
-      } as _Global.CatalogItem,
-    }
-  })
+
+  const choices = mapChoices(catalog, level)
+
   const suggest = async (input, choices) => {
     return choices.filter((choice) => {
       return choice.title.toLowerCase().includes(input.toLowerCase())
     })
   }
-  const onState = (state) => {
-    select = state.value.filter((element) => {
-      return element.selected
+
+  const { selects } = await pro.autoMultiselect(choices, `show ${level} layer catalog.`, suggest)
+  const selects2: ChoiceValue[] = selects || []
+
+  if (selects2.length === 0)
+    return
+
+  log.yellow(`note: the path is relative to root of repository. selected:`)
+  for (let i = 0; i < selects2.length; i++) {
+    const element = selects2[i]
+    log.green(element.relativeInputPath)
+  }
+}
+
+interface ChoiceItem {
+  title: string
+  value: {
+    path: string
+    type: string
+    relativeInputPath: string
+  }
+}
+
+type ChoiceValue = ChoiceItem['value']
+
+function mapChoices(data: _Global.CatalogItem[], level) {
+  const result: ChoiceItem[] = []
+
+  for (let i = 0; i < data.length; i++) {
+    const element = data[i]
+    const markStr = element.type === 'dir' ? '📂' : '📄'
+    const relativeInputPath = element.relativeInputPath ? element.relativeInputPath : element.path
+
+    result.push({
+      title: `${tools.repeatEmptyStr(coutLevel * 3)}${markStr} ${element.path}`,
+      value: {
+        path: element.path,
+        type: element.type,
+        relativeInputPath,
+      },
     })
-  }
 
-  const step1 = await pro.autoMultiselect(choices, '', suggest, onState)
-
-  const downloadPath = path.resolve(cwd(), downloadRelativePath)
-  const step2 = step1.selects?.length > 0
-    ? await pro.confirm(`Download path: ${downloadPath}
-  can you confirm ?`)
-    : { confirm: false }
-
-  const validate = (input) => {
-    if (input.trim() === '')
-      return true
-    const inputArr = input.split(',')
-    return inputArr.length === select.length ? true : 'Keep the mapping relationship with the selected!'
-  }
-  const step3 = step2.confirm ? await pro.list(validate) : { names: [] }
-
-  // 交互结果
-  const result = {
-    ...step1,
-    ...step2,
-    ...step3,
-  }
-
-  const { selects, confirm, names } = result
-  if (!confirm)
-    return log.green('download canceled!')
-
-  // 重命名
-  const renameMap = selects.map((file, index) => {
-    return {
-      ...file,
-      path: names[index]?.trim() || file.path,
+    if (element.children && coutLevel < level - 1) {
+      coutLevel++
+      const childResult = mapChoices(element.children, level)
+      coutLevel--
+      result.push(...childResult)
     }
-  })
-
-  // 下载
-  for (const fileOption of renameMap)
-    dowanloadFunc(fileOption, configFile)
-
-  async function dowanloadFunc(fileOption, configFile) {
-    const { type } = fileOption
-    if (type === 'file') {
-      await download.fileBlob(fileOption, configFile)
-      return
-    }
-    if (type === 'dir')
-      await download.trees(fileOption, configFile)
   }
+  return result
 }
