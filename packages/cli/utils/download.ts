@@ -30,26 +30,30 @@ function oneLayerCatalog(data, type: _Global.GitFetchType.trees | _Global.GitFet
 }
 
 // 递归目录
-let treeLevel = 0
+let treeLevel = 0 // 内部重置
 async function treeLayerCatalog(data, type: _Global.GitFetchType.trees | _Global.GitFetchType.contents, level: number): Promise<_Global.CatalogItem[]> {
   const oneLayer = oneLayerCatalog(data, type)
   treeLevel++
+  try {
+    for (let i = 0; i < oneLayer.length; i++) {
+      const element = oneLayer[i]
 
-  for (let i = 0; i < oneLayer.length; i++) {
-    const element = oneLayer[i]
-
-    // level 不存在就不限制
-    if (element.type === 'dir' && (!level || treeLevel < level)) {
-      const json = await http.gitUrl(element.url)
-      oneLayer[i].children = await treeLayerCatalog(json.tree, _Global.GitFetchType.trees, level)
-      // 将路径进行拼接
-      oneLayer[i].children = oneLayer[i].children?.map((item) => {
-        return {
-          ...item,
-          relativeInputPath: path.join(element.path, item.path),
-        }
-      })
+      // level 不存在就不限制
+      if (element.type === 'dir' && (!level || treeLevel < level)) {
+        const json = await http.gitUrl(element.url)
+        oneLayer[i].children = await treeLayerCatalog(json.tree, _Global.GitFetchType.trees, level)
+        // 将路径进行拼接
+        oneLayer[i].children = oneLayer[i].children?.map((item) => {
+          return {
+            ...item,
+            relativeInputPath: path.join(element.path, item.path),
+          }
+        })
+      }
     }
+  }
+  finally {
+    treeLevel--
   }
 
   return oneLayer
@@ -57,9 +61,15 @@ async function treeLayerCatalog(data, type: _Global.GitFetchType.trees | _Global
 
 // 下载
 // file-blob
-async function fileBlob(catalogItem: _Global.CatalogItem, configFile: _Global.ConfigFile): Promise<string> {
+function defualtParse(path: string, data: any) {
+  return Buffer.from(data.content, 'base64')
+}
+type PaseFunc = (path: string, data: any) => any
+
+async function fileBlob(catalogItem: _Global.CatalogItem, configFile: _Global.ConfigFile, parse?: PaseFunc): Promise<string> {
   const { url, path: itemPath } = catalogItem
   const downloadRelativePath = path.join(configFile.file.downloadRelativePath, itemPath)
+  const parseFunc = parse || defualtParse
 
   const spinner = ora(log._green(downloadRelativePath)).start()
   const data = await http.gitUrl(url)
@@ -67,11 +77,11 @@ async function fileBlob(catalogItem: _Global.CatalogItem, configFile: _Global.Co
   spinner.stop()
 
   const filePath = path.resolve(cwd(), downloadRelativePath)
-  const buf = Buffer.from(data.content, 'base64')
+  const content = parseFunc(filePath, data)
+
   let finishPath
   try {
-    finishPath = await file.writeSyncFile(filePath, buf)
-    // 循环下载
+    finishPath = await file.writeSyncFile(filePath, content)
   }
   catch (error) {
     throw new Error('writeSyncFile error.')
@@ -81,34 +91,45 @@ async function fileBlob(catalogItem: _Global.CatalogItem, configFile: _Global.Co
   return finishPath
 }
 
-let _level = 0 // 递归层级
-async function trees(catalogItem: _Global.CatalogItem, configFile: _Global.ConfigFile): Promise<string[]> {
+let _level = 0 // 递归层级, 内部重置
+/**
+ * 递归调用fileBlob, 传递parse
+ * @param catalogItem 单个目录信息
+ * @param configFile 全局配置文件
+ * @returns
+ */
+async function recursiveFileBlob(
+  catalogItem: _Global.CatalogItem,
+  configFile: _Global.ConfigFile,
+  parse?: PaseFunc,
+): Promise<string[]> {
   _level++
+  const finishPaths: string[] = []
   const { sha, path } = catalogItem
-  const config = {
-    ...configFile.git,
-    type: _Global.GitFetchType.trees,
-    sha,
-  }
-  const json = await http.git(config)
-  const catalog = oneLayerCatalog(json.tree, _Global.GitFetchType.trees)
-  const finishPath: string[] = []
+
   try {
+    const config = {
+      ...configFile.git,
+      type: _Global.GitFetchType.trees,
+      sha,
+    }
+    const json = await http.git(config)
+    const catalog = oneLayerCatalog(json.tree, _Global.GitFetchType.trees)
     for (const item of catalog) {
-      item.path = `${path}/${item.path}` // tree 获取的不带 父目录.这里拼接上
+      item.path = `${path}/${item.path}` // tree 获取不包含父目录, 在这里拼接上父目录
       if (item.type === 'file') {
         const finish = await fileBlob(item, configFile)
-        finishPath.push(finish)
+        finishPaths.push(finish)
       }
 
       else if (item.type === 'dir') {
-        const finishs = await trees(item, configFile)
-        finishPath.push(...finishs)
+        const finishs = await recursiveFileBlob(item, configFile, parse)
+        finishPaths.push(...finishs)
       }
     }
   }
   catch (error) {
-    for (const filePath of finishPath)
+    for (const filePath of finishPaths)
       await file.rmSyncFile(`${filePath}`) // 删除whitepath
 
     // 同时删除当前文件夹下的空文件夹.
@@ -124,19 +145,18 @@ async function trees(catalogItem: _Global.CatalogItem, configFile: _Global.Confi
     _level-- // 执行完一层减1, 回归init
   }
 
-  return finishPath
+  return finishPaths
 }
-
 interface DownloadType {
-  fileBlob: (catalogItem: _Global.CatalogItem, configFile: _Global.ConfigFile) => Promise<string>
-  trees: (catalogItem: _Global.CatalogItem, configFile: _Global.ConfigFile) => Promise<string[]>
-  oneLayerCatalog: (data, type: _Global.GitFetchType.trees | _Global.GitFetchType.contents) => _Global.CatalogItem[]
-  treeLayerCatalog: (data, type: _Global.GitFetchType.trees | _Global.GitFetchType.contents, level: number) => Promise<_Global.CatalogItem[]>
+  fileBlob: (...args: Parameters<typeof fileBlob>) => ReturnType<typeof fileBlob>
+  recursiveFileBlob: (...args: Parameters<typeof recursiveFileBlob>) => ReturnType<typeof recursiveFileBlob>
+  oneLayerCatalog: (...args: Parameters<typeof oneLayerCatalog>) => ReturnType<typeof oneLayerCatalog>
+  treeLayerCatalog: (...args: Parameters<typeof treeLayerCatalog>) => ReturnType<typeof treeLayerCatalog>
 }
 
 export const download: DownloadType = {
   fileBlob,
-  trees,
+  recursiveFileBlob,
   oneLayerCatalog,
   treeLayerCatalog,
 }

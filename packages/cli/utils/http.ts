@@ -66,7 +66,13 @@ async function gitUrl(url) {
   return json
 }
 
-export const http = {
+interface HttpMethods {
+  init: (...args: Parameters<typeof init>) => ReturnType<typeof init>
+  git: (...args: Parameters<typeof git>) => ReturnType<typeof git>
+  gitUrl: (...args: Parameters<typeof gitUrl>) => ReturnType<typeof gitUrl>
+}
+
+export const http: HttpMethods = {
   init,
   git,
   gitUrl,

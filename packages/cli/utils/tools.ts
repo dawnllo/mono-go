@@ -6,7 +6,7 @@ function repeatEmptyStr(num: number) {
 }
 
 interface Tools {
-  repeatEmptyStr: (num: number) => string
+  repeatEmptyStr: (...args: Parameters<typeof repeatEmptyStr>) => ReturnType<typeof repeatEmptyStr>
 }
 
 export const tools: Tools = {

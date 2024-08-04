@@ -131,13 +131,13 @@ function repeatFactory(confirmMsg?: string, textMsg?: string) {
 
 // 导出
 interface Pro {
-  confirm: (message?: string) => Promise<PConfirm>
-  text: (message?: string) => Promise<PText>
-  list: (validate?, message?: string) => Promise<PList>
-  autoMultiselect: (choices, message?, suggest?: (input, choices) => Promise<any[]>, onState?: (state: any) => void) => Promise<PAutocompleteMultiselect>
-  confirm_text: (confirmMsg?: string, textMsg?: string) => Promise<PConfirm & PText>
-  repeat_confirm_text: (name: string) => Promise<PConfirm & PText>
-  repeatFactory: (confirmMsg?: string, textMsg?: string) => (name: string) => Promise<PConfirm & PText>
+  confirm: (...args: Parameters<typeof confirm>) => ReturnType<typeof confirm>
+  text: (...args: Parameters<typeof text>) => ReturnType<typeof text>
+  list: (...args: Parameters<typeof list>) => ReturnType<typeof list>
+  autoMultiselect: (...args: Parameters<typeof autoMultiselect>) => ReturnType<typeof autoMultiselect>
+  confirm_text: (...args: Parameters<typeof confirm_text>) => ReturnType<typeof confirm_text>
+  repeatFactory: (...args: Parameters<typeof repeatFactory>) => ReturnType<typeof repeatFactory>
+  repeat_confirm_text: ReturnType<typeof repeatFactory>
 }
 
 export const pro: Pro = {

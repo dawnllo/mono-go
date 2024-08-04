@@ -9,7 +9,7 @@ const fileConfig: _Global.ConfigFile_File = defaultConfig.file
  * 初始化文件操作系统 - 需要的配置内容
  * @param configFile 全局配置文件
  */
-function init(configFile: _Global.ConfigFile) {
+function init(configFile: _Global.ConfigFile): void {
   const dlcFileConfig = configFile.file
 
   Object.keys(fileConfig).forEach((key) => {
@@ -18,61 +18,69 @@ function init(configFile: _Global.ConfigFile) {
 }
 /**
  * 生成文件
- * @param filePath
+ * @param input 绝对路径
  * @param content
  * @returns 返回完整绝对路径,或则重名后的绝对路径
  */
-async function writeSyncFile(filePath: string, content): Promise<string> {
-  if (fs.existsSync(filePath)) {
+async function writeSyncFile(input: string, content): Promise<string> {
+  if (fs.existsSync(input)) {
     // 交互
-    const initAnswer = {
-      confirm: false,
-      name: '',
-    }
     const repeat_confirm_text = pro.repeatFactory(log._red(`file already exists, rename?`))
-    const result = await repeat_confirm_text(filePath, initAnswer)
+    const result = await repeat_confirm_text(input)
 
-    if (result.confirm && result.name) {
-      // 重命名
-      const extname = path.extname(filePath)
-      const newFilePath = path.join(path.dirname(filePath), result.name + extname)
-      filePath = newFilePath
-    }
-    else {
+    if (result.confirm && result.name)
+      input = pathRename(input, result.name)
+    else
       throw new Error('file already exists, exit!!!')
-    }
   }
 
-  const dir = path.dirname(filePath)
+  const dir = path.dirname(input)
   if (!fs.existsSync(dir))
     fs.mkdirSync(dir, { recursive: true })
 
-  fs.writeFileSync(filePath, content)
+  fs.writeFileSync(input, content)
 
-  return filePath
+  return input
+}
+
+function pathRename(input: string, name: string): string {
+  const extname = path.extname(input)
+  const newFilePath = path.join(path.dirname(input), name + extname)
+  return newFilePath
 }
 
 /**
  * 删除文件
- * @param input
+ * @param input 绝对路径
  * @returns
  */
-async function rmSyncFile(input: string) {
+async function rmSyncFile(input: string): Promise<void> {
   if (!rmSyncValidate(input))
     return
 
-  // 2.交互提示文件路径, 并confirm.
-  const result = await pro.confirm(log._red(`delete file or directory, ${input}?`))
-  result.confirm && fs.rmSync(input, { recursive: true })
+  let promptResult = {
+    confirm: false,
+  }
+  // 1.提示文件路径,确认是否删除
+  promptResult = await pro.confirm(log._red(`delete file or directory, ${input}?`))
+
+  // 2.有内容的文件夹,确认是否删除
+  if (fs.statSync(input).isDirectory()) {
+    const curDirFiles = fs.readdirSync(input)
+    curDirFiles.length > 0 && log.red('directory is not empty, exit!!!')
+    promptResult = await pro.confirm(log._red(`directory is not empty, confirm delete?`))
+  }
+
+  promptResult.confirm && fs.rmSync(input, { recursive: true })
   log.green('delete success')
 }
 
 /**
  * 删除空文件夹
- * @param input
+ * @param input绝对路径
  * @returns
  */
-async function rmSyncEmptyDir(input: string) {
+async function rmSyncEmptyDir(input: string): Promise<void> {
   if (!rmSyncValidate(input))
     return
 
@@ -93,10 +101,10 @@ async function rmSyncEmptyDir(input: string) {
 
 /**
  * 删除验证
- * @param input
+ * @param input 绝对路径
  * @returns boolean
  */
-function rmSyncValidate(input) {
+function rmSyncValidate(input: string): boolean {
   const whiteList = fileConfig.removeWhitePath
   let isPass = false
   for (const white of whiteList) {
@@ -117,9 +125,18 @@ function rmSyncValidate(input) {
   return true
 }
 
-export const file = {
+interface FileMethods {
+  init: (...args: Parameters<typeof init>) => ReturnType<typeof init>
+  writeSyncFile: (...args: Parameters<typeof writeSyncFile>) => ReturnType<typeof writeSyncFile>
+  rmSyncFile: (...args: Parameters<typeof rmSyncFile>) => ReturnType<typeof rmSyncFile>
+  rmSyncEmptyDir: (...args: Parameters<typeof rmSyncEmptyDir>) => ReturnType<typeof rmSyncEmptyDir>
+  pathRename: (...args: Parameters<typeof pathRename>) => ReturnType<typeof pathRename>
+}
+
+export const file: FileMethods = {
   init,
   writeSyncFile,
   rmSyncFile,
   rmSyncEmptyDir,
+  pathRename,
 }
