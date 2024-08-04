@@ -43,6 +43,12 @@ async function writeSyncFile(input: string, content): Promise<string> {
   return input
 }
 
+/**
+ *
+ * @param input
+ * @param name
+ * @returns
+ */
 function pathRename(input: string, name: string): string {
   const extname = path.extname(input)
   const newFilePath = path.join(path.dirname(input), name + extname)

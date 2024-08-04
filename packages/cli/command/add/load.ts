@@ -1,25 +1,23 @@
 import { cwd } from 'node:process'
 import path from 'node:path'
-import { download, http, log, oraWrapper, pro } from '../../utils'
+import { download, file, http, log, oraWrapper, pro } from '../../utils'
 import type MiddleWare from './middleware'
+import type { Context } from './index'
 
-export default async function load(this: MiddleWare, _ctx: _Global.Context) {
+export default async function load(this: MiddleWare, _ctx: Context) {
   // 1. 下载原文件内容
-  const { configFile: { file, git }, answers: { confirm } } = _ctx
+  const { answers: { confirm }, args: [path, branch] } = _ctx
 
-  const rename = confirm.name // rename
-  console.log('downloadRelativePath', file.downloadRelativePath)
-  console.log('rename', rename)
-  console.log('git', git)
+  let newPath = path
+  if (confirm.isRenamed)
+    newPath = file.pathRename(path, confirm.name)
 
-  // const downloadPath = path.resolve(cwd(), file.downloadRelativePath)
-  // const config = {
-  //   ...git,
-  //   type: _Global.GitFetchType.contents,
-  //   sha: repPath,
-  //   branch,
-  // }
-
+  const gitConfig = {
+    type: _Global.GitFetchType.contents,
+    sha: newPath,
+    branch,
+  }
+  console.log(gitConfig)
   // async function dowanloadFunc(fileOption, configFile) {
   //   const { type } = fileOption
   //   if (type === 'file') {
@@ -27,10 +25,6 @@ export default async function load(this: MiddleWare, _ctx: _Global.Context) {
   //     return
   //   }
   //   if (type === 'dir')
-  //     await download.trees(fileOption, configFile)
+  //     await download.recursiveFileBlob(fileOption, configFile)
   // }
-
-  // 2. 解析且替换模版内容
-
-  // 3. 写入文件
 }

@@ -1,6 +1,7 @@
 import { type FuncKeys, log } from '../../utils'
+import type { Context } from './index'
 
-type UseFunction = (content: _Global.Context) => void | Promise<void>
+type UseFunction = (content: Context) => void | Promise<void>
 type GeneratorType = Generator<UseFunction, string, void> | null
 
 /**
@@ -9,7 +10,7 @@ type GeneratorType = Generator<UseFunction, string, void> | null
 export default class MiddleWare {
   private queues: UseFunction[] = []
   private iterator: GeneratorType = null
-  context: _Global.Context | null
+  context: Context | null
 
   construction() {
   }
@@ -22,7 +23,7 @@ export default class MiddleWare {
     return this
   }
 
-  async run(context: _Global.Context) {
+  async run(context: Context) {
     this.context = context
     this.iterator = this.generator()
 

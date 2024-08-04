@@ -1,5 +1,5 @@
-import path from 'node:path'
 import { download, http, log, oraWrapper, pro, tools } from '../../utils'
+import { errorWrapper } from '../../config/error'
 
 let coutLevel = 0
 
@@ -9,13 +9,12 @@ let coutLevel = 0
  * @param _args
  * @returns
  */
-export default async function getListAction(configFile, _args?: any) {
-  const { git } = configFile
+
+async function getListAction(configFile, _args?: any) {
   const [repPath, branch, { level }] = _args // level 默认为 3
 
   // 通过content获取目录时,如果传入path,那么第一层自动会带上path
   const config = {
-    ...git,
     type: _Global.GitFetchType.contents,
     sha: repPath,
     branch,
@@ -55,9 +54,7 @@ interface ChoiceItem {
     relativeInputPath: string
   }
 }
-
 type ChoiceValue = ChoiceItem['value']
-
 function mapChoices(data: _Global.CatalogItem[], level) {
   const result: ChoiceItem[] = []
 
@@ -84,3 +81,5 @@ function mapChoices(data: _Global.CatalogItem[], level) {
   }
   return result
 }
+
+export default errorWrapper(getListAction)

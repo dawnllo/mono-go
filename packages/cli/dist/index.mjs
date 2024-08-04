@@ -4446,6 +4446,7 @@ const defaultConfig = {
         owner: 'Dofw',
         repo: 'vs-theme',
         pafg_token: '',
+        defaultBranch: 'main',
     },
 };
 // 获取配置文件名
@@ -4470,15 +4471,15 @@ function normalizeConfig(mergeConfig, rootAP) {
     });
 }
 
-const gitConfig = defaultConfig.git;
+const gitConfig$1 = defaultConfig.git;
 /**
  * 初始化文件操作系统 - 需要的配置内容
  * @param configFile 全局配置文件
  */
 function init$1(configFile) {
     const dclGitConfig = configFile.git;
-    Object.keys(gitConfig).forEach((key) => {
-        gitConfig[key] = dclGitConfig[key];
+    Object.keys(gitConfig$1).forEach((key) => {
+        gitConfig$1[key] = dclGitConfig[key];
     });
 }
 // 策略
@@ -4486,19 +4487,19 @@ const urlStrategy = {
     ["contents" /* _Global.GitFetchType.contents */]: (option) => {
         // .../contents/{path}{?ref} ref: branch, tag, commit
         const path = option.sha ? `${option.sha}` : '';
-        const branch = option.branch || 'master';
-        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/contents/${path}?ref=${branch}`;
+        const branch = option.branch || gitConfig$1.defaultBranch;
+        return `https://api.github.com/repos/${gitConfig$1.owner}/${gitConfig$1.repo}/contents/${path}?ref=${branch}`;
     },
     ["branches" /* _Global.GitFetchType.branches */]: () => {
-        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/branches`;
+        return `https://api.github.com/repos/${gitConfig$1.owner}/${gitConfig$1.repo}/branches`;
     },
     ["trees" /* _Global.GitFetchType.trees */]: (option) => {
         // .../git/trees/{sha}{?recursive=1}, sha: commit or ref(branch, tag)
-        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/trees/${option.sha}${option.recursive ? '?recursive=1' : ''}`;
+        return `https://api.github.com/repos/${gitConfig$1.owner}/${gitConfig$1.repo}/git/trees/${option.sha}${option.recursive ? '?recursive=1' : ''}`;
     },
     ["blobs" /* _Global.GitFetchType.blobs */]: (option) => {
         // .../git/blobs/{sha} sha: commit;
-        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/blobs/${option.sha}`;
+        return `https://api.github.com/repos/${gitConfig$1.owner}/${gitConfig$1.repo}/git/blobs/${option.sha}`;
     },
 };
 async function git(option) {
@@ -4515,13 +4516,13 @@ async function gitUrl(url) {
         headers: {
             'User-Agent': '@dawnll/cli',
             'Accept': 'application/vnd.github.v3+json',
-            'authorization': `Bearer ${gitConfig.pafg_token}`,
+            'authorization': `Bearer ${gitConfig$1.pafg_token}`,
         },
     });
     const res = await fetch(options);
     const json = await res.json();
     if (json.message)
-        throw new Error(log._red(json.message));
+        throw new DLCHttpError(ENUM_ERROR_TYPE.HTTP, json.message);
     return json;
 }
 const http = {
@@ -4543,51 +4544,62 @@ function init(configFile) {
 }
 /**
  * 生成文件
- * @param filePath
+ * @param input 绝对路径
  * @param content
  * @returns 返回完整绝对路径,或则重名后的绝对路径
  */
-async function writeSyncFile(filePath, content) {
-    if (fs$1.existsSync(filePath)) {
+async function writeSyncFile(input, content) {
+    if (fs$1.existsSync(input)) {
         // 交互
-        const initAnswer = {
-            confirm: false,
-            name: '',
-        };
         const repeat_confirm_text = pro.repeatFactory(log._red(`file already exists, rename?`));
-        const result = await repeat_confirm_text(filePath, initAnswer);
-        if (result.confirm && result.name) {
-            // 重命名
-            const extname = path$1.extname(filePath);
-            const newFilePath = path$1.join(path$1.dirname(filePath), result.name + extname);
-            filePath = newFilePath;
-        }
-        else {
+        const result = await repeat_confirm_text(input);
+        if (result.confirm && result.name)
+            input = pathRename(input, result.name);
+        else
             throw new Error('file already exists, exit!!!');
-        }
     }
-    const dir = path$1.dirname(filePath);
+    const dir = path$1.dirname(input);
     if (!fs$1.existsSync(dir))
         fs$1.mkdirSync(dir, { recursive: true });
-    fs$1.writeFileSync(filePath, content);
-    return filePath;
+    fs$1.writeFileSync(input, content);
+    return input;
+}
+/**
+ *
+ * @param input
+ * @param name
+ * @returns
+ */
+function pathRename(input, name) {
+    const extname = path$1.extname(input);
+    const newFilePath = path$1.join(path$1.dirname(input), name + extname);
+    return newFilePath;
 }
 /**
  * 删除文件
- * @param input
+ * @param input 绝对路径
  * @returns
  */
 async function rmSyncFile(input) {
     if (!rmSyncValidate(input))
         return;
-    // 2.交互提示文件路径, 并confirm.
-    const result = await pro.confirm(log._red(`delete file or directory, ${input}?`));
-    result.confirm && fs$1.rmSync(input, { recursive: true });
+    let promptResult = {
+        confirm: false,
+    };
+    // 1.提示文件路径,确认是否删除
+    promptResult = await pro.confirm(log._red(`delete file or directory, ${input}?`));
+    // 2.有内容的文件夹,确认是否删除
+    if (fs$1.statSync(input).isDirectory()) {
+        const curDirFiles = fs$1.readdirSync(input);
+        curDirFiles.length > 0 && log.red('directory is not empty, exit!!!');
+        promptResult = await pro.confirm(log._red(`directory is not empty, confirm delete?`));
+    }
+    promptResult.confirm && fs$1.rmSync(input, { recursive: true });
     log.green('delete success');
 }
 /**
  * 删除空文件夹
- * @param input
+ * @param input绝对路径
  * @returns
  */
 async function rmSyncEmptyDir(input) {
@@ -4607,7 +4619,7 @@ async function rmSyncEmptyDir(input) {
 }
 /**
  * 删除验证
- * @param input
+ * @param input 绝对路径
  * @returns boolean
  */
 function rmSyncValidate(input) {
@@ -4632,6 +4644,7 @@ const file = {
     writeSyncFile,
     rmSyncFile,
     rmSyncEmptyDir,
+    pathRename,
 };
 
 var prompts$3 = {};
@@ -10969,31 +10982,37 @@ async function confirm_text(confirmMsg, textMsg) {
         ...step2,
     };
 }
-// 工厂函数, inject confirmMsg, textMsg
 function repeatFactory(confirmMsg, textMsg) {
-    // 递归重命名, 不通过返回 initAnswer
     const initAnswer = {
         confirm: false,
+        isRenamed: false,
         name: '',
     };
-    return async function repeat_confirm_text(name) {
+    return async function repeat_confirm_text(name, count = 0) {
+        // 只判断basename
+        const dirname = path$1.dirname(name); // 父目录
+        const extname = path$1.extname(name); // 扩展名
+        const basename = path$1.basename(name, extname); // 基础名
         const targetPath = path$1.resolve(cwd(), name); // 绝对路径,name覆盖cwd.
         const isExist = fs$1.existsSync(targetPath);
         if (!isExist) {
             return {
                 confirm: true,
-                name,
+                isRenamed: count !== 0, // 大于0代表: 已经重命名且不存在
+                name: basename,
             };
         }
-        // 重复确认
+        // 已存在,确认
         let answer = {
             confirm: false,
             name: '',
         };
-        if (isExist)
-            answer = await confirm_text(confirmMsg, textMsg);
-        if (answer.confirm && answer.name)
-            return await repeat_confirm_text(answer.name);
+        answer = await confirm_text(confirmMsg, textMsg);
+        if (answer.confirm && answer.name) {
+            const newName = path$1.join(dirname, answer.name + extname);
+            count++;
+            return await repeat_confirm_text(newName, count);
+        }
         return initAnswer;
     };
 }
@@ -14067,41 +14086,50 @@ function oneLayerCatalog(data, type) {
     return catalog;
 }
 // 递归目录
-let treeLevel = 0;
+let treeLevel = 0; // 内部重置
 async function treeLayerCatalog(data, type, level) {
     const oneLayer = oneLayerCatalog(data, type);
     treeLevel++;
-    for (let i = 0; i < oneLayer.length; i++) {
-        const element = oneLayer[i];
-        // level 不存在就不限制
-        if (element.type === 'dir' && (!level || treeLevel < level)) {
-            const json = await http.gitUrl(element.url);
-            oneLayer[i].children = await treeLayerCatalog(json.tree, "trees" /* _Global.GitFetchType.trees */, level);
-            // 将路径进行拼接
-            oneLayer[i].children = oneLayer[i].children?.map((item) => {
-                return {
-                    ...item,
-                    relativeInputPath: path$1.join(element.path, item.path),
-                };
-            });
+    try {
+        for (let i = 0; i < oneLayer.length; i++) {
+            const element = oneLayer[i];
+            // level 不存在就不限制
+            if (element.type === 'dir' && (!level || treeLevel < level)) {
+                const json = await http.gitUrl(element.url);
+                oneLayer[i].children = await treeLayerCatalog(json.tree, "trees" /* _Global.GitFetchType.trees */, level);
+                // 将路径进行拼接
+                oneLayer[i].children = oneLayer[i].children?.map((item) => {
+                    return {
+                        ...item,
+                        relativeInputPath: path$1.join(element.path, item.path),
+                    };
+                });
+            }
         }
+    }
+    finally {
+        treeLevel--;
     }
     return oneLayer;
 }
 // 下载
 // file-blob
-async function fileBlob(catalogItem, configFile) {
+function defualtParse(path, data) {
+    return Buffer$1.from(data.content, 'base64');
+}
+async function fileBlob(catalogItem, configFile, parse) {
     const { url, path: itemPath } = catalogItem;
     const downloadRelativePath = path$1.join(configFile.file.downloadRelativePath, itemPath);
+    const parseFunc = parse || defualtParse;
     const spinner = ora(log._green(downloadRelativePath)).start();
     const data = await http.gitUrl(url);
     spinner.stop();
+    // 绝对路径
     const filePath = path$1.resolve(cwd(), downloadRelativePath);
-    const buf = Buffer$1.from(data.content, 'base64');
+    const content = parseFunc(filePath, data);
     let finishPath;
     try {
-        finishPath = await file.writeSyncFile(filePath, buf);
-        // 循环下载
+        finishPath = await file.writeSyncFile(filePath, content);
     }
     catch (error) {
         throw new Error('writeSyncFile error.');
@@ -14109,33 +14137,39 @@ async function fileBlob(catalogItem, configFile) {
     spinner.succeed(log._green(`${downloadRelativePath}, success.`));
     return finishPath;
 }
-let _level = 0; // 递归层级
-async function trees(catalogItem, configFile) {
+let _level = 0; // 递归层级, 内部重置
+/**
+ * 递归调用fileBlob, 传递parse
+ * @param catalogItem 单个目录信息
+ * @param configFile 全局配置文件
+ * @returns
+ */
+async function recursiveFileBlob(catalogItem, configFile, parse) {
     _level++;
+    const finishPaths = [];
     const { sha, path } = catalogItem;
-    const config = {
-        ...configFile.git,
-        type: "trees" /* _Global.GitFetchType.trees */,
-        sha,
-    };
-    const json = await http.git(config);
-    const catalog = oneLayerCatalog(json.tree, "trees" /* _Global.GitFetchType.trees */);
-    const finishPath = [];
     try {
+        const config = {
+            ...configFile.git,
+            type: "trees" /* _Global.GitFetchType.trees */,
+            sha,
+        };
+        const json = await http.git(config);
+        const catalog = oneLayerCatalog(json.tree, "trees" /* _Global.GitFetchType.trees */);
         for (const item of catalog) {
-            item.path = `${path}/${item.path}`; // tree 获取的不带 父目录.这里拼接上
+            item.path = `${path}/${item.path}`; // tree 获取不包含父目录, 在这里拼接上父目录
             if (item.type === 'file') {
                 const finish = await fileBlob(item, configFile);
-                finishPath.push(finish);
+                finishPaths.push(finish);
             }
             else if (item.type === 'dir') {
-                const finishs = await trees(item, configFile);
-                finishPath.push(...finishs);
+                const finishs = await recursiveFileBlob(item, configFile, parse);
+                finishPaths.push(...finishs);
             }
         }
     }
     catch (error) {
-        for (const filePath of finishPath)
+        for (const filePath of finishPaths)
             await file.rmSyncFile(`${filePath}`); // 删除whitepath
         // 同时删除当前文件夹下的空文件夹.
         await file.rmSyncEmptyDir(path);
@@ -14147,11 +14181,11 @@ async function trees(catalogItem, configFile) {
     finally {
         _level--; // 执行完一层减1, 回归init
     }
-    return finishPath;
+    return finishPaths;
 }
 const download = {
     fileBlob,
-    trees,
+    recursiveFileBlob,
     oneLayerCatalog,
     treeLayerCatalog,
 };
@@ -14173,6 +14207,44 @@ function repeatEmptyStr(num) {
 const tools = {
     repeatEmptyStr,
 };
+
+var ENUM_ERROR_TYPE;
+(function (ENUM_ERROR_TYPE) {
+    // 请求错误
+    ENUM_ERROR_TYPE["HTTP"] = "git_http_error";
+    // 语法错误
+    ENUM_ERROR_TYPE["SYNTAX"] = "syntax_error";
+})(ENUM_ERROR_TYPE || (ENUM_ERROR_TYPE = {}));
+let DLCHttpError$1 = class DLCHttpError extends Error {
+    type;
+    constructor(type, message) {
+        super(message);
+        this.type = type;
+    }
+};
+function errorInit() {
+    // @ts-expect-error TODO: 不知道如何搞定了
+    globalThis.DLCHttpError = DLCHttpError$1;
+}
+function handlerHttpError(error) {
+    typeof error === 'string' ? log.red(error) : log.red(error.message);
+}
+function errorWrapper(fn) {
+    return async function (...args) {
+        try {
+            return await fn.apply(this, args);
+        }
+        catch (error) {
+            if (typeof error === 'string') {
+                log.red(error);
+            }
+            else {
+                if (error.type === ENUM_ERROR_TYPE.HTTP)
+                    handlerHttpError(error);
+            }
+        }
+    };
+}
 
 /**
  * 先注册功能函数串联起来, 每次run从头迭代.
@@ -14237,18 +14309,16 @@ class MiddleWare {
 
 async function load(_ctx) {
     // 1. 下载原文件内容
-    const { configFile: { file, git }, answers: { confirm } } = _ctx;
-    const rename = confirm.name; // rename
-    console.log('downloadRelativePath', file.downloadRelativePath);
-    console.log('rename', rename);
-    console.log('git', git);
-    // const downloadPath = path.resolve(cwd(), file.downloadRelativePath)
-    // const config = {
-    //   ...git,
-    //   type: _Global.GitFetchType.contents,
-    //   sha: repPath,
-    //   branch,
-    // }
+    const { answers: { confirm }, args: [path, branch] } = _ctx;
+    let newPath = path;
+    if (confirm.isRenamed)
+        newPath = file.pathRename(path, confirm.name);
+    const gitConfig = {
+        type: "contents" /* _Global.GitFetchType.contents */,
+        sha: newPath,
+        branch,
+    };
+    console.log(gitConfig);
     // async function dowanloadFunc(fileOption, configFile) {
     //   const { type } = fileOption
     //   if (type === 'file') {
@@ -14256,10 +14326,8 @@ async function load(_ctx) {
     //     return
     //   }
     //   if (type === 'dir')
-    //     await download.trees(fileOption, configFile)
+    //     await download.recursiveFileBlob(fileOption, configFile)
     // }
-    // 2. 解析且替换模版内容
-    // 3. 写入文件
 }
 
 /**
@@ -14268,7 +14336,7 @@ async function load(_ctx) {
  * 不存在：进行下一步。
  */
 async function confirm(ctx) {
-    const { path } = ctx;
+    const { args: [path] } = ctx;
     const answer = await pro.repeat_confirm_text(path); // 反复确认
     if (!answer.confirm)
         this.cancel();
@@ -14286,12 +14354,19 @@ async function addAction(configFile, _args) {
     if (!path)
         throw new Error(chalk.red('Missing require argument: `tempalte`.'));
     const context = {
-        path,
-        answers: Object.create(null),
+        args: _args,
+        answers: {
+            confirm: {
+                confirm: false,
+                isRenamed: false,
+                name: '',
+            },
+        },
         configFile,
     };
     await app.run(context);
 }
+var addAction$1 = errorWrapper(addAction);
 
 let coutLevel = 0;
 /**
@@ -14301,11 +14376,9 @@ let coutLevel = 0;
  * @returns
  */
 async function getListAction(configFile, _args) {
-    const { git } = configFile;
     const [repPath, branch, { level }] = _args; // level 默认为 3
     // 通过content获取目录时,如果传入path,那么第一层自动会带上path
     const config = {
-        ...git,
         type: "contents" /* _Global.GitFetchType.contents */,
         sha: repPath,
         branch,
@@ -14353,6 +14426,7 @@ function mapChoices(data, level) {
     }
     return result;
 }
+var getListAction$1 = errorWrapper(getListAction);
 
 // 获取根目录
 async function getRootPath() {
@@ -14387,11 +14461,13 @@ async function initConfig() {
     normalizeConfig(mergeConfig, rootAP);
     file.init(mergeConfig); // file模块初始化
     http.init(mergeConfig); // http模块初始化
+    errorInit(); // globalThis 上添加错误类
     return mergeConfig;
 }
 
 // 初始化配置
 const config = await initConfig();
+const gitConfig = config.git;
 const dlc = new Command();
 dlc
     .name('dlc-cli')
@@ -14400,13 +14476,14 @@ dlc
 dlc
     .command('add')
     .argument('<path>', 'file or directory path of template repository.')
+    .argument('[branch]', 'branch to use', gitConfig.defaultBranch)
     .description('add template')
-    .action((...args) => { addAction(config, args); });
+    .action((...args) => { addAction$1(config, args); });
 dlc
     .command('list-remote')
     .argument('[path]', 'path to use', '')
-    .argument('[branch]', 'branch to use', 'master')
+    .argument('[branch]', 'branch to use', gitConfig.defaultBranch)
     .option('-l, --level <num>', 'level layer of catalog ', '3')
     .description('view the remote template list')
-    .action((...args) => { getListAction(config, args); });
+    .action((...args) => { getListAction$1(config, args); });
 dlc.parse();

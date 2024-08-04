@@ -97,33 +97,46 @@ async function confirm_text(confirmMsg?: string, textMsg?: string): Promise<PCon
 }
 
 // 工厂函数, inject confirmMsg, textMsg
+export interface PRepeatConfirmText {
+  confirm: boolean
+  isRenamed: boolean
+  name: string
+}
 function repeatFactory(confirmMsg?: string, textMsg?: string) {
-  // 递归重命名, 不通过返回 initAnswer
-  const initAnswer = {
+  const initAnswer: PRepeatConfirmText = {
     confirm: false,
+    isRenamed: false,
     name: '',
   }
-  return async function repeat_confirm_text(name: string) {
+  return async function repeat_confirm_text(name: string, count = 0): Promise<PRepeatConfirmText> {
+    // 只判断basename
+    const dirname = path.dirname(name) // 父目录
+    const extname = path.extname(name) // 扩展名
+    const basename = path.basename(name, extname) // 基础名
+
     const targetPath = path.resolve(cwd(), name) // 绝对路径,name覆盖cwd.
     const isExist = fs.existsSync(targetPath)
 
     if (!isExist) {
       return {
         confirm: true,
-        name,
+        isRenamed: count !== 0, // 大于0代表: 已经重命名且不存在
+        name: basename,
       }
     }
 
-    // 重复确认
+    // 已存在,确认
     let answer = {
       confirm: false,
       name: '',
     }
-    if (isExist)
-      answer = await confirm_text(confirmMsg, textMsg)
+    answer = await confirm_text(confirmMsg, textMsg)
 
-    if (answer.confirm && answer.name)
-      return await repeat_confirm_text(answer.name)
+    if (answer.confirm && answer.name) {
+      const newName = path.join(dirname, answer.name + extname)
+      count++
+      return await repeat_confirm_text(newName, count)
+    }
 
     return initAnswer
   }

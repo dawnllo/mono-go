@@ -1,4 +1,5 @@
 import { defaultConfig } from '../config/constant'
+import { ENUM_ERROR_TYPE } from '../config/error'
 import { log } from '.'
 
 const gitConfig: _Global.ConfigFile_Git = defaultConfig.git
@@ -20,7 +21,7 @@ const urlStrategy = {
   [_Global.GitFetchType.contents]: (option: _Global.GitHttpOption) => {
     // .../contents/{path}{?ref} ref: branch, tag, commit
     const path = option.sha ? `${option.sha}` : ''
-    const branch = option.branch || 'master'
+    const branch = option.branch || gitConfig.defaultBranch
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/contents/${path}?ref=${branch}`
   },
   [_Global.GitFetchType.branches]: () => {
@@ -61,7 +62,7 @@ async function gitUrl(url) {
   const json = await res.json()
 
   if (json.message)
-    throw new Error(log._red(json.message))
+    throw new DLCHttpError(ENUM_ERROR_TYPE.HTTP, json.message)
 
   return json
 }

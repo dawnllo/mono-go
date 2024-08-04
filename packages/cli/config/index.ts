@@ -3,6 +3,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { file, http, log } from '../utils'
 import { defaultConfig, getConfigFileName, normalizeConfig } from './constant'
+import { errorInit } from './error'
 
 // 获取根目录
 async function getRootPath(): Promise<string | undefined> {
@@ -25,7 +26,6 @@ async function getRootPath(): Promise<string | undefined> {
     curCwdPath = path.dirname(curCwdPath)
   }
 }
-
 // 初始化配置 (包块各个模块,依赖全局配置的 init )
 export async function initConfig() {
   const rootAP = await getRootPath()
@@ -48,6 +48,7 @@ export async function initConfig() {
 
   file.init(mergeConfig) // file模块初始化
   http.init(mergeConfig) // http模块初始化
+  errorInit() // globalThis 上添加错误类
 
   return mergeConfig
 }

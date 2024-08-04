@@ -9,9 +9,9 @@
 
     "strict": true,
     "strictPropertyInitialization": false,
-    "noImplicitAny": false
-    // "declaration": true
+    "noImplicitAny": false,
+    "declaration": false
   },
-  "files": ["./global.d.ts"],
+  "files": ["./global.d.ts", "./dlcglobal.d.ts"],
   "include": ["./**/*.ts"]
 }

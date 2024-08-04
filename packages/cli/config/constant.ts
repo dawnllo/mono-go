@@ -16,6 +16,7 @@ export const defaultConfig: _Global.ConfigFile = {
     owner: 'Dofw',
     repo: 'vs-theme',
     pafg_token: '',
+    defaultBranch: 'main',
   },
 }
 

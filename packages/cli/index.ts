@@ -6,6 +6,7 @@ import { initConfig } from './config'
 
 // 初始化配置
 const config = await initConfig()
+const gitConfig = config.git
 
 const dlc = new Command()
 
@@ -17,13 +18,14 @@ dlc
 dlc
   .command('add')
   .argument('<path>', 'file or directory path of template repository.')
+  .argument('[branch]', 'branch to use', gitConfig.defaultBranch)
   .description('add template')
   .action((...args) => { addAction(config, args) })
 
 dlc
   .command('list-remote')
   .argument('[path]', 'path to use', '')
-  .argument('[branch]', 'branch to use', 'master')
+  .argument('[branch]', 'branch to use', gitConfig.defaultBranch)
   .option('-l, --level <num>', 'level layer of catalog ', '3')
   .description('view the remote template list')
   .action((...args) => { getListAction(config, args) })

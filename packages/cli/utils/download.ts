@@ -5,7 +5,7 @@ import ora from 'ora'
 import { file, http, log } from '../utils'
 
 // 单层目录content/tree格式统一.
-function oneLayerCatalog(data, type: _Global.GitFetchType.trees | _Global.GitFetchType.contents): _Global.CatalogItem[] {
+function oneLayerCatalog(data: any[], type: _Global.GitFetchType.trees | _Global.GitFetchType.contents): _Global.CatalogItem[] {
   if (!data)
     return []
 
@@ -76,6 +76,7 @@ async function fileBlob(catalogItem: _Global.CatalogItem, configFile: _Global.Co
 
   spinner.stop()
 
+  // 绝对路径
   const filePath = path.resolve(cwd(), downloadRelativePath)
   const content = parseFunc(filePath, data)
 
