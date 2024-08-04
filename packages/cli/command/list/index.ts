@@ -22,6 +22,7 @@ async function getListAction(configFile, _args?: any) {
 
   const catalog = await oraWrapper(async () => {
     const json = await http.git(config)
+    console.log(json)
     return await download.treeLayerCatalog(json, _Global.GitFetchType.contents, +level)
   })
 

@@ -1,8 +1,10 @@
-import { Buffer } from 'node:buffer'
 import path from 'node:path'
 import { cwd } from 'node:process'
 import ora from 'ora'
+import type { WriteFileSyncRestParams } from '../utils'
 import { file, http, log } from '../utils'
+
+export type ParseFunc = (path: string, data: any) => Promise<WriteFileSyncRestParams>
 
 // 单层目录content/tree格式统一.
 function oneLayerCatalog(data: any[], type: _Global.GitFetchType.trees | _Global.GitFetchType.contents): _Global.CatalogItem[] {
@@ -61,15 +63,10 @@ async function treeLayerCatalog(data, type: _Global.GitFetchType.trees | _Global
 
 // 下载
 // file-blob
-function defualtParse(path: string, data: any) {
-  return Buffer.from(data.content, 'base64')
-}
-type PaseFunc = (path: string, data: any) => any
 
-async function fileBlob(catalogItem: _Global.CatalogItem, configFile: _Global.ConfigFile, parse?: PaseFunc): Promise<string> {
+async function fileBlob(catalogItem: _Global.CatalogItem, configFile: _Global.ConfigFile, parse: ParseFunc): Promise<string> {
   const { url, path: itemPath } = catalogItem
   const downloadRelativePath = path.join(configFile.file.downloadRelativePath, itemPath)
-  const parseFunc = parse || defualtParse
 
   const spinner = ora(log._green(downloadRelativePath)).start()
   const data = await http.gitUrl(url)
@@ -78,14 +75,14 @@ async function fileBlob(catalogItem: _Global.CatalogItem, configFile: _Global.Co
 
   // 绝对路径
   const filePath = path.resolve(cwd(), downloadRelativePath)
-  const content = parseFunc(filePath, data)
+  const restParams = await parse(filePath, data)
 
   let finishPath
   try {
-    finishPath = await file.writeSyncFile(filePath, content)
+    finishPath = await file.writeFileSync(filePath, restParams)
   }
   catch (error) {
-    throw new Error('writeSyncFile error.')
+    throw new Error('writeFileSync error.')
   }
 
   spinner.succeed(log._green(`${downloadRelativePath}, success.`))
@@ -102,7 +99,7 @@ let _level = 0 // 递归层级, 内部重置
 async function recursiveFileBlob(
   catalogItem: _Global.CatalogItem,
   configFile: _Global.ConfigFile,
-  parse?: PaseFunc,
+  parse: ParseFunc,
 ): Promise<string[]> {
   _level++
   const finishPaths: string[] = []
@@ -110,7 +107,6 @@ async function recursiveFileBlob(
 
   try {
     const config = {
-      ...configFile.git,
       type: _Global.GitFetchType.trees,
       sha,
     }
@@ -119,7 +115,7 @@ async function recursiveFileBlob(
     for (const item of catalog) {
       item.path = `${path}/${item.path}` // tree 获取不包含父目录, 在这里拼接上父目录
       if (item.type === 'file') {
-        const finish = await fileBlob(item, configFile)
+        const finish = await fileBlob(item, configFile, parse)
         finishPaths.push(finish)
       }
 

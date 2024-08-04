@@ -4548,7 +4548,7 @@ function init(configFile) {
  * @param content
  * @returns 返回完整绝对路径,或则重名后的绝对路径
  */
-async function writeSyncFile(input, content) {
+async function writeFileSync(input, content) {
     if (fs$1.existsSync(input)) {
         // 交互
         const repeat_confirm_text = pro.repeatFactory(log._red(`file already exists, rename?`));
@@ -4591,8 +4591,8 @@ async function rmSyncFile(input) {
     // 2.有内容的文件夹,确认是否删除
     if (fs$1.statSync(input).isDirectory()) {
         const curDirFiles = fs$1.readdirSync(input);
-        curDirFiles.length > 0 && log.red('directory is not empty, exit!!!');
-        promptResult = await pro.confirm(log._red(`directory is not empty, confirm delete?`));
+        if (curDirFiles.length > 0)
+            promptResult = await pro.confirm(log._red(`directory is not empty, confirm delete?`));
     }
     promptResult.confirm && fs$1.rmSync(input, { recursive: true });
     log.green('delete success');
@@ -4641,7 +4641,7 @@ function rmSyncValidate(input) {
 }
 const file = {
     init,
-    writeSyncFile,
+    writeFileSync,
     rmSyncFile,
     rmSyncEmptyDir,
     pathRename,
@@ -14129,10 +14129,10 @@ async function fileBlob(catalogItem, configFile, parse) {
     const content = parseFunc(filePath, data);
     let finishPath;
     try {
-        finishPath = await file.writeSyncFile(filePath, content);
+        finishPath = await file.writeFileSync(filePath, content);
     }
     catch (error) {
-        throw new Error('writeSyncFile error.');
+        throw new Error('writeFileSync error.');
     }
     spinner.succeed(log._green(`${downloadRelativePath}, success.`));
     return finishPath;
@@ -14150,7 +14150,6 @@ async function recursiveFileBlob(catalogItem, configFile, parse) {
     const { sha, path } = catalogItem;
     try {
         const config = {
-            ...configFile.git,
             type: "trees" /* _Global.GitFetchType.trees */,
             sha,
         };
@@ -14159,7 +14158,7 @@ async function recursiveFileBlob(catalogItem, configFile, parse) {
         for (const item of catalog) {
             item.path = `${path}/${item.path}`; // tree 获取不包含父目录, 在这里拼接上父目录
             if (item.type === 'file') {
-                const finish = await fileBlob(item, configFile);
+                const finish = await fileBlob(item, configFile, parse);
                 finishPaths.push(finish);
             }
             else if (item.type === 'dir') {
@@ -14227,21 +14226,25 @@ function errorInit() {
     globalThis.DLCHttpError = DLCHttpError$1;
 }
 function handlerHttpError(error) {
-    typeof error === 'string' ? log.red(error) : log.red(error.message);
+    log.red(`gitApi request error: ${error.message}`);
 }
+const errorHandler = {
+    [ENUM_ERROR_TYPE.HTTP]: handlerHttpError,
+    [ENUM_ERROR_TYPE.SYNTAX]: handlerHttpError,
+};
 function errorWrapper(fn) {
     return async function (...args) {
         try {
             return await fn.apply(this, args);
         }
         catch (error) {
-            if (typeof error === 'string') {
+            if (typeof error === 'string')
                 log.red(error);
-            }
-            else {
-                if (error.type === ENUM_ERROR_TYPE.HTTP)
-                    handlerHttpError(error);
-            }
+            else if (errorHandler[error.type])
+                errorHandler[error.type]?.(error);
+            else
+                log.red(error);
+            process$3.exit(0);
         }
     };
 }
@@ -14313,22 +14316,33 @@ async function load(_ctx) {
     let newPath = path;
     if (confirm.isRenamed)
         newPath = file.pathRename(path, confirm.name);
-    const gitConfig = {
+    const config = {
         type: "contents" /* _Global.GitFetchType.contents */,
         sha: newPath,
         branch,
     };
-    console.log(gitConfig);
-    // async function dowanloadFunc(fileOption, configFile) {
-    //   const { type } = fileOption
-    //   if (type === 'file') {
-    //     await download.fileBlob(fileOption, configFile)
-    //     return
-    //   }
-    //   if (type === 'dir')
-    //     await download.recursiveFileBlob(fileOption, configFile)
-    // }
+    await oraWrapper(async () => {
+        const json = await http.git(config);
+        if (json.type === 'file') {
+            console.log('json', json);
+        }
+        else {
+            // 是array
+            const arrs = download.oneLayerCatalog(json, "contents" /* _Global.GitFetchType.contents */);
+            console.log('arr2', arrs);
+            // await download.recursiveFileBlob(fileOption, configFile)
+        }
+    });
 }
+// async function dowanloadFunc(fileOption, configFile) {
+//   const { type } = fileOption
+//   if (type === 'file') {
+//     await download.fileBlob(fileOption, configFile)
+//     return
+//   }
+//   if (type === 'dir')
+//     await download.recursiveFileBlob(fileOption, configFile)
+// }
 
 /**
  * 确定文件目标
@@ -14385,6 +14399,7 @@ async function getListAction(configFile, _args) {
     };
     const catalog = await oraWrapper(async () => {
         const json = await http.git(config);
+        console.log(json);
         return await download.treeLayerCatalog(json, "contents" /* _Global.GitFetchType.contents */, +level);
     });
     const choices = mapChoices(catalog, level);

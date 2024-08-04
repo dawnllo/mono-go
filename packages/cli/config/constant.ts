@@ -1,7 +1,12 @@
 import path from 'node:path'
+import { Buffer } from 'node:buffer'
+import type { ParseFunc, WriteFileSyncRestParams } from '../utils'
 import { log } from '../utils'
 
 const CNONFIG_FILE_DEFAULT = 'dlc.config.js'
+const defualtParse: ParseFunc = async (path: string, data: any): Promise<WriteFileSyncRestParams> => {
+  return [Buffer.from(data.content, 'base64')]
+}
 
 // 全局默认配置
 export const defaultConfig: _Global.ConfigFile = {
@@ -11,6 +16,7 @@ export const defaultConfig: _Global.ConfigFile = {
     // 文件下载/操作相关
     removeWhitePath: [],
     downloadRelativePath: '.',
+    parse: defualtParse,
   },
   git: {
     owner: 'Dofw',
@@ -25,7 +31,7 @@ export function getConfigFileName() {
   return CNONFIG_FILE_DEFAULT
 }
 
-// 配置归一化 TODO: 对配置进行合法校验.
+// 配置归一化 TODO: 深度配置字段校验.
 export function normalizeConfig(mergeConfig: _Global.ConfigFile, rootAP: string) {
   const keys = Object.keys(defaultConfig)
   const configKeys = Object.keys(mergeConfig)

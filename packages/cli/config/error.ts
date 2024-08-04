@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { log } from '../utils'
 
 export enum ENUM_ERROR_TYPE {
@@ -19,8 +20,12 @@ export function errorInit() {
   globalThis.DLCHttpError = DLCHttpError
 }
 
-export function handlerHttpError(error: DLCHttpError) {
-  typeof error === 'string' ? log.red(error) : log.red(error.message)
+function handlerHttpError(error: DLCHttpError) {
+  log.red(`gitApi request error: ${error.message}`)
+}
+const errorHandler = {
+  [ENUM_ERROR_TYPE.HTTP]: handlerHttpError,
+  [ENUM_ERROR_TYPE.SYNTAX]: handlerHttpError,
 }
 
 export function errorWrapper(fn: Function) {
@@ -29,15 +34,17 @@ export function errorWrapper(fn: Function) {
       return await fn.apply(this, args)
     }
     catch (error: any) {
-      if (typeof error === 'string') {
+      if (typeof error === 'string')
         log.red(error)
-      }
-      else {
-        if (error.type === ENUM_ERROR_TYPE.HTTP
 
-        )
-          handlerHttpError(error)
-      }
+      else
+        if (errorHandler[error.type])
+          errorHandler[error.type]?.(error)
+
+        else
+          log.red(error)
+
+      process.exit(0)
     }
   }
 }

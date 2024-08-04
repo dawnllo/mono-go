@@ -3,6 +3,8 @@ import path from 'node:path'
 import { log, pro } from '../utils'
 import { defaultConfig } from '../config/constant'
 
+export type WriteFileSyncRestParams = ExcludeFirstParams<Parameters<typeof fs.writeFileSync>>
+
 const fileConfig: _Global.ConfigFile_File = defaultConfig.file
 
 /**
@@ -22,7 +24,7 @@ function init(configFile: _Global.ConfigFile): void {
  * @param content
  * @returns 返回完整绝对路径,或则重名后的绝对路径
  */
-async function writeSyncFile(input: string, content): Promise<string> {
+async function writeFileSync(input: string, restParams: WriteFileSyncRestParams): Promise<string> {
   if (fs.existsSync(input)) {
     // 交互
     const repeat_confirm_text = pro.repeatFactory(log._red(`file already exists, rename?`))
@@ -38,7 +40,7 @@ async function writeSyncFile(input: string, content): Promise<string> {
   if (!fs.existsSync(dir))
     fs.mkdirSync(dir, { recursive: true })
 
-  fs.writeFileSync(input, content)
+  fs.writeFileSync(input, ...restParams)
 
   return input
 }
@@ -73,8 +75,9 @@ async function rmSyncFile(input: string): Promise<void> {
   // 2.有内容的文件夹,确认是否删除
   if (fs.statSync(input).isDirectory()) {
     const curDirFiles = fs.readdirSync(input)
-    curDirFiles.length > 0 && log.red('directory is not empty, exit!!!')
-    promptResult = await pro.confirm(log._red(`directory is not empty, confirm delete?`))
+
+    if (curDirFiles.length > 0)
+      promptResult = await pro.confirm(log._red(`directory is not empty, confirm delete?`))
   }
 
   promptResult.confirm && fs.rmSync(input, { recursive: true })
@@ -133,7 +136,7 @@ function rmSyncValidate(input: string): boolean {
 
 interface FileMethods {
   init: (...args: Parameters<typeof init>) => ReturnType<typeof init>
-  writeSyncFile: (...args: Parameters<typeof writeSyncFile>) => ReturnType<typeof writeSyncFile>
+  writeFileSync: (...args: Parameters<typeof writeFileSync>) => ReturnType<typeof writeFileSync>
   rmSyncFile: (...args: Parameters<typeof rmSyncFile>) => ReturnType<typeof rmSyncFile>
   rmSyncEmptyDir: (...args: Parameters<typeof rmSyncEmptyDir>) => ReturnType<typeof rmSyncEmptyDir>
   pathRename: (...args: Parameters<typeof pathRename>) => ReturnType<typeof pathRename>
@@ -141,7 +144,7 @@ interface FileMethods {
 
 export const file: FileMethods = {
   init,
-  writeSyncFile,
+  writeFileSync,
   rmSyncFile,
   rmSyncEmptyDir,
   pathRename,

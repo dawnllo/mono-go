@@ -17,6 +17,7 @@ declare namespace _Global {
   interface ConfigFile_File {
     removeWhitePath: string[] // 移除文件时, 白名单
     downloadRelativePath: string
+    parse: (path: string, data: any) => Promise<any> // TODO: 全局类型 Promise<WriteFileSyncRestParams>
   }
 
   const enum GitFetchType {
@@ -44,3 +45,4 @@ declare namespace _Global {
     children?: CatalogItem[]
   }
 }
+type ExcludeFirstParams<T extends any[]> = T extends [any, ...rest: infer R] ? R : never
