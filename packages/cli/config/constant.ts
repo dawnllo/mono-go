@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { Buffer } from 'node:buffer'
-import type { ParseFunc, WriteFileSyncRestParams } from '../utils'
+import type { ParseFunc } from '../utils'
 import { log } from '../utils'
 
 const CNONFIG_FILE_DEFAULT = 'dlc.config.js'
@@ -16,7 +16,7 @@ export const defaultConfig: _Global.ConfigFile = {
     // 文件下载/操作相关
     removeWhitePath: [],
     downloadRelativePath: '.',
-    parse: defualtParse,
+    parse: defualtParse, // 内容解析函数
   },
   git: {
     owner: 'Dofw',

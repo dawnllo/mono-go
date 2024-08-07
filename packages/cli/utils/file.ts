@@ -3,8 +3,6 @@ import path from 'node:path'
 import { log, pro } from '../utils'
 import { defaultConfig } from '../config/constant'
 
-export type WriteFileSyncRestParams = ExcludeFirstParams<Parameters<typeof fs.writeFileSync>>
-
 const fileConfig: _Global.ConfigFile_File = defaultConfig.file
 
 /**

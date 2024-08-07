@@ -1,7 +1,6 @@
 import path from 'node:path'
 import { cwd } from 'node:process'
 import ora from 'ora'
-import type { WriteFileSyncRestParams } from '../utils'
 import { file, http, log } from '../utils'
 
 export type ParseFunc = (path: string, data: any) => Promise<WriteFileSyncRestParams>

@@ -6,9 +6,9 @@ import fs$1 from 'node:fs';
 import process$3, { cwd } from 'node:process';
 import os from 'node:os';
 import tty from 'node:tty';
+import { Buffer as Buffer$1 } from 'node:buffer';
 import require$$0$2 from 'readline';
 import require$$2 from 'events';
-import { Buffer as Buffer$1 } from 'node:buffer';
 import require$$0$3 from 'assert';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -4433,6 +4433,9 @@ colors.forEach((item) => {
 });
 
 const CNONFIG_FILE_DEFAULT = 'dlc.config.js';
+const defualtParse = async (path, data) => {
+    return [Buffer$1.from(data.content, 'base64')];
+};
 // 全局默认配置
 const defaultConfig = {
     root: '.',
@@ -4441,6 +4444,7 @@ const defaultConfig = {
         // 文件下载/操作相关
         removeWhitePath: [],
         downloadRelativePath: '.',
+        parse: defualtParse, // 内容解析函数
     },
     git: {
         owner: 'Dofw',
@@ -4453,7 +4457,7 @@ const defaultConfig = {
 function getConfigFileName() {
     return CNONFIG_FILE_DEFAULT;
 }
-// 配置归一化 TODO: 对配置进行合法校验.
+// 配置归一化 TODO: 深度配置字段校验.
 function normalizeConfig(mergeConfig, rootAP) {
     const keys = Object.keys(defaultConfig);
     const configKeys = Object.keys(mergeConfig);
@@ -4548,7 +4552,7 @@ function init(configFile) {
  * @param content
  * @returns 返回完整绝对路径,或则重名后的绝对路径
  */
-async function writeFileSync(input, content) {
+async function writeFileSync(input, restParams) {
     if (fs$1.existsSync(input)) {
         // 交互
         const repeat_confirm_text = pro.repeatFactory(log._red(`file already exists, rename?`));
@@ -4561,7 +4565,7 @@ async function writeFileSync(input, content) {
     const dir = path$1.dirname(input);
     if (!fs$1.existsSync(dir))
         fs$1.mkdirSync(dir, { recursive: true });
-    fs$1.writeFileSync(input, content);
+    fs$1.writeFileSync(input, ...restParams);
     return input;
 }
 /**
@@ -14114,22 +14118,18 @@ async function treeLayerCatalog(data, type, level) {
 }
 // 下载
 // file-blob
-function defualtParse(path, data) {
-    return Buffer$1.from(data.content, 'base64');
-}
 async function fileBlob(catalogItem, configFile, parse) {
     const { url, path: itemPath } = catalogItem;
     const downloadRelativePath = path$1.join(configFile.file.downloadRelativePath, itemPath);
-    const parseFunc = parse || defualtParse;
     const spinner = ora(log._green(downloadRelativePath)).start();
     const data = await http.gitUrl(url);
     spinner.stop();
     // 绝对路径
     const filePath = path$1.resolve(cwd(), downloadRelativePath);
-    const content = parseFunc(filePath, data);
+    const restParams = await parse(filePath, data);
     let finishPath;
     try {
-        finishPath = await file.writeFileSync(filePath, content);
+        finishPath = await file.writeFileSync(filePath, restParams);
     }
     catch (error) {
         throw new Error('writeFileSync error.');
@@ -14312,7 +14312,8 @@ class MiddleWare {
 
 async function load(_ctx) {
     // 1. 下载原文件内容
-    const { answers: { confirm }, args: [path, branch] } = _ctx;
+    const { answers: { confirm }, args: [path, branch], configFile } = _ctx;
+    const { parse } = configFile.file;
     let newPath = path;
     if (confirm.isRenamed)
         newPath = file.pathRename(path, confirm.name);
@@ -14323,26 +14324,35 @@ async function load(_ctx) {
     };
     await oraWrapper(async () => {
         const json = await http.git(config);
+        // 单个文件,直接下载
         if (json.type === 'file') {
             console.log('json', json);
+            const downloadRelativePath = path.join(configFile.file.downloadRelativePath, newPath);
+            const filePath = path.resolve(cwd(), downloadRelativePath);
+            // 解析
+            // const parse: ParseFunc = async (path, data) => {
+            //   return [data.content]
+            // }
+            // const restParams = await parse(filePath, json)
+            await file.writeFileSync(filePath, [json.content]);
         }
         else {
             // 是array
             const arrs = download.oneLayerCatalog(json, "contents" /* _Global.GitFetchType.contents */);
-            console.log('arr2', arrs);
-            // await download.recursiveFileBlob(fileOption, configFile)
+            for (const fileOption of arrs)
+                await dowanloadFunc(fileOption, configFile, parse); // TODO: 解析函数通过配置文件读取.
         }
     });
 }
-// async function dowanloadFunc(fileOption, configFile) {
-//   const { type } = fileOption
-//   if (type === 'file') {
-//     await download.fileBlob(fileOption, configFile)
-//     return
-//   }
-//   if (type === 'dir')
-//     await download.recursiveFileBlob(fileOption, configFile)
-// }
+async function dowanloadFunc(fileOption, configFile, parse) {
+    const { type } = fileOption;
+    if (type === 'file') {
+        await download.fileBlob(fileOption, configFile, parse);
+        return;
+    }
+    if (type === 'dir')
+        await download.recursiveFileBlob(fileOption, configFile, parse);
+}
 
 /**
  * 确定文件目标

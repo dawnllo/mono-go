@@ -12,6 +12,6 @@
     "noImplicitAny": false,
     "declaration": false
   },
-  "files": ["./global.d.ts", "./dlcglobal.d.ts"],
+  "files": ["./global.d.ts"],
   "include": ["./**/*.ts"]
 }
