@@ -10,8 +10,10 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "noImplicitAny": false,
-    "declaration": false
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist/types"
   },
   "files": ["./global.d.ts"],
-  "include": ["./**/*.ts"]
+  "include": ["./**/*.ts", "vite.config.ts"]
 }

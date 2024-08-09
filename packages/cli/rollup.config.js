@@ -28,5 +28,10 @@ export default defineConfig({
       format: 'es',
       entryFileNames: '[name].mjs',
     },
+    {
+      dir: 'dist',
+      format: 'cjs',
+      entryFileNames: '[name].cjs',
+    },
   ],
 })
