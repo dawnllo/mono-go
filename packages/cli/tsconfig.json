@@ -1,19 +1,15 @@
+// modules, emit
 {
-  // "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "target": "ES2022",
-    "baseUrl": ".",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "moduleSuffixes": ["", ".js", ".jsx", ".ts", ".tsx"],
+  "extends": "../../tsconfig.base.json",
 
-    "strict": true,
-    "strictPropertyInitialization": false,
-    "noImplicitAny": false,
+  "compilerOptions": {
     "declaration": true,
+    "declarationDir": "./dist/types",
     "emitDeclarationOnly": true,
-    "outDir": "./dist/types"
+    "outDir": "./dist",
+    "esModuleInterop": true
   },
   "files": ["./global.d.ts"],
-  "include": ["./**/*.ts", "vite.config.ts"]
+  "include": ["./**/*.ts"],
+  "exclude": ["./dist", "./node_modules", "./test", "./**/*.spec.ts"]
 }

@@ -42,7 +42,7 @@ async function getListAction(configFile, _args?: any) {
 
   log.yellow(`note: the path is relative to root of repository. selected:`)
   for (let i = 0; i < selects2.length; i++) {
-    const element = selects2[i]
+    const element = selects2[i]!
     log.green(element.relativeInputPath)
   }
 }
@@ -60,7 +60,7 @@ function mapChoices(data: _Global.CatalogItem[], level) {
   const result: ChoiceItem[] = []
 
   for (let i = 0; i < data.length; i++) {
-    const element = data[i]
+    const element = data[i]!
     const markStr = element.type === 'dir' ? '📂' : '📄'
     const relativeInputPath = element.relativeInputPath ? element.relativeInputPath : element.path
 

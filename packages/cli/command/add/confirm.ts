@@ -1,6 +1,3 @@
-import path from 'node:path'
-import { cwd } from 'node:process'
-import fs from 'node:fs'
 import { pro } from '../../utils'
 import type MiddleWare from './middleware'
 import type { Context } from './index'

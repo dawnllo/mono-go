@@ -3,12 +3,10 @@ import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
 import typescript from 'rollup-plugin-typescript2'
-
-import testPlugin from './rollup-plugins/test.js'
+import esbuild from 'rollup-plugin-esbuild'
 
 export default defineConfig({
   plugins: [
-    // testPlugin(),
     json(),
     nodeResolve({
       exportConditions: ['node'],
@@ -17,7 +15,13 @@ export default defineConfig({
     commonjs({
       defaultIsModuleExports: 'auto',
     }),
-    typescript(),
+    // esbuild 和 typescript2 插件同时使用时, typescript2 执行检查和声明文件生成, esbuild 进行编译.
+    // https://www.npmjs.com/package/rollup-plugin-typescript2
+    typescript({
+      useTsconfigDeclarationDir: true,
+      clean: true,
+    }),
+    esbuild({}),
   ],
   input: {
     index: './index.ts',

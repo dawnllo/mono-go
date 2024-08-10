@@ -5,7 +5,7 @@ import { log } from '../utils'
 
 const CNONFIG_FILE_DEFAULT = 'dlc.config.js'
 const defualtParse: ParseFunc = async (path: string, data: any): Promise<WriteFileSyncRestParams> => {
-  return [Buffer.from(data.content, 'base64')]
+  return [Buffer.from(data.content, 'base64'), 'utf-8']
 }
 
 // 全局默认配置

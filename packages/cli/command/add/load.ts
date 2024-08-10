@@ -1,6 +1,5 @@
 import { cwd } from 'node:process'
-import path from 'node:path'
-import { type ParseFunc, download, file, http, log, oraWrapper, pro } from '../../utils'
+import { type ParseFunc, download, file, http, oraWrapper } from '../../utils'
 import type MiddleWare from './middleware'
 import type { Context } from './index'
 

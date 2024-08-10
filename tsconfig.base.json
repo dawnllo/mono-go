@@ -1,12 +1,18 @@
+// tsconfig.base.json, classify according to the document
+// https://www.typescriptlang.org/tsconfig/#Type_Checking_6248
 {
   "compilerOptions": {
+    // language and enviroment
     "target": "es2020",
     "jsx": "preserve",
     "lib": ["ESNext", "DOM", "DOM.Iterable", "webworker"],
+    // modules
+    "baseUrl": ".",
     "module": "esnext",
     "moduleResolution": "Bundler",
+    "moduleSuffixes": ["", ".js", ".jsx", ".ts", ".tsx"],
     "resolveJsonModule": true,
-
+    // type checking
     "strict": true,
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
@@ -19,10 +25,6 @@
     "noImplicitThis": true,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
-    "declaration": true,
-    "declarationDir": "./types",
-    "noEmit": true,
-    "esModuleInterop": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },

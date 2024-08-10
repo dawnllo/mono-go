@@ -37,14 +37,14 @@ async function treeLayerCatalog(data, type: _Global.GitFetchType.trees | _Global
   treeLevel++
   try {
     for (let i = 0; i < oneLayer.length; i++) {
-      const element = oneLayer[i]
+      const element = oneLayer[i]!
 
       // level 不存在就不限制
       if (element.type === 'dir' && (!level || treeLevel < level)) {
         const json = await http.gitUrl(element.url)
-        oneLayer[i].children = await treeLayerCatalog(json.tree, _Global.GitFetchType.trees, level)
+        oneLayer[i]!.children = await treeLayerCatalog(json.tree, _Global.GitFetchType.trees, level)
         // 将路径进行拼接
-        oneLayer[i].children = oneLayer[i].children?.map((item) => {
+        oneLayer[i]!.children = oneLayer[i]!.children?.map((item) => {
           return {
             ...item,
             relativeInputPath: path.join(element.path, item.path),
