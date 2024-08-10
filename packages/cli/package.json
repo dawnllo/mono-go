@@ -23,9 +23,9 @@
     },
     "./package.json": "./package.json"
   },
-  "main": "./index.ts",
+  "main": "./dist/index.mjs",
   "module": "./index.ts",
-  "types": "./types/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "bin": {
     "dlc": "./dist/index.mjs"
   },

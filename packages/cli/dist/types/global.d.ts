@@ -1,11 +1,19 @@
-import type fs from 'node:fs'
-import type { DLCHttpError as DLCHttpErrorConstructor } from './config/error'
+import fs from 'node:fs';
+
+declare enum ENUM_ERROR_TYPE {
+    HTTP = "git_http_error",
+    SYNTAX = "syntax_error"
+}
+declare class DLCHttpError extends Error {
+    type: ENUM_ERROR_TYPE;
+    constructor(type: ENUM_ERROR_TYPE, message: string);
+}
 
 declare global {
   /**
    * @description: 全局DLCHttp错误类
    */
-  const DLCHttpError: typeof DLCHttpErrorConstructor
+  const DLCHttpError: typeof DLCHttpError
 
   export namespace _Global {
     interface ConfigFile {
