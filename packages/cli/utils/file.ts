@@ -1,15 +1,15 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { log, pro } from '../utils'
-import { defaultConfig } from '../config/constant'
+import { log, pro } from '@/utils/index'
+import { defaultConfig } from '@/config/constant'
 
-const fileConfig: _Global.ConfigFile_File = defaultConfig.file
+const fileConfig: ConfigFile_File = defaultConfig.file
 
 /**
  * 初始化文件操作系统 - 需要的配置内容
  * @param configFile 全局配置文件
  */
-function init(configFile: _Global.ConfigFile): void {
+function init(configFile: ConfigFile): void {
   const dlcFileConfig = configFile.file
 
   Object.keys(fileConfig).forEach((key) => {

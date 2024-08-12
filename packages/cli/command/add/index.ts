@@ -1,13 +1,13 @@
 import chalk from 'chalk'
-import type { PRepeatConfirmText } from '../../utils'
-import { errorWrapper } from '../../config/error'
 import MiddleWare from './middleware'
 import load from './load'
 import confirm from './confirm'
+import { errorWrapper } from '@/config/error'
+import type { PRepeatConfirmText } from '@/utils/index'
 
 export interface Context {
   args: any[] // 命令行参数
-  configFile: _Global.ConfigFile // 获取模板，读取require
+  configFile: ConfigFile // 获取模板，读取require
   answers: {
     confirm: PRepeatConfirmText
   }
@@ -20,7 +20,7 @@ app
   .use(confirm)
   .use(load)
 
-async function addAction(configFile: _Global.ConfigFile, _args) {
+async function addAction(configFile: ConfigFile, _args) {
   const [path] = _args
   if (!path)
     throw new Error(chalk.red('Missing require argument: `tempalte`.'))

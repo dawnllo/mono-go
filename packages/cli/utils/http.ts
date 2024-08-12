@@ -2,13 +2,13 @@ import { defaultConfig } from '../config/constant'
 import { ENUM_ERROR_TYPE } from '../config/error'
 import { log } from '.'
 
-const gitConfig: _Global.ConfigFile_Git = defaultConfig.git
+const gitConfig: ConfigFile_Git = defaultConfig.git
 
 /**
  * 初始化文件操作系统 - 需要的配置内容
  * @param configFile 全局配置文件
  */
-function init(configFile: _Global.ConfigFile) {
+function init(configFile: ConfigFile) {
   const dclGitConfig = configFile.git
 
   Object.keys(gitConfig).forEach((key) => {
@@ -18,26 +18,26 @@ function init(configFile: _Global.ConfigFile) {
 
 // 策略
 const urlStrategy = {
-  [_Global.GitFetchType.contents]: (option: _Global.GitHttpOption) => {
+  [GitFetchType.contents]: (option: GitHttpOption) => {
     // .../contents/{path}{?ref} ref: branch, tag, commit
     const path = option.sha ? `${option.sha}` : ''
     const branch = option.branch || gitConfig.defaultBranch
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/contents/${path}?ref=${branch}`
   },
-  [_Global.GitFetchType.branches]: () => {
+  [GitFetchType.branches]: () => {
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/branches`
   },
-  [_Global.GitFetchType.trees]: (option: _Global.GitHttpOption) => {
+  [GitFetchType.trees]: (option: GitHttpOption) => {
     // .../git/trees/{sha}{?recursive=1}, sha: commit or ref(branch, tag)
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/trees/${option.sha}${option.recursive ? '?recursive=1' : ''}`
   },
-  [_Global.GitFetchType.blobs]: (option: _Global.GitHttpOption) => {
+  [GitFetchType.blobs]: (option: GitHttpOption) => {
     // .../git/blobs/{sha} sha: commit;
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/blobs/${option.sha}`
   },
 }
 
-async function git(option: _Global.GitHttpOption) {
+async function git(option: GitHttpOption) {
   let url
   const generate = urlStrategy[option.type]
   if (generate)

@@ -1,6 +1,6 @@
-import { pro } from '../../utils'
 import type MiddleWare from './middleware'
 import type { Context } from './index'
+import { pro } from '@/utils/index'
 
 /**
  * 确定文件目标

@@ -4471,6 +4471,43 @@ function normalizeConfig(mergeConfig, rootAP) {
   });
 }
 
+var ENUM_ERROR_TYPE = /* @__PURE__ */ ((ENUM_ERROR_TYPE2) => {
+  ENUM_ERROR_TYPE2["HTTP"] = "git_http_error";
+  ENUM_ERROR_TYPE2["SYNTAX"] = "syntax_error";
+  return ENUM_ERROR_TYPE2;
+})(ENUM_ERROR_TYPE || {});
+let DLCHttpError$1 = class DLCHttpError extends Error {
+  constructor(type, message) {
+    super(message);
+    this.type = type;
+  }
+};
+function errorInit() {
+  globalThis.DLCHttpError = DLCHttpError$1;
+}
+function handlerHttpError(error) {
+  log.red(`gitApi request error: ${error.message}`);
+}
+const errorHandler = {
+  ["git_http_error" /* HTTP */]: handlerHttpError,
+  ["syntax_error" /* SYNTAX */]: handlerHttpError
+};
+function errorWrapper(fn) {
+  return async function(...args) {
+    try {
+      return await fn.apply(this, args);
+    } catch (error) {
+      if (typeof error === "string")
+        log.red(error);
+      else if (errorHandler[error.type])
+        errorHandler[error.type]?.(error);
+      else
+        log.red(error);
+      process$3.exit(0);
+    }
+  };
+}
+
 const gitConfig = defaultConfig.git;
 function init$1(configFile) {
   const dclGitConfig = configFile.git;
@@ -4479,18 +4516,18 @@ function init$1(configFile) {
   });
 }
 const urlStrategy = {
-  [_Global.GitFetchType.contents]: (option) => {
+  [GitFetchType.contents]: (option) => {
     const path = option.sha ? `${option.sha}` : "";
     const branch = option.branch || gitConfig.defaultBranch;
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/contents/${path}?ref=${branch}`;
   },
-  [_Global.GitFetchType.branches]: () => {
+  [GitFetchType.branches]: () => {
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/branches`;
   },
-  [_Global.GitFetchType.trees]: (option) => {
+  [GitFetchType.trees]: (option) => {
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/trees/${option.sha}${option.recursive ? "?recursive=1" : ""}`;
   },
-  [_Global.GitFetchType.blobs]: (option) => {
+  [GitFetchType.blobs]: (option) => {
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/blobs/${option.sha}`;
   }
 };
@@ -14024,13 +14061,13 @@ function ora(options) {
 function oneLayerCatalog(data, type) {
   if (!data)
     return [];
-  const urlKey = type === _Global.GitFetchType.contents ? "git_url" : "url";
+  const urlKey = type === GitFetchType.contents ? "git_url" : "url";
   const catalog = [];
   for (const item of data) {
     const ele = {
       path: item.path,
       url: item[urlKey],
-      type: type === _Global.GitFetchType.contents ? item.type : item.type === "tree" ? "dir" : "file",
+      type: type === GitFetchType.contents ? item.type : item.type === "tree" ? "dir" : "file",
       size: item.size,
       sha: item.sha
     };
@@ -14047,7 +14084,7 @@ async function treeLayerCatalog(data, type, level) {
       const element = oneLayer[i];
       if (element.type === "dir" && (!level || treeLevel < level)) {
         const json = await http.gitUrl(element.url);
-        oneLayer[i].children = await treeLayerCatalog(json.tree, _Global.GitFetchType.trees, level);
+        oneLayer[i].children = await treeLayerCatalog(json.tree, GitFetchType.trees, level);
         oneLayer[i].children = oneLayer[i].children?.map((item) => {
           return {
             ...item,
@@ -14085,11 +14122,11 @@ async function recursiveFileBlob(catalogItem, configFile, parse) {
   const { sha, path: path2 } = catalogItem;
   try {
     const config = {
-      type: _Global.GitFetchType.trees,
+      type: GitFetchType.trees,
       sha
     };
     const json = await http.git(config);
-    const catalog = oneLayerCatalog(json.tree, _Global.GitFetchType.trees);
+    const catalog = oneLayerCatalog(json.tree, GitFetchType.trees);
     for (const item of catalog) {
       item.path = `${path2}/${item.path}`;
       if (item.type === "file") {
@@ -14136,43 +14173,6 @@ function repeatEmptyStr(num) {
 const tools = {
   repeatEmptyStr
 };
-
-var ENUM_ERROR_TYPE = /* @__PURE__ */ ((ENUM_ERROR_TYPE2) => {
-  ENUM_ERROR_TYPE2["HTTP"] = "git_http_error";
-  ENUM_ERROR_TYPE2["SYNTAX"] = "syntax_error";
-  return ENUM_ERROR_TYPE2;
-})(ENUM_ERROR_TYPE || {});
-let DLCHttpError$1 = class DLCHttpError extends Error {
-  constructor(type, message) {
-    super(message);
-    this.type = type;
-  }
-};
-function errorInit() {
-  globalThis.DLCHttpError = DLCHttpError$1;
-}
-function handlerHttpError(error) {
-  log.red(`gitApi request error: ${error.message}`);
-}
-const errorHandler = {
-  ["git_http_error" /* HTTP */]: handlerHttpError,
-  ["syntax_error" /* SYNTAX */]: handlerHttpError
-};
-function errorWrapper(fn) {
-  return async function(...args) {
-    try {
-      return await fn.apply(this, args);
-    } catch (error) {
-      if (typeof error === "string")
-        log.red(error);
-      else if (errorHandler[error.type])
-        errorHandler[error.type]?.(error);
-      else
-        log.red(error);
-      process$3.exit(0);
-    }
-  };
-}
 
 class MiddleWare {
   constructor() {
@@ -14236,7 +14236,7 @@ async function load(_ctx) {
   if (confirm.isRenamed)
     newPath = file.pathRename(path, confirm.name);
   const config = {
-    type: _Global.GitFetchType.contents,
+    type: GitFetchType.contents,
     sha: newPath,
     branch
   };
@@ -14248,7 +14248,7 @@ async function load(_ctx) {
       const filePath = path.resolve(cwd(), downloadRelativePath);
       await file.writeFileSync(filePath, [json.content]);
     } else {
-      const arrs = download.oneLayerCatalog(json, _Global.GitFetchType.contents);
+      const arrs = download.oneLayerCatalog(json, GitFetchType.contents);
       for (const fileOption of arrs)
         await dowanloadFunc(fileOption, configFile, parse);
     }
@@ -14297,14 +14297,14 @@ let coutLevel = 0;
 async function getListAction(configFile, _args) {
   const [repPath, branch, { level }] = _args;
   const config = {
-    type: _Global.GitFetchType.contents,
+    type: GitFetchType.contents,
     sha: repPath,
     branch
   };
   const catalog = await oraWrapper(async () => {
     const json = await http.git(config);
     console.log(json);
-    return await download.treeLayerCatalog(json, _Global.GitFetchType.contents, +level);
+    return await download.treeLayerCatalog(json, GitFetchType.contents, +level);
   });
   const choices = mapChoices(catalog, level);
   const suggest = async (input, choices2) => {

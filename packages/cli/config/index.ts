@@ -1,9 +1,9 @@
 import { cwd } from 'node:process'
 import path from 'node:path'
 import fs from 'node:fs'
-import { file, http, log } from '../utils'
 import { defaultConfig, getConfigFileName, normalizeConfig } from './constant'
 import { errorInit, errorWrapper } from './error'
+import { file, http, log } from '@/utils/index'
 
 // 获取根目录
 async function getRootPath(): Promise<string | undefined> {
@@ -35,7 +35,7 @@ export const initConfig = errorWrapper(async () => {
 
   const configFile = path.join(rootAP, getConfigFileName())
 
-  let mergeConfig: _Global.ConfigFile = {} as _Global.ConfigFile
+  let mergeConfig: ConfigFile = {} as ConfigFile
   if (fs.existsSync(configFile)) {
     const userConfig = await import(configFile)
     mergeConfig = Object.assign(defaultConfig, userConfig.default)

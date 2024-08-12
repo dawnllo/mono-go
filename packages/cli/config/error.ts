@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { log } from '../utils'
+import { log } from '@/utils/index'
 
 export enum ENUM_ERROR_TYPE {
   // 请求错误
@@ -16,7 +16,6 @@ export class DLCHttpError extends Error {
   }
 }
 export function errorInit() {
-  // @ts-expect-error TODO: 不知道如何搞定了
   globalThis.DLCHttpError = DLCHttpError
 }
 

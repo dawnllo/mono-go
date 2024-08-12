@@ -2,7 +2,7 @@ import path from 'node:path'
 import { cwd } from 'node:process'
 import fs from 'node:fs'
 import prompts from 'prompts'
-import { log } from '../utils'
+import { log } from '@/utils/index'
 
 // confirm
 interface PConfirm {

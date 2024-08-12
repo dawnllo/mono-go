@@ -4,7 +4,9 @@ import addAction from './command/add/index'
 import getListAction from './command/list/index'
 import { initConfig } from './config'
 
-export function defineConfig(config: _Global.ConfigFile): _Global.ConfigFile {
+export type * from '@/utils/index'
+
+export function defineConfig(config: ConfigFile): ConfigFile {
   return config
 }
 

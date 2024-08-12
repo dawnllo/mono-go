@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { defineConfig } from 'rollup'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
@@ -5,24 +6,35 @@ import json from '@rollup/plugin-json'
 import typescript from 'rollup-plugin-typescript2'
 import esbuild from 'rollup-plugin-esbuild'
 import { dts } from 'rollup-plugin-dts'
+import AutoImport from 'unplugin-auto-import/rollup'
+import alias from '@rollup/plugin-alias'
+
+const commonPlugins = [alias({
+  entries: {
+    '@': path.resolve(import.meta.dirname, '.'),
+  },
+})]
 
 // 单独打包声明文件
 const dtsConfig = defineConfig({
   input: ['./index.ts', './global.d.ts'],
-  plugins: [dts({ respectExternal: false })],
+  plugins: [...commonPlugins, dts({ respectExternal: false })],
   output: {
     dir: 'dist/types',
     format: 'esm',
+    entryFileNames: '[name].d.ts',
   },
 })
 
 // 常规打包
 const normalConfig = defineConfig({
   plugins: [
+    ...commonPlugins,
     json(),
     nodeResolve({
       exportConditions: ['node'],
       preferBuiltins: true,
+      extensions: ['.js', '.ts', '.json'],
     }),
     commonjs({
       defaultIsModuleExports: 'auto',
@@ -53,6 +65,6 @@ const normalConfig = defineConfig({
 })
 
 export default defineConfig([
-  dtsConfig,
+  // dtsConfig,
   normalConfig,
 ])

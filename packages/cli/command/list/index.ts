@@ -1,5 +1,5 @@
-import { download, http, log, oraWrapper, pro, tools } from '../../utils'
-import { errorWrapper } from '../../config/error'
+import { errorWrapper } from '@/config/error'
+import { download, http, log, oraWrapper, pro, tools } from '@/utils/index'
 
 let coutLevel = 0
 
@@ -15,7 +15,7 @@ async function getListAction(configFile, _args?: any) {
 
   // 通过content获取目录时,如果传入path,那么第一层自动会带上path
   const config = {
-    type: _Global.GitFetchType.contents,
+    type: GitFetchType.contents,
     sha: repPath,
     branch,
   }
@@ -23,7 +23,7 @@ async function getListAction(configFile, _args?: any) {
   const catalog = await oraWrapper(async () => {
     const json = await http.git(config)
     console.log(json)
-    return await download.treeLayerCatalog(json, _Global.GitFetchType.contents, +level)
+    return await download.treeLayerCatalog(json, GitFetchType.contents, +level)
   })
 
   const choices = mapChoices(catalog, level)
@@ -56,7 +56,7 @@ interface ChoiceItem {
   }
 }
 type ChoiceValue = ChoiceItem['value']
-function mapChoices(data: _Global.CatalogItem[], level) {
+function mapChoices(data: CatalogItem[], level) {
   const result: ChoiceItem[] = []
 
   for (let i = 0; i < data.length; i++) {

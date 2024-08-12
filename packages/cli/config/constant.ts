@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { Buffer } from 'node:buffer'
-import type { ParseFunc } from '../utils'
-import { log } from '../utils'
+import type { ParseFunc } from '@/utils/index'
+import { log } from '@/utils/index'
 
 const CNONFIG_FILE_DEFAULT = 'dlc.config.js'
 const defualtParse: ParseFunc = async (path: string, data: any): Promise<WriteFileSyncRestParams> => {
@@ -9,7 +9,7 @@ const defualtParse: ParseFunc = async (path: string, data: any): Promise<WriteFi
 }
 
 // 全局默认配置
-export const defaultConfig: _Global.ConfigFile = {
+export const defaultConfig: ConfigFile = {
   root: '.',
   rootAP: '', // 运行时,init 绝对路径
   file: {
@@ -32,7 +32,7 @@ export function getConfigFileName() {
 }
 
 // 配置归一化 TODO: 深度配置字段校验.
-export function normalizeConfig(mergeConfig: _Global.ConfigFile, rootAP: string) {
+export function normalizeConfig(mergeConfig: ConfigFile, rootAP: string) {
   const keys = Object.keys(defaultConfig)
   const configKeys = Object.keys(mergeConfig)
 
