@@ -15,9 +15,9 @@ const commonPlugins = [alias({
   },
 })]
 
-// 单独打包声明文件
+// ts声明文件
 const dtsConfig = defineConfig({
-  input: ['./index.ts', './global.d.ts'],
+  input: './types/index.ts',
   plugins: [...commonPlugins, dts({ respectExternal: false })],
   output: {
     dir: 'dist/types',
@@ -41,11 +41,19 @@ const normalConfig = defineConfig({
     }),
     // esbuild 和 typescript2 插件同时使用时, typescript2 执行检查和声明文件生成, esbuild 进行编译.
     // https://www.npmjs.com/package/rollup-plugin-typescript2
+    // ts检查
     typescript({
+      tsconfigOverride: {
+        compilerOptions: {
+          declaration: false,
+          declarationDir: null,
+        }
+      },
       useTsconfigDeclarationDir: true,
       clean: true,
     }),
-    // esbuild({}),
+    // ts构建
+    esbuild(),
   ],
   input: {
     index: './index.ts',
@@ -65,6 +73,6 @@ const normalConfig = defineConfig({
 })
 
 export default defineConfig([
-  // dtsConfig,
+  dtsConfig,
   normalConfig,
 ])

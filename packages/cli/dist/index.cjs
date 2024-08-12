@@ -4388,310 +4388,271 @@ const chalk = createChalk();
 createChalk({level: stderrColor ? stderrColor.level : 0});
 
 const colors = [
-    'black',
-    'red',
-    'green',
-    'yellow',
-    'blue',
-    'magenta',
-    'cyan',
-    'white',
-    'gray',
-    'redBright',
-    'greenBright',
-    'yellowBright',
-    'blueBright',
-    'magentaBright',
-    'cyanBright',
-    'whiteBright',
-    // bg
-    'bgBlack',
-    'bgRed',
-    'bgGreen',
-    'bgYellow',
-    'bgBlue',
-    'bgMagenta',
-    'bgCyan',
-    'bgWhite',
-    'bgBlackBright',
-    'bgRedBright',
-    'bgGreenBright',
-    'bgYellowBright',
-    'bgBlueBright',
-    'bgMagentaBright',
-    'bgCyanBright',
-    'bgWhiteBright',
-]; // as const 它告诉 TypeScript 将数组中的元素视为字面量类型，而不是普通的 string 类型。
+  "black",
+  "red",
+  "green",
+  "yellow",
+  "blue",
+  "magenta",
+  "cyan",
+  "white",
+  "gray",
+  "redBright",
+  "greenBright",
+  "yellowBright",
+  "blueBright",
+  "magentaBright",
+  "cyanBright",
+  "whiteBright",
+  // bg
+  "bgBlack",
+  "bgRed",
+  "bgGreen",
+  "bgYellow",
+  "bgBlue",
+  "bgMagenta",
+  "bgCyan",
+  "bgWhite",
+  "bgBlackBright",
+  "bgRedBright",
+  "bgGreenBright",
+  "bgYellowBright",
+  "bgBlueBright",
+  "bgMagentaBright",
+  "bgCyanBright",
+  "bgWhiteBright"
+];
 const log = {};
-// log
 colors.forEach((item) => {
-    log[item] = (...strs) => {
-        console.log(chalk[item](...strs));
-    };
+  log[item] = (...strs) => {
+    console.log(chalk[item](...strs));
+  };
 });
-// chalk
 colors.forEach((item) => {
-    log[`_${item}`] = chalk[item];
+  log[`_${item}`] = chalk[item];
 });
 
-const CNONFIG_FILE_DEFAULT = 'dlc.config.js';
-const defualtParse = async (path, data) => {
-    return [node_buffer.Buffer.from(data.content, 'base64'), 'utf-8'];
+const CNONFIG_FILE_DEFAULT = "dlc.config.js";
+const defualtParse = async (path2, data) => {
+  return [node_buffer.Buffer.from(data.content, "base64"), "utf-8"];
 };
-// 全局默认配置
 const defaultConfig = {
-    root: '.',
-    rootAP: '', // 运行时,init 绝对路径
-    file: {
-        // 文件下载/操作相关
-        removeWhitePath: [],
-        downloadRelativePath: '.',
-        parse: defualtParse, // 内容解析函数
-    },
-    git: {
-        owner: 'Dofw',
-        repo: 'vs-theme',
-        pafg_token: '',
-        defaultBranch: 'main',
-    },
+  root: ".",
+  rootAP: "",
+  // 运行时,init 绝对路径
+  file: {
+    // 文件下载/操作相关
+    removeWhitePath: [],
+    downloadRelativePath: ".",
+    parse: defualtParse
+    // 内容解析函数
+  },
+  git: {
+    owner: "Dofw",
+    repo: "vs-theme",
+    pafg_token: "",
+    defaultBranch: "main"
+  }
 };
-// 获取配置文件名
 function getConfigFileName() {
-    return CNONFIG_FILE_DEFAULT;
+  return CNONFIG_FILE_DEFAULT;
 }
-// 配置归一化 TODO: 深度配置字段校验.
 function normalizeConfig(mergeConfig, rootAP) {
-    const keys = Object.keys(defaultConfig);
-    const configKeys = Object.keys(mergeConfig);
-    configKeys.forEach((key) => {
-        if (!keys.includes(key))
-            throw new Error(log._red(`${key} is invalid key in config`));
-    });
-    // 与路径相关, 相对路径全部转位绝对路径
-    mergeConfig.rootAP = rootAP;
-    mergeConfig.root = path$1.resolve(rootAP, mergeConfig.root);
-    mergeConfig.file.removeWhitePath = mergeConfig.file.removeWhitePath.map((item) => {
-        if (typeof item !== 'string')
-            throw new Error(log._red('removeWhitePath must be string array'));
-        return path$1.resolve(rootAP, item);
-    });
+  const keys = Object.keys(defaultConfig);
+  const configKeys = Object.keys(mergeConfig);
+  configKeys.forEach((key) => {
+    if (!keys.includes(key))
+      throw new Error(log._red(`${key} is invalid key in config`));
+  });
+  mergeConfig.rootAP = rootAP;
+  mergeConfig.root = path$1.resolve(rootAP, mergeConfig.root);
+  mergeConfig.file.removeWhitePath = mergeConfig.file.removeWhitePath.map((item) => {
+    if (typeof item !== "string")
+      throw new Error(log._red("removeWhitePath must be string array"));
+    return path$1.resolve(rootAP, item);
+  });
 }
 
 var ENUM_ERROR_TYPE;
-(function (ENUM_ERROR_TYPE) {
-    // 请求错误
-    ENUM_ERROR_TYPE["HTTP"] = "git_http_error";
-    // 语法错误
-    ENUM_ERROR_TYPE["SYNTAX"] = "syntax_error";
+(function(ENUM_ERROR_TYPE2) {
+  ENUM_ERROR_TYPE2["HTTP"] = "git_http_error";
+  ENUM_ERROR_TYPE2["SYNTAX"] = "syntax_error";
 })(ENUM_ERROR_TYPE || (ENUM_ERROR_TYPE = {}));
 let DLCHttpError$1 = class DLCHttpError extends Error {
-    constructor(type, message) {
-        super(message);
-        this.type = type;
-    }
+  constructor(type, message) {
+    super(message);
+    this.type = type;
+  }
 };
 function errorInit() {
-    // @ts-ignore
-    globalThis.DLCHttpError = DLCHttpError$1;
+  globalThis.DLCHttpError = DLCHttpError$1;
 }
 function handlerHttpError(error) {
-    log.red(`gitApi request error: ${error.message}`);
+  log.red(`gitApi request error: ${error.message}`);
 }
 const errorHandler = {
-    [ENUM_ERROR_TYPE.HTTP]: handlerHttpError,
-    [ENUM_ERROR_TYPE.SYNTAX]: handlerHttpError,
+  [ENUM_ERROR_TYPE.HTTP]: handlerHttpError,
+  [ENUM_ERROR_TYPE.SYNTAX]: handlerHttpError
 };
 function errorWrapper(fn) {
-    return async function (...args) {
-        try {
-            return await fn.apply(this, args);
-        }
-        catch (error) {
-            if (typeof error === 'string')
-                log.red(error);
-            else if (errorHandler[error.type])
-                errorHandler[error.type]?.(error);
-            else
-                log.red(error);
-            process$3.exit(0);
-        }
-    };
+  return async function(...args) {
+    try {
+      return await fn.apply(this, args);
+    } catch (error) {
+      if (typeof error === "string")
+        log.red(error);
+      else if (errorHandler[error.type])
+        errorHandler[error.type]?.(error);
+      else
+        log.red(error);
+      process$3.exit(0);
+    }
+  };
 }
 
 const gitConfig = defaultConfig.git;
-/**
- * 初始化文件操作系统 - 需要的配置内容
- * @param configFile 全局配置文件
- */
 function init$1(configFile) {
-    const dclGitConfig = configFile.git;
-    Object.keys(gitConfig).forEach((key) => {
-        gitConfig[key] = dclGitConfig[key];
-    });
+  const dclGitConfig = configFile.git;
+  Object.keys(gitConfig).forEach((key) => {
+    gitConfig[key] = dclGitConfig[key];
+  });
 }
-// 策略
 const urlStrategy = {
-    ["contents" /* GitFetchType.contents */]: (option) => {
-        // .../contents/{path}{?ref} ref: branch, tag, commit
-        const path = option.sha ? `${option.sha}` : '';
-        const branch = option.branch || gitConfig.defaultBranch;
-        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/contents/${path}?ref=${branch}`;
-    },
-    ["branches" /* GitFetchType.branches */]: () => {
-        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/branches`;
-    },
-    ["trees" /* GitFetchType.trees */]: (option) => {
-        // .../git/trees/{sha}{?recursive=1}, sha: commit or ref(branch, tag)
-        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/trees/${option.sha}${option.recursive ? '?recursive=1' : ''}`;
-    },
-    ["blobs" /* GitFetchType.blobs */]: (option) => {
-        // .../git/blobs/{sha} sha: commit;
-        return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/blobs/${option.sha}`;
-    },
+  [
+    "contents"
+    /* GitFetchType.contents */
+  ]: (option) => {
+    const path = option.sha ? `${option.sha}` : "";
+    const branch = option.branch || gitConfig.defaultBranch;
+    return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/contents/${path}?ref=${branch}`;
+  },
+  [
+    "branches"
+    /* GitFetchType.branches */
+  ]: () => {
+    return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/branches`;
+  },
+  [
+    "trees"
+    /* GitFetchType.trees */
+  ]: (option) => {
+    return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/trees/${option.sha}${option.recursive ? "?recursive=1" : ""}`;
+  },
+  [
+    "blobs"
+    /* GitFetchType.blobs */
+  ]: (option) => {
+    return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/blobs/${option.sha}`;
+  }
 };
 async function git(option) {
-    let url;
-    const generate = urlStrategy[option.type];
-    if (generate)
-        url = generate(option);
-    return await gitUrl(url);
+  let url;
+  const generate = urlStrategy[option.type];
+  if (generate)
+    url = generate(option);
+  return await gitUrl(url);
 }
 async function gitUrl(url) {
-    if (!url)
-        throw new Error(log._red('urlStrategy not found, please check option.type!'));
-    const options = new Request(url, {
-        headers: {
-            'User-Agent': '@dawnll/cli',
-            'Accept': 'application/vnd.github.v3+json',
-            'authorization': `Bearer ${gitConfig.pafg_token}`,
-        },
-    });
-    const res = await fetch(options);
-    const json = await res.json();
-    if (json.message)
-        throw new DLCHttpError(ENUM_ERROR_TYPE.HTTP, json.message);
-    return json;
+  if (!url)
+    throw new Error(log._red("urlStrategy not found, please check option.type!"));
+  const options = new Request(url, {
+    headers: {
+      "User-Agent": "@dawnll/cli",
+      "Accept": "application/vnd.github.v3+json",
+      "authorization": `Bearer ${gitConfig.pafg_token}`
+    }
+  });
+  const res = await fetch(options);
+  const json = await res.json();
+  if (json.message)
+    throw new DLCHttpError(ENUM_ERROR_TYPE.HTTP, json.message);
+  return json;
 }
 const http = {
-    init: init$1,
-    git,
-    gitUrl,
+  init: init$1,
+  git,
+  gitUrl
 };
 
 const fileConfig = defaultConfig.file;
-/**
- * 初始化文件操作系统 - 需要的配置内容
- * @param configFile 全局配置文件
- */
 function init(configFile) {
-    const dlcFileConfig = configFile.file;
-    Object.keys(fileConfig).forEach((key) => {
-        fileConfig[key] = dlcFileConfig[key];
-    });
+  const dlcFileConfig = configFile.file;
+  Object.keys(fileConfig).forEach((key) => {
+    fileConfig[key] = dlcFileConfig[key];
+  });
 }
-/**
- * 生成文件
- * @param input 绝对路径
- * @param content
- * @returns 返回完整绝对路径,或则重名后的绝对路径
- */
 async function writeFileSync(input, restParams) {
-    if (fs$1.existsSync(input)) {
-        // 交互
-        const repeat_confirm_text = pro.repeatFactory(log._red(`file already exists, rename?`));
-        const result = await repeat_confirm_text(input);
-        if (result.confirm && result.name)
-            input = pathRename(input, result.name);
-        else
-            throw new Error('file already exists, exit!!!');
-    }
-    const dir = path$1.dirname(input);
-    if (!fs$1.existsSync(dir))
-        fs$1.mkdirSync(dir, { recursive: true });
-    fs$1.writeFileSync(input, ...restParams);
-    return input;
+  if (fs$1.existsSync(input)) {
+    const repeat_confirm_text = pro.repeatFactory(log._red(`file already exists, rename?`));
+    const result = await repeat_confirm_text(input);
+    if (result.confirm && result.name)
+      input = pathRename(input, result.name);
+    else
+      throw new Error("file already exists, exit!!!");
+  }
+  const dir = path$1.dirname(input);
+  if (!fs$1.existsSync(dir))
+    fs$1.mkdirSync(dir, { recursive: true });
+  fs$1.writeFileSync(input, ...restParams);
+  return input;
 }
-/**
- *
- * @param input
- * @param name
- * @returns
- */
 function pathRename(input, name) {
-    const extname = path$1.extname(input);
-    const newFilePath = path$1.join(path$1.dirname(input), name + extname);
-    return newFilePath;
+  const extname = path$1.extname(input);
+  const newFilePath = path$1.join(path$1.dirname(input), name + extname);
+  return newFilePath;
 }
-/**
- * 删除文件
- * @param input 绝对路径
- * @returns
- */
 async function rmSyncFile(input) {
-    if (!rmSyncValidate(input))
-        return;
-    let promptResult = {
-        confirm: false,
-    };
-    // 1.提示文件路径,确认是否删除
-    promptResult = await pro.confirm(log._red(`delete file or directory, ${input}?`));
-    // 2.有内容的文件夹,确认是否删除
-    if (fs$1.statSync(input).isDirectory()) {
-        const curDirFiles = fs$1.readdirSync(input);
-        if (curDirFiles.length > 0)
-            promptResult = await pro.confirm(log._red(`directory is not empty, confirm delete?`));
-    }
-    promptResult.confirm && fs$1.rmSync(input, { recursive: true });
-    log.green('delete success');
-}
-/**
- * 删除空文件夹
- * @param input绝对路径
- * @returns
- */
-async function rmSyncEmptyDir(input) {
-    if (!rmSyncValidate(input))
-        return;
-    if (!fs$1.statSync(input).isDirectory())
-        return;
+  if (!rmSyncValidate(input))
+    return;
+  let promptResult = {
+    confirm: false
+  };
+  promptResult = await pro.confirm(log._red(`delete file or directory, ${input}?`));
+  if (fs$1.statSync(input).isDirectory()) {
     const curDirFiles = fs$1.readdirSync(input);
-    for (const file of curDirFiles) {
-        const nextPath = path$1.join(input, file);
-        if (fs$1.statSync(nextPath).isDirectory())
-            await rmSyncEmptyDir(nextPath);
-    }
-    // 从内层向外删除.
-    if (curDirFiles.length === 0)
-        return fs$1.rmSync(input);
+    if (curDirFiles.length > 0)
+      promptResult = await pro.confirm(log._red(`directory is not empty, confirm delete?`));
+  }
+  promptResult.confirm && fs$1.rmSync(input, { recursive: true });
+  log.green("delete success");
 }
-/**
- * 删除验证
- * @param input 绝对路径
- * @returns boolean
- */
+async function rmSyncEmptyDir(input) {
+  if (!rmSyncValidate(input))
+    return;
+  if (!fs$1.statSync(input).isDirectory())
+    return;
+  const curDirFiles = fs$1.readdirSync(input);
+  for (const file2 of curDirFiles) {
+    const nextPath = path$1.join(input, file2);
+    if (fs$1.statSync(nextPath).isDirectory())
+      await rmSyncEmptyDir(nextPath);
+  }
+  if (curDirFiles.length === 0)
+    return fs$1.rmSync(input);
+}
 function rmSyncValidate(input) {
-    const whiteList = fileConfig.removeWhitePath;
-    let isPass = false;
-    for (const white of whiteList) {
-        if (input.startsWith(white)) {
-            isPass = true;
-            break;
-        }
+  const whiteList = fileConfig.removeWhitePath;
+  let isPass = false;
+  for (const white of whiteList) {
+    if (input.startsWith(white)) {
+      isPass = true;
+      break;
     }
-    if (!isPass) {
-        log._red('file path not in whiteList, exit!!!');
-        return false;
-    }
-    if (!fs$1.existsSync(input))
-        return false;
-    return true;
+  }
+  if (!isPass) {
+    log._red("file path not in whiteList, exit!!!");
+    return false;
+  }
+  if (!fs$1.existsSync(input))
+    return false;
+  return true;
 }
 const file = {
-    init,
-    writeFileSync,
-    rmSyncFile,
-    rmSyncEmptyDir,
-    pathRename,
+  init,
+  writeFileSync,
+  rmSyncFile,
+  rmSyncEmptyDir,
+  pathRename
 };
 
 var prompts$3 = {};
@@ -10964,113 +10925,111 @@ var prompts =
 var prompts$1 = /*@__PURE__*/getDefaultExportFromCjs(prompts);
 
 async function confirm$1(message) {
-    message = message || `file or directory already exists, rename?`;
-    return await prompts$1({
-        type: 'toggle',
-        name: 'confirm',
-        message: log._yellow(message),
-        initial: false,
-        active: 'yes',
-        inactive: 'no',
-    });
+  message = message || `file or directory already exists, rename?`;
+  return await prompts$1({
+    type: "toggle",
+    name: "confirm",
+    message: log._yellow(message),
+    initial: false,
+    active: "yes",
+    inactive: "no"
+  });
 }
 async function text(message) {
-    message = message || 'please input';
-    return await prompts$1({
-        type: 'text',
-        name: 'name',
-        validate(input) {
-            return !input ? log._yellow('name is required') : true;
-        },
-        message,
-    });
+  message = message || "please input";
+  return await prompts$1({
+    type: "text",
+    name: "name",
+    validate(input) {
+      return !input ? log._yellow("name is required") : true;
+    },
+    message
+  });
 }
 async function list(validate, message) {
-    message = message || log._yellow(`input rename and must separate with comma!`);
-    validate = validate || (() => true);
-    return await prompts$1({
-        type: 'list',
-        name: 'names',
-        separator: ',',
-        message,
-        validate,
-    });
+  message = message || log._yellow(`input rename and must separate with comma!`);
+  validate = validate || (() => true);
+  return await prompts$1({
+    type: "list",
+    name: "names",
+    separator: ",",
+    message,
+    validate
+  });
 }
 async function autoMultiselect(choices, message, suggest, onState) {
-    suggest = suggest || (async (input, choices) => {
-        return choices.filter((choice) => {
-            return choice.title.toLowerCase().includes(input.toLowerCase());
-        });
+  suggest = suggest || (async (input, choices2) => {
+    return choices2.filter((choice) => {
+      return choice.title.toLowerCase().includes(input.toLowerCase());
     });
-    onState = onState || (() => {
-        log.green('--onState--');
-    });
-    message = message || 'please select';
-    return await prompts$1({
-        type: 'autocompleteMultiselect',
-        name: 'selects',
-        initial: 0,
-        limit: 100,
-        optionsPerPage: 100,
-        fallback: 'no match!',
-        instructions: false,
-        message,
-        choices,
-        suggest,
-        onState,
-    });
+  });
+  onState = onState || (() => {
+    log.green("--onState--");
+  });
+  message = message || "please select";
+  return await prompts$1({
+    type: "autocompleteMultiselect",
+    name: "selects",
+    initial: 0,
+    limit: 100,
+    optionsPerPage: 100,
+    fallback: "no match!",
+    instructions: false,
+    message,
+    choices,
+    suggest,
+    onState
+  });
 }
-// 组合 confirm + text
 async function confirm_text(confirmMsg, textMsg) {
-    const step1 = await confirm$1(confirmMsg);
-    const step2 = step1.confirm ? await text(textMsg) : { name: '' };
-    return {
-        ...step1,
-        ...step2,
-    };
+  const step1 = await confirm$1(confirmMsg);
+  const step2 = step1.confirm ? await text(textMsg) : { name: "" };
+  return {
+    ...step1,
+    ...step2
+  };
 }
 function repeatFactory(confirmMsg, textMsg) {
-    const initAnswer = {
-        confirm: false,
-        isRenamed: false,
-        name: '',
+  const initAnswer = {
+    confirm: false,
+    isRenamed: false,
+    name: ""
+  };
+  return async function repeat_confirm_text(name, count = 0) {
+    const dirname = path$1.dirname(name);
+    const extname = path$1.extname(name);
+    const basename = path$1.basename(name, extname);
+    const targetPath = path$1.resolve(process$3.cwd(), name);
+    const isExist = fs$1.existsSync(targetPath);
+    if (!isExist) {
+      return {
+        confirm: true,
+        isRenamed: count !== 0,
+        // 大于0代表: 已经重命名且不存在
+        name: basename
+      };
+    }
+    let answer = {
+      confirm: false,
+      name: ""
     };
-    return async function repeat_confirm_text(name, count = 0) {
-        // 只判断basename
-        const dirname = path$1.dirname(name); // 父目录
-        const extname = path$1.extname(name); // 扩展名
-        const basename = path$1.basename(name, extname); // 基础名
-        const targetPath = path$1.resolve(process$3.cwd(), name); // 绝对路径,name覆盖cwd.
-        const isExist = fs$1.existsSync(targetPath);
-        if (!isExist) {
-            return {
-                confirm: true,
-                isRenamed: count !== 0, // 大于0代表: 已经重命名且不存在
-                name: basename,
-            };
-        }
-        // 已存在,确认
-        let answer = {
-            confirm: false,
-            name: '',
-        };
-        answer = await confirm_text(confirmMsg, textMsg);
-        if (answer.confirm && answer.name) {
-            const newName = path$1.join(dirname, answer.name + extname);
-            count++;
-            return await repeat_confirm_text(newName, count);
-        }
-        return initAnswer;
-    };
+    answer = await confirm_text(confirmMsg, textMsg);
+    if (answer.confirm && answer.name) {
+      const newName = path$1.join(dirname, answer.name + extname);
+      count++;
+      return await repeat_confirm_text(newName, count);
+    }
+    return initAnswer;
+  };
 }
 const pro = {
-    confirm: confirm$1,
-    text,
-    list,
-    autoMultiselect,
-    confirm_text,
-    repeat_confirm_text: repeatFactory(),
-    repeatFactory,
+  confirm: confirm$1,
+  text,
+  list,
+  autoMultiselect,
+  confirm_text,
+  repeat_confirm_text: repeatFactory(),
+  repeatFactory
 };
 
 var onetime$2 = {exports: {}};
@@ -14113,411 +14072,351 @@ function ora(options) {
 	return new Ora(options);
 }
 
-// 单层目录content/tree格式统一.
 function oneLayerCatalog(data, type) {
-    if (!data)
-        return [];
-    const urlKey = type === "contents" /* GitFetchType.contents */ ? 'git_url' : 'url';
-    // 生成目录
-    const catalog = [];
-    for (const item of data) {
-        const ele = {
-            path: item.path,
-            url: item[urlKey],
-            type: type === "contents" /* GitFetchType.contents */ ? item.type : item.type === 'tree' ? 'dir' : 'file',
-            size: item.size,
-            sha: item.sha,
-        };
-        catalog.push(ele);
-    }
-    return catalog;
+  if (!data)
+    return [];
+  const urlKey = type === "contents" ? "git_url" : "url";
+  const catalog = [];
+  for (const item of data) {
+    const ele = {
+      path: item.path,
+      url: item[urlKey],
+      type: type === "contents" ? item.type : item.type === "tree" ? "dir" : "file",
+      size: item.size,
+      sha: item.sha
+    };
+    catalog.push(ele);
+  }
+  return catalog;
 }
-// 递归目录
-let treeLevel = 0; // 内部重置
+let treeLevel = 0;
 async function treeLayerCatalog(data, type, level) {
-    const oneLayer = oneLayerCatalog(data, type);
-    treeLevel++;
-    try {
-        for (let i = 0; i < oneLayer.length; i++) {
-            const element = oneLayer[i];
-            // level 不存在就不限制
-            if (element.type === 'dir' && (!level || treeLevel < level)) {
-                const json = await http.gitUrl(element.url);
-                oneLayer[i].children = await treeLayerCatalog(json.tree, "trees" /* GitFetchType.trees */, level);
-                // 将路径进行拼接
-                oneLayer[i].children = oneLayer[i].children?.map((item) => {
-                    return {
-                        ...item,
-                        relativeInputPath: path$1.join(element.path, item.path),
-                    };
-                });
-            }
-        }
+  const oneLayer = oneLayerCatalog(data, type);
+  treeLevel++;
+  try {
+    for (let i = 0; i < oneLayer.length; i++) {
+      const element = oneLayer[i];
+      if (element.type === "dir" && (!level || treeLevel < level)) {
+        const json = await http.gitUrl(element.url);
+        oneLayer[i].children = await treeLayerCatalog(json.tree, "trees", level);
+        oneLayer[i].children = oneLayer[i].children?.map((item) => {
+          return {
+            ...item,
+            relativeInputPath: path$1.join(element.path, item.path)
+          };
+        });
+      }
     }
-    finally {
-        treeLevel--;
-    }
-    return oneLayer;
+  } finally {
+    treeLevel--;
+  }
+  return oneLayer;
 }
-// 下载
-// file-blob
 async function fileBlob(catalogItem, configFile, parse) {
-    const { url, path: itemPath } = catalogItem;
-    const downloadRelativePath = path$1.join(configFile.file.downloadRelativePath, itemPath);
-    const spinner = ora(log._green(downloadRelativePath)).start();
-    const data = await http.gitUrl(url);
-    spinner.stop();
-    // 绝对路径
-    const filePath = path$1.resolve(process$3.cwd(), downloadRelativePath);
-    const restParams = await parse(filePath, data);
-    let finishPath;
-    try {
-        finishPath = await file.writeFileSync(filePath, restParams);
-    }
-    catch (error) {
-        throw new Error('writeFileSync error.');
-    }
-    spinner.succeed(log._green(`${downloadRelativePath}, success.`));
-    return finishPath;
+  const { url, path: itemPath } = catalogItem;
+  const downloadRelativePath = path$1.join(configFile.file.downloadRelativePath, itemPath);
+  const spinner = ora(log._green(downloadRelativePath)).start();
+  const data = await http.gitUrl(url);
+  spinner.stop();
+  const filePath = path$1.resolve(process$3.cwd(), downloadRelativePath);
+  const restParams = await parse(filePath, data);
+  let finishPath;
+  try {
+    finishPath = await file.writeFileSync(filePath, restParams);
+  } catch (error) {
+    throw new Error("writeFileSync error.");
+  }
+  spinner.succeed(log._green(`${downloadRelativePath}, success.`));
+  return finishPath;
 }
-let _level = 0; // 递归层级, 内部重置
-/**
- * 递归调用fileBlob, 传递parse
- * @param catalogItem 单个目录信息
- * @param configFile 全局配置文件
- * @returns
- */
+let _level = 0;
 async function recursiveFileBlob(catalogItem, configFile, parse) {
-    _level++;
-    const finishPaths = [];
-    const { sha, path } = catalogItem;
-    try {
-        const config = {
-            type: "trees" /* GitFetchType.trees */,
-            sha,
-        };
-        const json = await http.git(config);
-        const catalog = oneLayerCatalog(json.tree, "trees" /* GitFetchType.trees */);
-        for (const item of catalog) {
-            item.path = `${path}/${item.path}`; // tree 获取不包含父目录, 在这里拼接上父目录
-            if (item.type === 'file') {
-                const finish = await fileBlob(item, configFile, parse);
-                finishPaths.push(finish);
-            }
-            else if (item.type === 'dir') {
-                const finishs = await recursiveFileBlob(item, configFile, parse);
-                finishPaths.push(...finishs);
-            }
-        }
+  _level++;
+  const finishPaths = [];
+  const { sha, path: path2 } = catalogItem;
+  try {
+    const config = {
+      type: "trees",
+      sha
+    };
+    const json = await http.git(config);
+    const catalog = oneLayerCatalog(
+      json.tree,
+      "trees"
+      /* GitFetchType.trees */
+    );
+    for (const item of catalog) {
+      item.path = `${path2}/${item.path}`;
+      if (item.type === "file") {
+        const finish = await fileBlob(item, configFile, parse);
+        finishPaths.push(finish);
+      } else if (item.type === "dir") {
+        const finishs = await recursiveFileBlob(item, configFile, parse);
+        finishPaths.push(...finishs);
+      }
     }
-    catch (error) {
-        for (const filePath of finishPaths)
-            await file.rmSyncFile(`${filePath}`); // 删除whitepath
-        // 同时删除当前文件夹下的空文件夹.
-        await file.rmSyncEmptyDir(path);
-        log.white('-- quit --');
-        // 起始层, 不需要报错;
-        if (_level > 1)
-            throw new Error('download trees error.');
-    }
-    finally {
-        _level--; // 执行完一层减1, 回归init
-    }
-    return finishPaths;
+  } catch (error) {
+    for (const filePath of finishPaths)
+      await file.rmSyncFile(`${filePath}`);
+    await file.rmSyncEmptyDir(path2);
+    log.white("-- quit --");
+    if (_level > 1)
+      throw new Error("download trees error.");
+  } finally {
+    _level--;
+  }
+  return finishPaths;
 }
 const download = {
-    fileBlob,
-    recursiveFileBlob,
-    oneLayerCatalog,
-    treeLayerCatalog,
+  fileBlob,
+  recursiveFileBlob,
+  oneLayerCatalog,
+  treeLayerCatalog
 };
 
-async function oraWrapper(cb, param, start = log._yellow('loading...'), end = log._green('success')) {
-    const spinner = ora(start).start();
-    let result;
-    cb && (result = await cb(param));
-    spinner.succeed(end);
-    return result;
+async function oraWrapper(cb, param, start = log._yellow("loading..."), end = log._green("success")) {
+  const spinner = ora(start).start();
+  let result;
+  cb && (result = await cb(param));
+  spinner.succeed(end);
+  return result;
 }
 
 function repeatEmptyStr(num) {
-    let str = '';
-    for (let i = 0; i < num; i++)
-        str += ' ';
-    return str;
+  let str = "";
+  for (let i = 0; i < num; i++)
+    str += " ";
+  return str;
 }
 const tools = {
-    repeatEmptyStr,
+  repeatEmptyStr
 };
 
-/**
- * 先注册功能函数串联起来, 每次run从头迭代.
- */
 class MiddleWare {
-    constructor() {
-        this.queues = [];
-        this.iterator = null;
-    }
-    construction() {
-    }
-    use(fn) {
-        if (typeof fn !== 'function')
-            throw new Error('param must be a function');
-        this.queues.push(fn.bind(this));
-        return this;
-    }
-    async run(context) {
-        this.context = context;
-        this.iterator = this.generator();
-        let result = this.iterator.next();
-        const handlerResult = async () => {
-            if (result.done)
-                return;
-            const res = result.value(this.context);
-            if (res && typeof res.then === 'function') {
-                try {
-                    await res;
-                    result = this.iterator.next();
-                    await handlerResult();
-                }
-                catch (error) {
-                    result = this.iterator.throw(error);
-                    await handlerResult();
-                }
-            }
-            else {
-                // 同步
-                result = this.iterator.next();
-                handlerResult();
-            }
-        };
-        await handlerResult();
-    }
-    cancel(str = 'cancel', color = 'yellow') {
-        if (this.iterator) {
-            log[color](str);
-            return this.iterator.return('cancel');
+  constructor() {
+    this.queues = [];
+    this.iterator = null;
+  }
+  construction() {
+  }
+  use(fn) {
+    if (typeof fn !== "function")
+      throw new Error("param must be a function");
+    this.queues.push(fn.bind(this));
+    return this;
+  }
+  async run(context) {
+    this.context = context;
+    this.iterator = this.generator();
+    let result = this.iterator.next();
+    const handlerResult = async () => {
+      if (result.done)
+        return;
+      const res = result.value(this.context);
+      if (res && typeof res.then === "function") {
+        try {
+          await res;
+          result = this.iterator.next();
+          await handlerResult();
+        } catch (error) {
+          result = this.iterator.throw(error);
+          await handlerResult();
         }
-        else {
-            throw new Error('not execute run !');
-        }
+      } else {
+        result = this.iterator.next();
+        handlerResult();
+      }
+    };
+    await handlerResult();
+  }
+  cancel(str = "cancel", color = "yellow") {
+    if (this.iterator) {
+      log[color](str);
+      return this.iterator.return("cancel");
+    } else {
+      throw new Error("not execute run !");
     }
-    *generator() {
-        const queues = this.queues;
-        for (let i = 0; i < queues.length; i++) {
-            const fn = queues[i];
-            yield fn;
-        }
-        return 'done';
+  }
+  *generator() {
+    const queues = this.queues;
+    for (let i = 0; i < queues.length; i++) {
+      const fn = queues[i];
+      yield fn;
     }
+    return "done";
+  }
 }
 
 async function load(_ctx) {
-    // 1. 下载原文件内容
-    const { answers: { confirm }, args: [path, branch], configFile } = _ctx;
-    const { parse } = configFile.file;
-    let newPath = path;
-    if (confirm.isRenamed)
-        newPath = file.pathRename(path, confirm.name);
-    const config = {
-        type: "contents" /* GitFetchType.contents */,
-        sha: newPath,
-        branch,
-    };
-    await oraWrapper(async () => {
-        const json = await http.git(config);
-        // 单个文件,直接下载
-        if (json.type === 'file') {
-            console.log('json', json);
-            const downloadRelativePath = path.join(configFile.file.downloadRelativePath, newPath);
-            const filePath = path.resolve(process$3.cwd(), downloadRelativePath);
-            // 解析
-            // const parse: ParseFunc = async (path, data) => {
-            //   return [data.content]
-            // }
-            // const restParams = await parse(filePath, json)
-            await file.writeFileSync(filePath, [json.content]);
-        }
-        else {
-            // 是array
-            const arrs = download.oneLayerCatalog(json, "contents" /* GitFetchType.contents */);
-            for (const fileOption of arrs)
-                await dowanloadFunc(fileOption, configFile, parse); // TODO: 解析函数通过配置文件读取.
-        }
-    });
+  const { answers: { confirm }, args: [path, branch], configFile } = _ctx;
+  const { parse } = configFile.file;
+  let newPath = path;
+  if (confirm.isRenamed)
+    newPath = file.pathRename(path, confirm.name);
+  const config = {
+    type: "contents",
+    sha: newPath,
+    branch
+  };
+  await oraWrapper(async () => {
+    const json = await http.git(config);
+    if (json.type === "file") {
+      console.log("json", json);
+      const downloadRelativePath = path.join(configFile.file.downloadRelativePath, newPath);
+      const filePath = path.resolve(process$3.cwd(), downloadRelativePath);
+      await file.writeFileSync(filePath, [json.content]);
+    } else {
+      const arrs = download.oneLayerCatalog(
+        json,
+        "contents"
+        /* GitFetchType.contents */
+      );
+      for (const fileOption of arrs)
+        await dowanloadFunc(fileOption, configFile, parse);
+    }
+  });
 }
 async function dowanloadFunc(fileOption, configFile, parse) {
-    const { type } = fileOption;
-    if (type === 'file') {
-        await download.fileBlob(fileOption, configFile, parse);
-        return;
-    }
-    if (type === 'dir')
-        await download.recursiveFileBlob(fileOption, configFile, parse);
+  const { type } = fileOption;
+  if (type === "file") {
+    await download.fileBlob(fileOption, configFile, parse);
+    return;
+  }
+  if (type === "dir")
+    await download.recursiveFileBlob(fileOption, configFile, parse);
 }
 
-/**
- * 确定文件目标
- * 存在：用户交互，是否重写、或取消重新输入。
- * 不存在：进行下一步。
- */
 async function confirm(ctx) {
-    const { args: [path] } = ctx;
-    const answer = await pro.repeat_confirm_text(path); // 反复确认
-    if (!answer.confirm)
-        this.cancel();
-    // 确认answer注入的ctx
-    ctx.answers.confirm = answer;
+  const { args: [path] } = ctx;
+  const answer = await pro.repeat_confirm_text(path);
+  if (!answer.confirm)
+    this.cancel();
+  ctx.answers.confirm = answer;
 }
 
 const app = new MiddleWare();
-// 先确认, 在加载
-app
-    .use(confirm)
-    .use(load);
+app.use(confirm).use(load);
 async function addAction(configFile, _args) {
-    const [path] = _args;
-    if (!path)
-        throw new Error(chalk.red('Missing require argument: `tempalte`.'));
-    const context = {
-        args: _args,
-        answers: {
-            confirm: {
-                confirm: false,
-                isRenamed: false,
-                name: '',
-            },
-        },
-        configFile,
-    };
-    await app.run(context);
+  const [path] = _args;
+  if (!path)
+    throw new Error(chalk.red("Missing require argument: `tempalte`."));
+  const context = {
+    args: _args,
+    answers: {
+      confirm: {
+        confirm: false,
+        isRenamed: false,
+        name: ""
+      }
+    },
+    configFile
+  };
+  await app.run(context);
 }
 var addAction$1 = errorWrapper(addAction);
 
 let coutLevel = 0;
-/**
- * 查看件结构
- * @param configFile 配置文件
- * @param _args
- * @returns
- */
 async function getListAction(configFile, _args) {
-    const [repPath, branch, { level }] = _args; // level 默认为 3
-    // 通过content获取目录时,如果传入path,那么第一层自动会带上path
-    const config = {
-        type: "contents" /* GitFetchType.contents */,
-        sha: repPath,
-        branch,
-    };
-    const catalog = await oraWrapper(async () => {
-        const json = await http.git(config);
-        console.log(json);
-        return await download.treeLayerCatalog(json, "contents" /* GitFetchType.contents */, +level);
+  const [repPath, branch, { level }] = _args;
+  const config = {
+    type: "contents",
+    sha: repPath,
+    branch
+  };
+  const catalog = await oraWrapper(async () => {
+    const json = await http.git(config);
+    console.log(json);
+    return await download.treeLayerCatalog(json, "contents", +level);
+  });
+  const choices = mapChoices(catalog, level);
+  const suggest = async (input, choices2) => {
+    return choices2.filter((choice) => {
+      return choice.title.toLowerCase().includes(input.toLowerCase());
     });
-    const choices = mapChoices(catalog, level);
-    const suggest = async (input, choices) => {
-        return choices.filter((choice) => {
-            return choice.title.toLowerCase().includes(input.toLowerCase());
-        });
-    };
-    const { selects } = await pro.autoMultiselect(choices, `show ${level} layer catalog.`, suggest);
-    const selects2 = selects || [];
-    if (selects2.length === 0)
-        return;
-    log.yellow(`note: the path is relative to root of repository. selected:`);
-    for (let i = 0; i < selects2.length; i++) {
-        const element = selects2[i];
-        log.green(element.relativeInputPath);
-    }
+  };
+  const { selects } = await pro.autoMultiselect(choices, `show ${level} layer catalog.`, suggest);
+  const selects2 = selects || [];
+  if (selects2.length === 0)
+    return;
+  log.yellow(`note: the path is relative to root of repository. selected:`);
+  for (let i = 0; i < selects2.length; i++) {
+    const element = selects2[i];
+    log.green(element.relativeInputPath);
+  }
 }
 function mapChoices(data, level) {
-    const result = [];
-    for (let i = 0; i < data.length; i++) {
-        const element = data[i];
-        const markStr = element.type === 'dir' ? '📂' : '📄';
-        const relativeInputPath = element.relativeInputPath ? element.relativeInputPath : element.path;
-        result.push({
-            title: `${tools.repeatEmptyStr(coutLevel * 3)}${markStr} ${element.path}`,
-            value: {
-                path: element.path,
-                type: element.type,
-                relativeInputPath,
-            },
-        });
-        if (element.children && coutLevel < level - 1) {
-            coutLevel++;
-            const childResult = mapChoices(element.children, level);
-            coutLevel--;
-            result.push(...childResult);
-        }
+  const result = [];
+  for (let i = 0; i < data.length; i++) {
+    const element = data[i];
+    const markStr = element.type === "dir" ? "\u{1F4C2}" : "\u{1F4C4}";
+    const relativeInputPath = element.relativeInputPath ? element.relativeInputPath : element.path;
+    result.push({
+      title: `${tools.repeatEmptyStr(coutLevel * 3)}${markStr} ${element.path}`,
+      value: {
+        path: element.path,
+        type: element.type,
+        relativeInputPath
+      }
+    });
+    if (element.children && coutLevel < level - 1) {
+      coutLevel++;
+      const childResult = mapChoices(element.children, level);
+      coutLevel--;
+      result.push(...childResult);
     }
-    return result;
+  }
+  return result;
 }
 var getListAction$1 = errorWrapper(getListAction);
 
-// 获取根目录
 async function getRootPath() {
-    const packageName = 'package.json';
-    const dlcName = getConfigFileName();
-    let curCwdPath = process$3.cwd();
-    while (curCwdPath) {
-        const configFile = path$1.join(curCwdPath, dlcName);
-        const packFile = path$1.join(curCwdPath, packageName);
-        if (fs$1.existsSync(configFile) && fs$1.existsSync(packFile))
-            return curCwdPath;
-        // 到达根目录
-        if (curCwdPath === path$1.dirname(curCwdPath))
-            return undefined;
-        curCwdPath = path$1.dirname(curCwdPath);
-    }
+  const packageName = "package.json";
+  const dlcName = getConfigFileName();
+  let curCwdPath = process$3.cwd();
+  while (curCwdPath) {
+    const configFile = path$1.join(curCwdPath, dlcName);
+    const packFile = path$1.join(curCwdPath, packageName);
+    if (fs$1.existsSync(configFile) && fs$1.existsSync(packFile))
+      return curCwdPath;
+    if (curCwdPath === path$1.dirname(curCwdPath))
+      return void 0;
+    curCwdPath = path$1.dirname(curCwdPath);
+  }
 }
-// 初始化配置
 const initConfig = errorWrapper(async () => {
-    const rootAP = await getRootPath();
-    if (!rootAP)
-        throw new Error(log._red('config file not found'));
-    const configFile = path$1.join(rootAP, getConfigFileName());
-    let mergeConfig = {};
-    if (fs$1.existsSync(configFile)) {
-        const userConfig = await import(configFile);
-        mergeConfig = Object.assign(defaultConfig, userConfig.default);
-    }
-    else {
-        mergeConfig = defaultConfig;
-    }
-    normalizeConfig(mergeConfig, rootAP);
-    file.init(mergeConfig); // file模块初始化
-    http.init(mergeConfig); // http模块初始化
-    errorInit(); // globalThis 上添加错误类
-    return mergeConfig;
+  const rootAP = await getRootPath();
+  if (!rootAP)
+    throw new Error(log._red("config file not found"));
+  const configFile = path$1.join(rootAP, getConfigFileName());
+  let mergeConfig = {};
+  if (fs$1.existsSync(configFile)) {
+    const userConfig = await import(configFile);
+    mergeConfig = Object.assign(defaultConfig, userConfig.default);
+  } else {
+    mergeConfig = defaultConfig;
+  }
+  normalizeConfig(mergeConfig, rootAP);
+  file.init(mergeConfig);
+  http.init(mergeConfig);
+  errorInit();
+  return mergeConfig;
 });
 
 function defineConfig(config) {
-    return config;
+  return config;
 }
-// 初始化配置
 (async () => {
-    const config = await initConfig();
-    const gitConfig = config.git;
-    const dlc = new Command();
-    dlc
-        .name('dlc-cli')
-        .description('study build myself Cli Tool !')
-        .version('0.0.1');
-    dlc
-        .command('add')
-        .argument('<path>', 'file or directory path of template repository.')
-        .argument('[branch]', 'branch to use', gitConfig.defaultBranch)
-        .description('add template')
-        .action((...args) => { addAction$1(config, args); });
-    dlc
-        .command('list-remote')
-        .argument('[path]', 'path to use', '')
-        .argument('[branch]', 'branch to use', gitConfig.defaultBranch)
-        .option('-l, --level <num>', 'level layer of catalog ', '3')
-        .description('view the remote template list')
-        .action((...args) => { getListAction$1(config, args); });
-    dlc.parse();
+  const config = await initConfig();
+  const gitConfig = config.git;
+  const dlc = new Command();
+  dlc.name("dlc-cli").description("study build myself Cli Tool !").version("0.0.1");
+  dlc.command("add").argument("<path>", "file or directory path of template repository.").argument("[branch]", "branch to use", gitConfig.defaultBranch).description("add template").action((...args) => {
+    addAction$1(config, args);
+  });
+  dlc.command("list-remote").argument("[path]", "path to use", "").argument("[branch]", "branch to use", gitConfig.defaultBranch).option("-l, --level <num>", "level layer of catalog ", "3").description("view the remote template list").action((...args) => {
+    getListAction$1(config, args);
+  });
+  dlc.parse();
 })();
 
 exports.defineConfig = defineConfig;
