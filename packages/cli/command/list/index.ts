@@ -1,5 +1,6 @@
 import { errorWrapper } from '@/config/error'
 import { download, http, log, oraWrapper, pro, tools } from '@/utils/index'
+import type {CatalogItem} from '@/types'
 
 let coutLevel = 0
 

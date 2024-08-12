@@ -3,7 +3,8 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { defaultConfig, getConfigFileName, normalizeConfig } from './constant'
 import { errorInit, errorWrapper } from './error'
-import { file, http, log } from '@/utils/index'
+import { file, http, log } from '@/utils'
+import type { ConfigFile } from '@/types'
 
 // 获取根目录
 async function getRootPath(): Promise<string | undefined> {

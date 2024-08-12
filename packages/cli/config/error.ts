@@ -16,6 +16,7 @@ export class DLCHttpError extends Error {
   }
 }
 export function errorInit() {
+  // @ts-ignore
   globalThis.DLCHttpError = DLCHttpError
 }
 

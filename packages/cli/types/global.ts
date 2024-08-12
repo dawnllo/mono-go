@@ -1,6 +1,5 @@
 import type fs from 'node:fs'
 
-export const a = 1
 export interface ConfigFile {
   root: string
   rootAP: string
@@ -21,12 +20,12 @@ export interface ConfigFile_File {
   parse: (path: string, data: any) => Promise<WriteFileSyncRestParams>
 }
 
-export enum GitFetchType {
+export const enum GitFetchType {
   branches = 'branches',
   contents = 'contents',
   trees = 'trees',
   blobs = 'blobs',
-}
+} 
 
 // sha 的含义见http模块
 export interface GitHttpOption {

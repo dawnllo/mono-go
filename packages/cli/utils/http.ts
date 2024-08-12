@@ -1,6 +1,7 @@
-import { defaultConfig } from '../config/constant'
-import { ENUM_ERROR_TYPE } from '../config/error'
+import { defaultConfig } from '@/config/constant'
+import { ENUM_ERROR_TYPE } from '@/config/error'
 import { log } from '.'
+import type { ConfigFile, GitHttpOption, ConfigFile_Git } from '@/types'
 
 const gitConfig: ConfigFile_Git = defaultConfig.git
 

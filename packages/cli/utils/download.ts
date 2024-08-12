@@ -2,6 +2,8 @@ import path from 'node:path'
 import { cwd } from 'node:process'
 import ora from 'ora'
 import { file, http, log } from '@/utils/index'
+import {GitFetchType} from '@/types'
+import type {CatalogItem, ConfigFile, WriteFileSyncRestParams } from '@/types'
 
 export type ParseFunc = (path: string, data: any) => Promise<WriteFileSyncRestParams>
 

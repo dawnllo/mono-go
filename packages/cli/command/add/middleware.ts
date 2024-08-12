@@ -1,5 +1,5 @@
 import type { Context } from './index'
-import type { FuncKeys } from '@/types/index'
+import type { FuncKeys } from '@/utils/index'
 import { log } from '@/utils/index'
 
 type UseFunction = (content: Context) => void | Promise<void>

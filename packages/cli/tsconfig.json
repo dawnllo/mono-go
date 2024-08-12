@@ -4,11 +4,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["."]
+      "@/*": ["./*"]
     },
-    "declaration": true,
-    "declarationDir": "./dist/types",
-    "emitDeclarationOnly": true,
+    "declaration": false,
+    // "declarationDir": "./dist/types",
+    // "emitDeclarationOnly": true,
     "outDir": "./dist",
     "esModuleInterop": true
   },

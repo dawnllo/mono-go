@@ -1,7 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { log, pro } from '@/utils/index'
+import { log, pro } from '@/utils'
 import { defaultConfig } from '@/config/constant'
+import type { ConfigFile_File, ConfigFile, WriteFileSyncRestParams } from '@/types'
 
 const fileConfig: ConfigFile_File = defaultConfig.file
 

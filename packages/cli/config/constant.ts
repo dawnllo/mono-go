@@ -2,6 +2,7 @@ import path from 'node:path'
 import { Buffer } from 'node:buffer'
 import type { ParseFunc } from '@/utils/index'
 import { log } from '@/utils/index'
+import type { WriteFileSyncRestParams, ConfigFile } from '@/types'
 
 const CNONFIG_FILE_DEFAULT = 'dlc.config.js'
 const defualtParse: ParseFunc = async (path: string, data: any): Promise<WriteFileSyncRestParams> => {

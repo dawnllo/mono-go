@@ -4,6 +4,7 @@ import load from './load'
 import confirm from './confirm'
 import { errorWrapper } from '@/config/error'
 import type { PRepeatConfirmText } from '@/utils/index'
+import type { ConfigFile } from '@/types'
 
 export interface Context {
   args: any[] // 命令行参数
