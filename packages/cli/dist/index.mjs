@@ -4503,7 +4503,6 @@ function errorWrapper(fn) {
         errorHandler[error.type]?.(error);
       else
         log.red(error);
-      process$3.exit(0);
     }
   };
 }
@@ -14404,6 +14403,7 @@ function defineConfig(config) {
   return config;
 }
 (async () => {
+  console.log("dlc-cli start");
   const config = await initConfig();
   const gitConfig = config.git;
   const dlc = new Command();
