@@ -1,3 +1,4 @@
+import process from 'node:process'
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
@@ -5,27 +6,10 @@ import { pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
 import { performance } from 'node:perf_hooks'
 import { builtinModules, createRequire } from 'node:module'
-
 import { build } from 'esbuild'
+import type { ConfigFile } from '@/types'
 
-export const DEFAULT_CONFIG_FILES = [
-  'vite.config.js',
-  'vite.config.mjs',
-  'vite.config.ts',
-  'vite.config.cjs',
-  'vite.config.mts',
-  'vite.config.cts',
-]
-
-export const DEFAULT_EXTENSIONS = [
-  '.mjs',
-  '.js',
-  '.mts',
-  '.ts',
-  '.jsx',
-  '.tsx',
-  '.json',
-]
+const promisifiedRealpath = promisify(fs.realpath)
 
 // Supported by Node, Deno, Bun
 const NODE_BUILTIN_NAMESPACE = 'node:'
@@ -47,91 +31,8 @@ export function isBuiltin(id: string): boolean {
   return isNodeBuiltin(id)
 }
 
-/** Cache for package.json resolution and package.json contents */
-export type PackageCache = Map<string, PackageData>
-
-export interface PackageData {
-  dir: string
-  hasSideEffects: (id: string) => boolean | 'no-treeshake' | null
-  webResolvedImports: Record<string, string | undefined>
-  nodeResolvedImports: Record<string, string | undefined>
-  setResolvedCache: (key: string, entry: string, targetWeb: boolean) => void
-  getResolvedCache: (key: string, targetWeb: boolean) => string | undefined
-  data: {
-    [field: string]: any
-    name: string
-    type: string
-    version: string
-    main: string
-    module: string
-    browser: string | Record<string, string | false>
-    exports: string | Record<string, any> | string[]
-    imports: Record<string, any>
-    dependencies: Record<string, string>
-  }
-}
-
-export function loadPackageData(pkgPath: string): PackageData {
-  const data = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
-  const pkgDir = normalizePath(path.dirname(pkgPath))
-  const { sideEffects } = data
-  let hasSideEffects: (id: string) => boolean | null
-  if (typeof sideEffects === 'boolean') {
-    hasSideEffects = () => sideEffects
-  } else if (Array.isArray(sideEffects)) {
-    if (sideEffects.length <= 0) {
-      // createFilter always returns true if `includes` is an empty array
-      // but here we want it to always return false
-      hasSideEffects = () => false
-    } else {
-      const finalPackageSideEffects = sideEffects.map((sideEffect) => {
-        /*
-         * The array accepts simple glob patterns to the relevant files... Patterns like *.css, which do not include a /, will be treated like **\/*.css.
-         * https://webpack.js.org/guides/tree-shaking/
-         * https://github.com/vitejs/vite/pull/11807
-         */
-        if (sideEffect.includes('/')) {
-          return sideEffect
-        }
-        return `**/${sideEffect}`
-      })
-
-      hasSideEffects = createFilter(finalPackageSideEffects, null, {
-        resolve: pkgDir,
-      })
-    }
-  } else {
-    hasSideEffects = () => null
-  }
-
-  const pkg: PackageData = {
-    dir: pkgDir,
-    data,
-    hasSideEffects,
-    webResolvedImports: {},
-    nodeResolvedImports: {},
-    setResolvedCache(key: string, entry: string, targetWeb: boolean) {
-      if (targetWeb) {
-        pkg.webResolvedImports[key] = entry
-      } else {
-        pkg.nodeResolvedImports[key] = entry
-      }
-    },
-    getResolvedCache(key: string, targetWeb: boolean) {
-      if (targetWeb) {
-        return pkg.webResolvedImports[key]
-      } else {
-        return pkg.nodeResolvedImports[key]
-      }
-    },
-  }
-
-  return pkg
-}
-
 export function isFilePathESM(
   filePath: string,
-  packageCache?: PackageCache,
 ): boolean {
   if (/\.m[jt]s$/.test(filePath)) {
     return true
@@ -140,103 +41,69 @@ export function isFilePathESM(
     return false
   }
   else {
-    // check package.json for type: "module"
+    // package.json for type: "module"
+    return false
+  }
+}
+
+export async function loadConfigFromFile() {
+  // type: esm/cjs
+
+  // bundle
+
+  // resolve
+  return {}
+}
+
+export type UserConfigExport = ConfigFile
+
+const _require = createRequire(import.meta.url)
+async function loadConfigFromBundledFile(
+  fileName: string,
+  bundledCode: string,
+  isESM: boolean,
+): Promise<UserConfigExport> {
+  // for esm, before we can register loaders without requiring users to run node
+  // with --experimental-loader themselves, we have to do a hack here:
+  // write it to disk, load it with native Node ESM, then delete the file.
+  if (isESM) {
+    const fileBase = `${fileName}.timestamp-${Date.now()}-${Math.random()
+      .toString(16)
+      .slice(2)}`
+    const fileNameTmp = `${fileBase}.mjs`
+    const fileUrl = `${pathToFileURL(fileBase)}.mjs`
+    await fsp.writeFile(fileNameTmp, bundledCode)
     try {
-      const pkg = findNearestPackageData(path.dirname(filePath), packageCache)
-      return pkg?.data.type === 'module'
+      return (await import(fileUrl)).default
     }
-    catch {
-      return false
+    finally {
+      fs.unlink(fileNameTmp, () => {}) // Ignore errors
     }
   }
-}
-
-// package cache key for `findNearestPackageData`
-function getFnpdCacheKey(basedir: string) {
-  return `fnpd_${basedir}`
-}
-
-
-function getFnpdCache(
-  packageCache: PackageCache,
-  basedir: string,
-  originalBasedir: string,
-) {
-  const cacheKey = getFnpdCacheKey(basedir)
-  const pkgData = packageCache.get(cacheKey)
-  if (pkgData) {
-    traverseBetweenDirs(originalBasedir, basedir, (dir) => {
-      packageCache.set(getFnpdCacheKey(dir), pkgData)
-    })
-    return pkgData
-  }
-}
-
-export function tryStatSync(file: string): fs.Stats | undefined {
-  try {
-    // The "throwIfNoEntry" is a performance optimization for cases where the file does not exist
-    return fs.statSync(file, { throwIfNoEntry: false })
-  } catch {
-    // Ignore errors
-  }
-}
-
-function traverseBetweenDirs(
-  longerDir: string,
-  shorterDir: string,
-  cb: (dir: string) => void,
-) {
-  while (longerDir !== shorterDir) {
-    cb(longerDir)
-    longerDir = path.dirname(longerDir)
-  }
-}
-
-function setFnpdCache(
-  packageCache: PackageCache,
-  pkgData: PackageData,
-  basedir: string,
-  originalBasedir: string,
-) {
-  packageCache.set(getFnpdCacheKey(basedir), pkgData)
-  traverseBetweenDirs(originalBasedir, basedir, (dir) => {
-    packageCache.set(getFnpdCacheKey(dir), pkgData)
-  })
-}
-
-
-export function findNearestPackageData(
-  basedir: string,
-  packageCache?: PackageCache,
-): PackageData | null {
-  const originalBasedir = basedir
-  while (basedir) {
-    if (packageCache) {
-      const cached = getFnpdCache(packageCache, basedir, originalBasedir)
-      if (cached)
-        return cached
-    }
-
-    const pkgPath = path.join(basedir, 'package.json')
-    if (tryStatSync(pkgPath)?.isFile()) {
-      try {
-        const pkgData = loadPackageData(pkgPath)
-
-        if (packageCache)
-          setFnpdCache(packageCache, pkgData, basedir, originalBasedir)
-
-        return pkgData
+  // for cjs, we can register a custom loader via `_require.extensions`
+  else {
+    const extension = path.extname(fileName)
+    // We don't use fsp.realpath() here because it has the same behaviour as
+    // fs.realpath.native. On some Windows systems, it returns uppercase volume
+    // letters (e.g. "C:\") while the Node.js loader uses lowercase volume letters.
+    // See https://github.com/vitejs/vite/issues/12923
+    const realFileName = await promisifiedRealpath(fileName)
+    const loaderExt = extension in _require.extensions ? extension : '.js'
+    const defaultLoader = _require.extensions[loaderExt]!
+    _require.extensions[loaderExt] = (module: NodeModule, filename: string) => {
+      if (filename === realFileName) {
+        ;(module as NodeModuleWithCompile)._compile(bundledCode, filename)
       }
-      catch {}
+      else {
+        defaultLoader(module, filename)
+      }
     }
-
-    const nextBasedir = path.dirname(basedir)
-    if (nextBasedir === basedir)
-      break
-    basedir = nextBasedir
+    // clear cache in case of server restart
+    delete _require.cache[_require.resolve(fileName)]
+    const raw = _require(fileName)
+    _require.extensions[loaderExt] = defaultLoader
+    return raw.__esModule ? raw.default : raw
   }
-
-  return null
 }
 
 export async function bundleConfigFile(
@@ -345,7 +212,7 @@ export async function bundleConfigFile(
               if (
                 idFsPath
                 && !isImport
-                && isFilePathESM(idFsPath, packageCache)
+                && isFilePathESM(idFsPath)
               ) {
                 throw new Error(
                   `${JSON.stringify(
@@ -359,27 +226,6 @@ export async function bundleConfigFile(
               }
             },
           )
-        },
-      },
-      {
-        name: 'inject-file-scope-variables',
-        setup(build) {
-          build.onLoad({ filter: /\.[cm]?[jt]s$/ }, async (args) => {
-            const contents = await fsp.readFile(args.path, 'utf-8')
-            const injectValues
-              = `const ${dirnameVarName} = ${JSON.stringify(
-                path.dirname(args.path),
-              )};`
-              + `const ${filenameVarName} = ${JSON.stringify(args.path)};`
-              + `const ${importMetaUrlVarName} = ${JSON.stringify(
-                pathToFileURL(args.path).href,
-              )};`
-
-            return {
-              loader: args.path.endsWith('ts') ? 'ts' : 'js',
-              contents: injectValues + contents,
-            }
-          })
         },
       },
     ],

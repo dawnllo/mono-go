@@ -2,7 +2,7 @@ import type fs from 'node:fs'
 
 export interface ConfigFile {
   root: string
-  rootAP: string
+  rootResolvePath: string
   file: ConfigFile_File
   git: ConfigFile_Git
 }

@@ -4436,7 +4436,7 @@ const defualtParse = async (path2, data) => {
 };
 const defaultConfig = {
   root: ".",
-  rootAP: "",
+  rootResolvePath: "",
   // 运行时,init 绝对路径
   file: {
     // 文件下载/操作相关
@@ -4455,19 +4455,19 @@ const defaultConfig = {
 function getConfigFileName() {
   return CNONFIG_FILE_DEFAULT;
 }
-function normalizeConfig(mergeConfig, rootAP) {
+function normalizeConfig(mergeConfig, rootResolvePath) {
   const keys = Object.keys(defaultConfig);
   const configKeys = Object.keys(mergeConfig);
   configKeys.forEach((key) => {
     if (!keys.includes(key))
       throw new Error(log._red(`${key} is invalid key in config`));
   });
-  mergeConfig.rootAP = rootAP;
-  mergeConfig.root = path$1.resolve(rootAP, mergeConfig.root);
+  mergeConfig.rootResolvePath = rootResolvePath;
+  mergeConfig.root = path$1.resolve(rootResolvePath, mergeConfig.root);
   mergeConfig.file.removeWhitePath = mergeConfig.file.removeWhitePath.map((item) => {
     if (typeof item !== "string")
       throw new Error(log._red("removeWhitePath must be string array"));
-    return path$1.resolve(rootAP, item);
+    return path$1.resolve(rootResolvePath, item);
   });
 }
 
@@ -14381,10 +14381,10 @@ async function getRootPath() {
   }
 }
 const initConfig = errorWrapper(async () => {
-  const rootAP = await getRootPath();
-  if (!rootAP)
+  const rootResolvePath = await getRootPath();
+  if (!rootResolvePath)
     throw new Error(log._red("config file not found"));
-  const configFile = path$1.join(rootAP, getConfigFileName());
+  const configFile = path$1.join(rootResolvePath, getConfigFileName());
   let mergeConfig = {};
   if (fs$1.existsSync(configFile)) {
     const userConfig = await import(configFile);
@@ -14392,7 +14392,7 @@ const initConfig = errorWrapper(async () => {
   } else {
     mergeConfig = defaultConfig;
   }
-  normalizeConfig(mergeConfig, rootAP);
+  normalizeConfig(mergeConfig, rootResolvePath);
   file.init(mergeConfig);
   http.init(mergeConfig);
   errorInit();
