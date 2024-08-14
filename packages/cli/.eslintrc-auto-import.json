@@ -1,7 +1,0 @@
-{
-  "globals": {
-    "GitFetchType": true,
-    "a": true,
-    "GitHttpOption": true
-  }
-}
