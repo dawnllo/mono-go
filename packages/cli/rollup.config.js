@@ -47,7 +47,7 @@ const normalConfig = defineConfig({
         compilerOptions: {
           declaration: false,
           declarationDir: null,
-        }
+        },
       },
       useTsconfigDeclarationDir: true,
       clean: true,
