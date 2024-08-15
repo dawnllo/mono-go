@@ -13,6 +13,8 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "ppt": "pnpm --filter @dawnll/ppt dev",
+
     "build:vite": "pnpm --filter @dawnll/dlc build:vite",
     "build:rollup": "pnpm --filter @dawnll/dlc build:rollup",
     "dlc": "pnpm --filter @dawnll/dlc run dlc",

@@ -1,5 +1,5 @@
 {
-  "name": "slidev",
+  "name": "@dawnll/ppt",
   "type": "module",
   "private": true,
   "scripts": {
