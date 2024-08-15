@@ -5,6 +5,7 @@
   "scripts": {
     "build": "slidev build",
     "dev": "slidev --open",
+    "dev:demo": "slidev --open ./slides2.md  --port 3033 ",
     "export": "slidev export"
   },
   "dependencies": {
