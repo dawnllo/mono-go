@@ -5,7 +5,7 @@ import { CNONFIG_FILE_LIST, defaultConfig } from './constant'
 import { errorInit, errorWrapper } from './error'
 import { file, http, log } from '@/utils'
 import type { ConfigFile } from '@/types'
-import { loadConfigFromFile } from '@/esbuild'
+import { loadConfigFromFile } from '@/config/esbuild'
 
 // 配置归一化 TODO: 深度配置字段校验.
 export function normalizeConfig(mergeConfig: ConfigFile, rootResolvePath: string) {
