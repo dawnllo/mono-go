@@ -1,6 +1,6 @@
 import { Buffer } from 'node:buffer'
 import type { ParseFunc } from '@/utils/index'
-import type { WriteFileSyncRestParams, ConfigFile } from '@/types'
+import type { ConfigFile, WriteFileSyncRestParams } from '@/types'
 
 // allow config file list
 export const CNONFIG_FILE_LIST = ['dlc.config.js', 'dlc.config.ts']
@@ -27,5 +27,3 @@ export const defaultConfig: ConfigFile = {
     defaultBranch: 'main',
   },
 }
-
-

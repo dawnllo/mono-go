@@ -14,7 +14,6 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "ppt": "pnpm --filter @dawnll/ppt dev",
-
     "build:vite": "pnpm --filter @dawnll/dlc build:vite",
     "build:rollup": "pnpm --filter @dawnll/dlc build:rollup",
     "dlc": "pnpm --filter @dawnll/dlc run dlc",
@@ -27,6 +26,7 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/pluginutils": "^5.1.0",
     "@types/node": "^20.12.7",
     "@unocss/eslint-plugin": "0.59.0-beta.1",
     "esbuild": "^0.23.0",

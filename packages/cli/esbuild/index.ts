@@ -5,31 +5,15 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
 import { performance } from 'node:perf_hooks'
-import { builtinModules, createRequire } from 'node:module'
+import { createRequire } from 'node:module'
 import { build } from 'esbuild'
+import { isBuiltin, isNodeBuiltin } from './utils/module'
+import { findNearestPackageData, normalizePath } from './utils/packages'
 import type { ConfigFile } from '@/types'
+import { log } from '@/utils'
+import { CNONFIG_FILE_LIST } from '@/config/constant'
 
 const promisifiedRealpath = promisify(fs.realpath)
-
-// Supported by Node, Deno, Bun
-const NODE_BUILTIN_NAMESPACE = 'node:'
-// Supported by Deno
-const NPM_BUILTIN_NAMESPACE = 'npm:'
-// Supported by Bun
-const BUN_BUILTIN_NAMESPACE = 'bun:'
-const nodeBuiltins = builtinModules.filter(id => !id.includes(':'))
-export function isNodeBuiltin(id: string): boolean {
-  if (id.startsWith(NODE_BUILTIN_NAMESPACE))
-    return true
-  return nodeBuiltins.includes(id)
-}
-export function isBuiltin(id: string): boolean {
-  if (process.versions.deno && id.startsWith(NPM_BUILTIN_NAMESPACE))
-    return true
-  if (process.versions.bun && id.startsWith(BUN_BUILTIN_NAMESPACE))
-    return true
-  return isNodeBuiltin(id)
-}
 
 export function isFilePathESM(
   filePath: string,
@@ -41,21 +25,102 @@ export function isFilePathESM(
     return false
   }
   else {
-    // package.json for type: "module"
-    return false
+    // TODO : 优化缓存机制
+    const pkg = findNearestPackageData(path.dirname(filePath))
+    return pkg?.data.type === 'module'
   }
 }
 
-export async function loadConfigFromFile() {
-  // type: esm/cjs
-
-  // bundle
-
-  // resolve
-  return {}
+export interface ConfigEnv {
+  /**
+   * 'serve': during dev (`vite` command)
+   * 'build': when building for production (`vite build` command)
+   */
+  command: 'build' | 'serve'
+  mode: string
+  isSsrBuild?: boolean
+  isPreview?: boolean
+}
+export interface UserConfig {
+  configFile?: string
+  root?: string
+  resolve?: {
+    alias?: Record<string, string>
+  }
 }
 
-export type UserConfigExport = ConfigFile
+export type UserConfigFnObject = (env: ConfigEnv) => UserConfig
+export type UserConfigFnPromise = (env: ConfigEnv) => Promise<UserConfig>
+export type UserConfigFn = (env: ConfigEnv) => UserConfig | Promise<UserConfig>
+
+export type UserConfigExport =
+  | UserConfig
+  | Promise<UserConfig>
+  | UserConfigFnObject
+  | UserConfigFnPromise
+  | UserConfigFn
+
+export async function loadConfigFromFile(
+  configEnv: ConfigEnv,
+  configFile?: string,
+  configRoot: string = process.cwd(),
+) {
+  const start = performance.now()
+  const getTime = () => `${(performance.now() - start).toFixed(2)}ms`
+
+  let resolvedPath: string | undefined
+
+  if (configFile) {
+    // explicit config path is always resolved from cwd
+    resolvedPath = path.resolve(configFile)
+  }
+  else {
+    // implicit config file loaded from inline root (if present)
+    // otherwise from cwd
+    for (const filename of CNONFIG_FILE_LIST) {
+      const filePath = path.resolve(configRoot, filename)
+      if (!fs.existsSync(filePath))
+        continue
+
+      resolvedPath = filePath
+      break
+    }
+  }
+
+  if (!resolvedPath) {
+    log.red('no config file found.')
+    return null
+  }
+
+  const isESM = isFilePathESM(resolvedPath)
+  // 1. build bundled file
+  const bundled = await bundleConfigFile(resolvedPath, isESM)
+  // 2. load bundled file
+  const userConfig = await loadConfigFromBundledFile(
+    resolvedPath,
+    bundled.code,
+    isESM,
+  )
+
+  log.green(`bundled config file loaded in ${getTime()}`)
+
+  const config = await (typeof userConfig === 'function'
+    ? userConfig(configEnv)
+    : userConfig)
+
+  if (!isObject(config))
+    throw new Error(`config must export or return an object.`)
+
+  return {
+    path: normalizePath(resolvedPath),
+    config,
+    dependencies: bundled.dependencies,
+  }
+}
+
+interface NodeModuleWithCompile extends NodeModule {
+  _compile: (code: string, filename: string) => any
+}
 
 const _require = createRequire(import.meta.url)
 async function loadConfigFromBundledFile(
@@ -235,4 +300,8 @@ export async function bundleConfigFile(
     code: text,
     dependencies: result.metafile ? Object.keys(result.metafile.inputs) : [],
   }
+}
+
+export function isObject(value: unknown): value is Record<string, any> {
+  return Object.prototype.toString.call(value) === '[object Object]'
 }
