@@ -25,7 +25,7 @@ export const enum GitFetchType {
   contents = 'contents',
   trees = 'trees',
   blobs = 'blobs',
-} 
+}
 
 // sha 的含义见http模块
 export interface GitHttpOption {
