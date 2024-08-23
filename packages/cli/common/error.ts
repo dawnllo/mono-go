@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { log } from '@/utils/index'
 
-export enum ENUM_ERROR_TYPE {
+export enum ERROR_TYPE_ENUM {
   // 请求错误
   HTTP = 'git_http_error',
   // 语法错误
@@ -9,14 +9,14 @@ export enum ENUM_ERROR_TYPE {
 }
 
 export class DLCHttpError extends Error {
-  type: ENUM_ERROR_TYPE
-  constructor(type: ENUM_ERROR_TYPE, message: string) {
+  type: ERROR_TYPE_ENUM
+  constructor(type: ERROR_TYPE_ENUM, message: string) {
     super(message)
     this.type = type
   }
 }
 export function errorInit() {
-  // @ts-ignore
+  // @ts-expect-error globalThis.DLCHttpError
   globalThis.DLCHttpError = DLCHttpError
 }
 
@@ -24,8 +24,8 @@ function handlerHttpError(error: DLCHttpError) {
   log.red(`gitApi request error: ${error.message}`)
 }
 const errorHandler = {
-  [ENUM_ERROR_TYPE.HTTP]: handlerHttpError,
-  [ENUM_ERROR_TYPE.SYNTAX]: handlerHttpError,
+  [ERROR_TYPE_ENUM.HTTP]: handlerHttpError,
+  [ERROR_TYPE_ENUM.SYNTAX]: handlerHttpError,
 }
 
 export function errorWrapper(fn: Function) {

@@ -1,4 +1,4 @@
-import type { DLCHttpError as DLCHttpErrorConstructor } from '@/config/error'
+import type { DLCHttpError as DLCHttpErrorConstructor } from '@/common/error'
 
 declare global {
   /**

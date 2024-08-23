@@ -9,9 +9,18 @@ import { createRequire } from 'node:module'
 import { build } from 'esbuild'
 import { isBuiltin, isNodeBuiltin } from './module'
 import { findNearestPackageData, normalizePath } from './packages'
-import type { ConfigFile } from '@/types'
+import type { UserConfig, UserConfigExport } from '@/types'
 import { log } from '@/utils'
-import { CNONFIG_FILE_LIST } from '@/config/constant'
+
+export const DEFAULT_EXTENSIONS = [
+  '.mjs',
+  '.js',
+  '.mts',
+  '.ts',
+  '.jsx',
+  '.tsx',
+  '.json',
+]
 
 const promisifiedRealpath = promisify(fs.realpath)
 
@@ -31,61 +40,11 @@ export function isFilePathESM(
   }
 }
 
-export interface ConfigEnv {
-  /**
-   * 'serve': during dev (`vite` command)
-   * 'build': when building for production (`vite build` command)
-   */
-  command: 'build' | 'serve'
-  mode: string
-  isSsrBuild?: boolean
-  isPreview?: boolean
-}
-export interface UserConfig {
-  configFile?: string
-  root?: string
-  resolve?: {
-    alias?: Record<string, string>
-  }
-}
-
-export type UserConfigFnObject = (env: ConfigEnv) => UserConfig
-export type UserConfigFnPromise = (env: ConfigEnv) => Promise<UserConfig>
-export type UserConfigFn = (env: ConfigEnv) => UserConfig | Promise<UserConfig>
-
-export type UserConfigExport =
-  | UserConfig
-  | Promise<UserConfig>
-  | UserConfigFnObject
-  | UserConfigFnPromise
-  | UserConfigFn
-
 export async function loadConfigFromFile(
-  configEnv: ConfigEnv,
-  configFile?: string,
-  configRoot: string = process.cwd(),
+  resolvedPath: string,
 ) {
   const start = performance.now()
   const getTime = () => `${(performance.now() - start).toFixed(2)}ms`
-
-  let resolvedPath: string | undefined
-
-  if (configFile) {
-    // explicit config path is always resolved from cwd
-    resolvedPath = path.resolve(configFile)
-  }
-  else {
-    // implicit config file loaded from inline root (if present)
-    // otherwise from cwd
-    for (const filename of CNONFIG_FILE_LIST) {
-      const filePath = path.resolve(configRoot, filename)
-      if (!fs.existsSync(filePath))
-        continue
-
-      resolvedPath = filePath
-      break
-    }
-  }
 
   if (!resolvedPath) {
     log.red('no config file found.')
@@ -104,8 +63,8 @@ export async function loadConfigFromFile(
 
   log.green(`bundled config file loaded in ${getTime()}`)
 
-  const config = await (typeof userConfig === 'function'
-    ? userConfig(configEnv)
+  const config: UserConfig = (typeof userConfig === 'function'
+    ? userConfig()
     : userConfig)
 
   if (!isObject(config))
@@ -114,6 +73,7 @@ export async function loadConfigFromFile(
   return {
     path: normalizePath(resolvedPath),
     config,
+    bundled,
     dependencies: bundled.dependencies,
   }
 }
@@ -219,7 +179,7 @@ export async function bundleConfigFile(
                 conditions: [],
                 overrideConditions: ['node'],
                 dedupe: [],
-                extensions: DEFAULT_EXTENSIONS,
+                extensions: [DEFAULT_EXTENSIONS],
                 preserveSymlinks: false,
                 packageCache,
                 isRequire,

@@ -1,35 +1,9 @@
 import type fs from 'node:fs'
-
-export interface ConfigFile {
-  root: string
-  rootResolvePath: string
-  file: ConfigFile_File
-  git: ConfigFile_Git
-}
-
-export interface ConfigFile_Git {
-  owner: string
-  repo: string
-  pafg_token: string
-  defaultBranch: string
-}
-
-export interface ConfigFile_File {
-  removeWhitePath: string[] // 移除文件时, 白名单
-  downloadRelativePath: string
-  parse: (path: string, data: any) => Promise<WriteFileSyncRestParams>
-}
-
-export const enum GitFetchType {
-  branches = 'branches',
-  contents = 'contents',
-  trees = 'trees',
-  blobs = 'blobs',
-}
+import type { GitFetchEnum } from '@/utils/http'
 
 // sha 的含义见http模块
 export interface GitHttpOption {
-  type: keyof typeof GitFetchType
+  type: keyof typeof GitFetchEnum
   sha?: string
   branch?: string
   recursive?: boolean

@@ -15,7 +15,7 @@ declare const log: Log & Chalk<ChalkInstance>;
  * 初始化文件操作系统 - 需要的配置内容
  * @param configFile 全局配置文件
  */
-declare function init$1(configFile: ConfigFile): void;
+declare function init$1(configFile: UserConfig): void;
 declare function git(option: GitHttpOption): Promise<any>;
 declare function gitUrl(url: any): Promise<any>;
 interface HttpMethods {
@@ -29,7 +29,7 @@ declare const http: HttpMethods;
  * 初始化文件操作系统 - 需要的配置内容
  * @param configFile 全局配置文件
  */
-declare function init(configFile: ConfigFile): void;
+declare function init(configFile: UserConfig): void;
 /**
  * 生成文件
  * @param input 绝对路径
@@ -106,16 +106,16 @@ interface Pro {
 declare const pro: Pro;
 
 type ParseFunc = (path: string, data: any) => Promise<WriteFileSyncRestParams>;
-declare function oneLayerCatalog(data: any[], type: GitFetchType.trees | GitFetchType.contents): CatalogItem[];
-declare function treeLayerCatalog(data: any, type: GitFetchType.trees | GitFetchType.contents, level: number): Promise<CatalogItem[]>;
-declare function fileBlob(catalogItem: CatalogItem, configFile: ConfigFile, parse: ParseFunc): Promise<string>;
+declare function oneLayerCatalog(data: any[], type: GitFetchEnum.trees | GitFetchEnum.contents): CatalogItem[];
+declare function treeLayerCatalog(data: any, type: GitFetchEnum.trees | GitFetchEnum.contents, level: number): Promise<CatalogItem[]>;
+declare function fileBlob(catalogItem: CatalogItem, configFile: UserConfig, parse: ParseFunc): Promise<string>;
 /**
  * 递归调用fileBlob, 传递parse
  * @param catalogItem 单个目录信息
  * @param configFile 全局配置文件
  * @returns
  */
-declare function recursiveFileBlob(catalogItem: CatalogItem, configFile: ConfigFile, parse: ParseFunc): Promise<string[]>;
+declare function recursiveFileBlob(catalogItem: CatalogItem, configFile: UserConfig, parse: ParseFunc): Promise<string[]>;
 interface DownloadType {
     fileBlob: (...args: Parameters<typeof fileBlob>) => ReturnType<typeof fileBlob>;
     recursiveFileBlob: (...args: Parameters<typeof recursiveFileBlob>) => ReturnType<typeof recursiveFileBlob>;
@@ -132,31 +132,31 @@ interface Tools {
 }
 declare const tools: Tools;
 
-interface ConfigFile {
+interface UserConfig{
     root: string;
     rootResolvePath: string;
-    file: ConfigFile_File;
-    git: ConfigFile_Git;
+    file: UserConfigFileOption;
+    git: UserConfigGitOption;
 }
-interface ConfigFile_Git {
+interface UserConfigGitOption {
     owner: string;
     repo: string;
     pafg_token: string;
     defaultBranch: string;
 }
-interface ConfigFile_File {
+interface UserConfigFileOption {
     removeWhitePath: string[];
     downloadRelativePath: string;
     parse: (path: string, data: any) => Promise<WriteFileSyncRestParams>;
 }
-declare const enum GitFetchType {
+declare const enum GitFetchEnum {
     branches = "branches",
     contents = "contents",
     trees = "trees",
     blobs = "blobs"
 }
 interface GitHttpOption {
-    type: keyof typeof GitFetchType;
+    type: keyof typeof GitFetchEnum;
     sha?: string;
     branch?: string;
     recursive?: boolean;
@@ -173,4 +173,4 @@ interface CatalogItem {
 type ExcludeFirstParams<T extends any[]> = T extends [any, ...rest: infer R] ? R : never;
 type WriteFileSyncRestParams = ExcludeFirstParams<Parameters<typeof fs.writeFileSync>>;
 
-export { type CatalogItem, type ConfigFile, type ConfigFile_File, type ConfigFile_Git, type ExcludeFirstParams, type FuncKeys, GitFetchType, type GitHttpOption, type PRepeatConfirmText, type ParseFunc, type WriteFileSyncRestParams, download, file, http, log, oraWrapper, pro, tools };
+export { type CatalogItem, type UserConfig, type UserConfigFileOption, type UserConfigGitOption, type ExcludeFirstParams, type FuncKeys, GitFetchEnum, type GitHttpOption, type PRepeatConfirmText, type ParseFunc, type WriteFileSyncRestParams, download, file, http, log, oraWrapper, pro, tools };

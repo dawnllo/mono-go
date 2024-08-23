@@ -1,7 +1,7 @@
 import path from 'node:path'
 import fs from 'node:fs'
 import { createFilter } from '@rollup/pluginutils'
-import { isWindows, slash } from './utils/system'
+import { isWindows, slash } from './system'
 
 // 获取package.json
 export interface PackageData {

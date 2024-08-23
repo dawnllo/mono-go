@@ -1,6 +1,7 @@
-import { errorWrapper } from '@/config/error'
+import { errorWrapper } from '@/common/error'
 import { download, http, log, oraWrapper, pro, tools } from '@/utils/index'
-import type {CatalogItem} from '@/types'
+import type { CatalogItem } from '@/types'
+import { GitFetchEnum } from '@/utils/http'
 
 let coutLevel = 0
 
@@ -16,7 +17,7 @@ async function getListAction(configFile, _args?: any) {
 
   // 通过content获取目录时,如果传入path,那么第一层自动会带上path
   const config = {
-    type: GitFetchType.contents,
+    type: GitFetchEnum.contents,
     sha: repPath,
     branch,
   }
@@ -24,7 +25,7 @@ async function getListAction(configFile, _args?: any) {
   const catalog = await oraWrapper(async () => {
     const json = await http.git(config)
     console.log(json)
-    return await download.treeLayerCatalog(json, GitFetchType.contents, +level)
+    return await download.treeLayerCatalog(json, GitFetchEnum.contents, +level)
   })
 
   const choices = mapChoices(catalog, level)

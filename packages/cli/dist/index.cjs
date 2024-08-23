@@ -4473,11 +4473,11 @@ function normalizeConfig(mergeConfig, rootResolvePath) {
   });
 }
 
-var ENUM_ERROR_TYPE;
-(function(ENUM_ERROR_TYPE2) {
-  ENUM_ERROR_TYPE2["HTTP"] = "git_http_error";
-  ENUM_ERROR_TYPE2["SYNTAX"] = "syntax_error";
-})(ENUM_ERROR_TYPE || (ENUM_ERROR_TYPE = {}));
+var ERROR_TYPE_ENUM;
+(function(ERROR_TYPE_ENUM2) {
+  ERROR_TYPE_ENUM2["HTTP"] = "git_http_error";
+  ERROR_TYPE_ENUM2["SYNTAX"] = "syntax_error";
+})(ERROR_TYPE_ENUM || (ERROR_TYPE_ENUM = {}));
 let DLCHttpError$1 = class DLCHttpError extends Error {
   constructor(type, message) {
     super(message);
@@ -4491,8 +4491,8 @@ function handlerHttpError(error) {
   log.red(`gitApi request error: ${error.message}`);
 }
 const errorHandler = {
-  [ENUM_ERROR_TYPE.HTTP]: handlerHttpError,
-  [ENUM_ERROR_TYPE.SYNTAX]: handlerHttpError
+  [ERROR_TYPE_ENUM.HTTP]: handlerHttpError,
+  [ERROR_TYPE_ENUM.SYNTAX]: handlerHttpError
 };
 function errorWrapper(fn) {
   return async function(...args) {
@@ -4512,15 +4512,15 @@ function errorWrapper(fn) {
 
 const gitConfig = defaultConfig.git;
 function init$1(configFile) {
-  const dclGitConfig = configFile.git;
+  const dclUserConfigGitOption = configFile.git;
   Object.keys(gitConfig).forEach((key) => {
-    gitConfig[key] = dclGitConfig[key];
+    gitConfig[key] = dclUserConfigGitOption[key];
   });
 }
 const urlStrategy = {
   [
     "contents"
-    /* GitFetchType.contents */
+    /* GitFetchEnum.contents */
   ]: (option) => {
     const path = option.sha ? `${option.sha}` : "";
     const branch = option.branch || gitConfig.defaultBranch;
@@ -4528,19 +4528,19 @@ const urlStrategy = {
   },
   [
     "branches"
-    /* GitFetchType.branches */
+    /* GitFetchEnum.branches */
   ]: () => {
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/branches`;
   },
   [
     "trees"
-    /* GitFetchType.trees */
+    /* GitFetchEnum.trees */
   ]: (option) => {
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/trees/${option.sha}${option.recursive ? "?recursive=1" : ""}`;
   },
   [
     "blobs"
-    /* GitFetchType.blobs */
+    /* GitFetchEnum.blobs */
   ]: (option) => {
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/blobs/${option.sha}`;
   }
@@ -4565,7 +4565,7 @@ async function gitUrl(url) {
   const res = await fetch(options);
   const json = await res.json();
   if (json.message)
-    throw new DLCHttpError(ENUM_ERROR_TYPE.HTTP, json.message);
+    throw new DLCHttpError(ERROR_TYPE_ENUM.HTTP, json.message);
   return json;
 }
 const http = {
@@ -14143,7 +14143,7 @@ async function recursiveFileBlob(catalogItem, configFile, parse) {
     const catalog = oneLayerCatalog(
       json.tree,
       "trees"
-      /* GitFetchType.trees */
+      /* GitFetchEnum.trees */
     );
     for (const item of catalog) {
       item.path = `${path2}/${item.path}`;
@@ -14269,7 +14269,7 @@ async function load(_ctx) {
       const arrs = download.oneLayerCatalog(
         json,
         "contents"
-        /* GitFetchType.contents */
+        /* GitFetchEnum.contents */
       );
       for (const fileOption of arrs)
         await dowanloadFunc(fileOption, configFile, parse);

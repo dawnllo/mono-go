@@ -1,16 +1,16 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { log, pro } from '@/utils'
-import { defaultConfig } from '@/config/constant'
-import type { ConfigFile_File, ConfigFile, WriteFileSyncRestParams } from '@/types'
+import { defaultConfig } from '@/common/config'
+import type { UserConfig, UserConfigFileOption, WriteFileSyncRestParams } from '@/types'
 
-const fileConfig: ConfigFile_File = defaultConfig.file
+const fileConfig: UserConfigFileOption = defaultConfig.file
 
 /**
  * 初始化文件操作系统 - 需要的配置内容
  * @param configFile 全局配置文件
  */
-function init(configFile: ConfigFile): void {
+function init(configFile: UserConfig): void {
   const dlcFileConfig = configFile.file
 
   Object.keys(fileConfig).forEach((key) => {
