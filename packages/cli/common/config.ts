@@ -2,17 +2,16 @@ import { cwd } from 'node:process'
 import path from 'node:path'
 import fs from 'node:fs'
 import { Buffer } from 'node:buffer'
+import { type ConfigEnv, loadConfigFromFile } from 'vite'
 import { errorInit, errorWrapper } from './error'
 import { file, http, log } from '@/utils'
 import type { ParseFunc, UserConfig, WriteFileSyncRestParams } from '@/types'
-import { loadConfigFromFile } from '@/esbuild'
 
 // allow config file list
 export const CNONFIG_FILE_LIST = ['dlc.config.js', 'dlc.config.ts']
 
 // default file content Parse
 const defualtParse: ParseFunc = async (path: string, data: any): Promise<WriteFileSyncRestParams> => {
-  // @ts-expect-error todo?
   return [Buffer.from(data.content, 'base64'), 'utf-8']
 }
 
@@ -88,25 +87,33 @@ export const initConfig = errorWrapper(async () => {
     throw new Error(log._red('config file not found'))
 
   const { rootResolvePath, configFileName } = result
-  const configFile = path.join(rootResolvePath, configFileName)
+  const configFileResolvePath = path.join(rootResolvePath, configFileName)
 
   let mergeConfig: UserConfig = {} as UserConfig
-  if (fs.existsSync(configFile)) {
-    const loadResult = await loadConfigFromFile(rootResolvePath)
-    console.log(123, loadResult)
-    mergeConfig = Object.assign(defaultConfig, loadResult?.config || {})
+  if (fs.existsSync(configFileResolvePath)) {
+    const loadParams = {
+      configEnv: {} as ConfigEnv,
+      configFile: configFileResolvePath,
+      configRoot: rootResolvePath || cwd(),
+    }
+    const loadResult = await loadConfigFromFile(
+      loadParams.configEnv,
+      loadParams.configFile,
+      loadParams.configRoot,
+    )
+    mergeConfig = Object.assign(defaultConfig, loadResult?.config)
   }
   else {
     mergeConfig = defaultConfig
   }
 
-  return mergeConfig
+  console.log('mergeConfig', mergeConfig)
 
   // normalizeConfig(mergeConfig, rootResolvePath)
 
-  // file.init(mergeConfig) // file模块初始化
-  // http.init(mergeConfig) // http模块初始化
-  // errorInit() // globalThis 上添加错误类
+  file.init(mergeConfig) // file模块初始化
+  http.init(mergeConfig) // http模块初始化
+  errorInit() // globalThis 上添加错误类
 
-  // return mergeConfig
+  return mergeConfig
 })

@@ -1,4 +1,6 @@
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'rollup'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
@@ -6,24 +8,36 @@ import json from '@rollup/plugin-json'
 import typescript from 'rollup-plugin-typescript2'
 import esbuild from 'rollup-plugin-esbuild'
 import { dts } from 'rollup-plugin-dts'
-import AutoImport from 'unplugin-auto-import/rollup'
 import alias from '@rollup/plugin-alias'
 
-const commonPlugins = [alias({
-  entries: {
-    '@': path.resolve(import.meta.dirname, '.'),
-  },
-})]
+const pkg = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url)).toString(),
+)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const commonPlugins = [
+  alias({
+    entries: {
+      '@': path.resolve(__dirname, '.'),
+    },
+  }),
+]
 
 // ts声明文件
 const dtsConfig = defineConfig({
   input: './types/index.ts',
-  plugins: [...commonPlugins, dts({ respectExternal: false })],
   output: {
     dir: 'dist/types',
     format: 'esm',
     entryFileNames: '[name].d.ts',
   },
+  external: [
+    ...Object.keys(pkg.dependencies || {}),
+    // lightningcss types are bundled
+    ...Object.keys(pkg.devDependencies || {}).filter(d => d !== 'lightningcss'),
+  ],
+  plugins: [...commonPlugins, dts({ respectExternal: false })],
 })
 
 // 常规打包

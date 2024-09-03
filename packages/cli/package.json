@@ -32,13 +32,12 @@
   "files": [
     "dist"
   ],
-
   "engines": {
     "node": ">=20.14.0"
   },
   "scripts": {
     "build:vite": "vite build",
-    "build:rollup": "rollup -c",
+    "build:rollup": "rollup --config rollup.config.ts --configPlugin esbuild",
     "tsc": "tsc --build --project tsconfig.json",
     "dlc": "NODE_OPTIONS='--trace-deprecation' node ./dist/index.mjs",
     "exec": " node --experimental-specifier-resolution=node --loader=ts-node/esm index.ts"
@@ -53,6 +52,7 @@
     "download-git-repo": "^3.0.2",
     "electron": "^30.0.6",
     "ora": "^8.0.1",
-    "prompts": "^2.4.2"
+    "prompts": "^2.4.2",
+    "vite": "^5.2.8"
   }
 }

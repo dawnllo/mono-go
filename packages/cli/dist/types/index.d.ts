@@ -11,6 +11,12 @@ type Chalk<T> = {
 };
 declare const log: Log & Chalk<ChalkInstance>;
 
+declare enum GitFetchEnum {
+    branches = "branches",
+    contents = "contents",
+    trees = "trees",
+    blobs = "blobs"
+}
 /**
  * 初始化文件操作系统 - 需要的配置内容
  * @param configFile 全局配置文件
@@ -132,29 +138,6 @@ interface Tools {
 }
 declare const tools: Tools;
 
-interface UserConfig{
-    root: string;
-    rootResolvePath: string;
-    file: UserConfigFileOption;
-    git: UserConfigGitOption;
-}
-interface UserConfigGitOption {
-    owner: string;
-    repo: string;
-    pafg_token: string;
-    defaultBranch: string;
-}
-interface UserConfigFileOption {
-    removeWhitePath: string[];
-    downloadRelativePath: string;
-    parse: (path: string, data: any) => Promise<WriteFileSyncRestParams>;
-}
-declare const enum GitFetchEnum {
-    branches = "branches",
-    contents = "contents",
-    trees = "trees",
-    blobs = "blobs"
-}
 interface GitHttpOption {
     type: keyof typeof GitFetchEnum;
     sha?: string;
@@ -173,4 +156,24 @@ interface CatalogItem {
 type ExcludeFirstParams<T extends any[]> = T extends [any, ...rest: infer R] ? R : never;
 type WriteFileSyncRestParams = ExcludeFirstParams<Parameters<typeof fs.writeFileSync>>;
 
-export { type CatalogItem, type UserConfig, type UserConfigFileOption, type UserConfigGitOption, type ExcludeFirstParams, type FuncKeys, GitFetchEnum, type GitHttpOption, type PRepeatConfirmText, type ParseFunc, type WriteFileSyncRestParams, download, file, http, log, oraWrapper, pro, tools };
+interface UserConfig {
+    root: string;
+    rootResolvePath: string;
+    file: UserConfigFileOption;
+    git: UserConfigGitOption;
+}
+interface UserConfigGitOption {
+    owner: string;
+    repo: string;
+    pafg_token: string;
+    defaultBranch: string;
+}
+interface UserConfigFileOption {
+    removeWhitePath: string[];
+    downloadRelativePath: string;
+    parse: (path: string, data: any) => Promise<WriteFileSyncRestParams>;
+}
+type UserConfigFnObject = () => UserConfig;
+type UserConfigExport = UserConfig | UserConfigFnObject;
+
+export { type CatalogItem, type ExcludeFirstParams, type FuncKeys, GitFetchEnum, type GitHttpOption, type PRepeatConfirmText, type ParseFunc, type UserConfig, type UserConfigExport, type UserConfigFileOption, type UserConfigFnObject, type UserConfigGitOption, type WriteFileSyncRestParams, download, file, http, log, oraWrapper, pro, tools };
