@@ -22,6 +22,11 @@ const commonPlugins = [
       '@': path.resolve(__dirname, '.'),
     },
   }),
+  nodeResolve({
+    exportConditions: ['node'],
+    preferBuiltins: true,
+    extensions: ['.js', '.ts', '.json'],
+  }),
 ]
 
 // ts声明文件
@@ -33,11 +38,11 @@ const dtsConfig = defineConfig({
     entryFileNames: '[name].d.ts',
   },
   external: [
-    ...Object.keys(pkg.dependencies || {}),
+    ...Object.keys(pkg.dependencies || {}).filter(d => d !== 'chalk'),
     // lightningcss types are bundled
     ...Object.keys(pkg.devDependencies || {}).filter(d => d !== 'lightningcss'),
   ],
-  plugins: [...commonPlugins, dts({ respectExternal: false })],
+  plugins: [...commonPlugins, dts({ respectExternal: true })],
 })
 
 // 常规打包
@@ -45,17 +50,13 @@ const normalConfig = defineConfig({
   plugins: [
     ...commonPlugins,
     json(),
-    nodeResolve({
-      exportConditions: ['node'],
-      preferBuiltins: true,
-      extensions: ['.js', '.ts', '.json'],
-    }),
+
     commonjs({
       defaultIsModuleExports: 'auto',
     }),
     // esbuild 和 typescript2 插件同时使用时, typescript2 执行检查和声明文件生成, esbuild 进行编译.
     // https://www.npmjs.com/package/rollup-plugin-typescript2
-    // ts检查
+    // ts检查/声明文件生成
     typescript({
       tsconfigOverride: {
         compilerOptions: {

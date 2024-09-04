@@ -25,6 +25,7 @@
     "noImplicitThis": true,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
+    "isolatedModules": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },

@@ -3,7 +3,7 @@ import type { GitFetchEnum } from '@/utils/http'
 
 // sha 的含义见http模块
 export interface GitHttpOption {
-  type: keyof typeof GitFetchEnum
+  type: GitFetchEnum
   sha?: string
   branch?: string
   recursive?: boolean
