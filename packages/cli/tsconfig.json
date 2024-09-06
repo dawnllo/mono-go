@@ -14,6 +14,6 @@
     "esModuleInterop": true
   },
   "files": ["./global.d.ts"],
-  "include": ["./**/*.ts", "rollup.config.js"],
+  "include": ["./**/*.ts", "rollup.config.js", "dlc.config.mjs"],
   "exclude": ["./dist", "./node_modules", "./test", "./**/*.spec.ts"]
 }

@@ -1,5 +1,4 @@
 import { log } from '.'
-import { defaultConfig } from '@/common/config'
 import { ERROR_TYPE_ENUM } from '@/common/error'
 import type { GitHttpOption, UserConfig, UserConfigGitOption } from '@/types'
 
@@ -10,7 +9,7 @@ export enum GitFetchEnum {
   blobs = 'blobs',
 }
 
-const gitConfig: UserConfigGitOption = defaultConfig.git
+const gitConfig: UserConfigGitOption = {} as UserConfigGitOption
 
 /**
  * 初始化文件操作系统 - 需要的配置内容

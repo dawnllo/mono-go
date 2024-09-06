@@ -59,6 +59,9 @@ importers:
       tslib:
         specifier: ^2.6.2
         version: 2.6.2
+      tsx:
+        specifier: ^4.19.0
+        version: 4.19.0
       typescript:
         specifier: ^5.4.4
         version: 5.4.5
@@ -105,7 +108,7 @@ importers:
         specifier: ^2.4.2
         version: 2.4.2
       vite:
-        specifier: ^5.2.8
+        specifier: ^5.4.0
         version: 5.4.0(@types/node@20.12.12)
 
   packages/element-v2:
@@ -4908,6 +4911,11 @@ packages:
 
   tsx@4.17.0:
     resolution: {integrity: sha512-eN4mnDA5UMKDt4YZixo9tBioibaMBpoxBkD+rIPAjVmYERSG0/dWEY1CEFuV89CgASlKL499q8AhmkMnnjtOJg==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+
+  tsx@4.19.0:
+    resolution: {integrity: sha512-bV30kM7bsLZKZIOCHeMNVMJ32/LuJzLVajkQI/qf92J2Qr08ueLQvW00PUZGiuLPP760UINwupgUj8qrSCPUKg==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -10997,6 +11005,13 @@ snapshots:
   tslib@2.6.2: {}
 
   tsx@4.17.0:
+    dependencies:
+      esbuild: 0.23.0
+      get-tsconfig: 4.7.5
+    optionalDependencies:
+      fsevents: 2.3.3
+
+  tsx@4.19.0:
     dependencies:
       esbuild: 0.23.0
       get-tsconfig: 4.7.5

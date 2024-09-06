@@ -1,10 +1,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { log, pro } from '@/utils'
-import { defaultConfig } from '@/common/config'
 import type { UserConfig, UserConfigFileOption, WriteFileSyncRestParams } from '@/types'
 
-const fileConfig: UserConfigFileOption = defaultConfig.file
+const fileConfig: UserConfigFileOption = {} as UserConfigFileOption
 
 /**
  * 初始化文件操作系统 - 需要的配置内容

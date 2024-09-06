@@ -8,7 +8,7 @@ import { file, http, log } from '@/utils'
 import type { ParseFunc, UserConfig, WriteFileSyncRestParams } from '@/types'
 
 // allow config file list
-export const CNONFIG_FILE_LIST = ['dlc.config.js', 'dlc.config.ts']
+export const CNONFIG_FILE_LIST = ['dlc.config.ts', 'dlc.config.js']
 
 // default file content Parse
 const defualtParse: ParseFunc = async (path: string, data: any): Promise<WriteFileSyncRestParams> => {

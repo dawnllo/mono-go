@@ -353,7 +353,7 @@ interface Tools {
 declare const tools: Tools;
 
 interface GitHttpOption {
-    type: keyof typeof GitFetchEnum;
+    type: GitFetchEnum;
     sha?: string;
     branch?: string;
     recursive?: boolean;

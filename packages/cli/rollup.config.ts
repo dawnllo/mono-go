@@ -50,7 +50,6 @@ const normalConfig = defineConfig({
   plugins: [
     ...commonPlugins,
     json(),
-
     commonjs({
       defaultIsModuleExports: 'auto',
     }),

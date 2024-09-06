@@ -17,8 +17,7 @@
     "build:vite": "pnpm --filter @dawnll/dlc build:vite",
     "build:rollup": "pnpm --filter @dawnll/dlc build:rollup",
     "dlc": "pnpm --filter @dawnll/dlc run dlc",
-    "dlc2": "pnpm --filter @dawnll/element-v2 run dlc",
-    "exec": "pnpm --filter @dawnll/dlc run exec"
+    "dlc:tsx": "pnpm --filter @dawnll/dlc run tsx"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.11.6",
@@ -38,9 +37,15 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.6.2",
+    "tsx": "^4.19.0",
     "typescript": "^5.4.4",
     "unplugin-auto-import": "^0.18.2",
     "vite": "^5.2.8",
     "vite-plugin-node-polyfills": "^0.21.0"
+  },
+  "overrides": {
+    "vite": {
+      "rollup": "npm:@rollup/wasm-node"
+    }
   }
 }
