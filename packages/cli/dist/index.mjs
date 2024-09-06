@@ -34328,7 +34328,7 @@ var GitFetchEnum;
   GitFetchEnum2["trees"] = "trees";
   GitFetchEnum2["blobs"] = "blobs";
 })(GitFetchEnum || (GitFetchEnum = {}));
-const gitConfig = defaultConfig.git;
+const gitConfig = {};
 function init$1(configFile) {
   const dclUserConfigGitOption = configFile.git;
   Object.keys(gitConfig).forEach((key) => {
@@ -34380,7 +34380,7 @@ const http = {
   gitUrl
 };
 
-const fileConfig = defaultConfig.file;
+const fileConfig = {};
 function init(configFile) {
   const dlcFileConfig = configFile.file;
   Object.keys(fileConfig).forEach((key) => {
@@ -40875,7 +40875,7 @@ function errorWrapper(fn) {
   };
 }
 
-const CNONFIG_FILE_LIST = ["dlc.config.js", "dlc.config.ts"];
+const CNONFIG_FILE_LIST = ["dlc.config.ts", "dlc.config.js"];
 const defualtParse = async (path2, data) => {
   return [Buffer$1.from(data.content, "base64"), "utf-8"];
 };

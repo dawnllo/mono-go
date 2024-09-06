@@ -47,6 +47,9 @@ const dtsConfig = defineConfig({
 
 // 常规打包
 const normalConfig = defineConfig({
+  external: [
+    'fsevents'
+  ],
   plugins: [
     ...commonPlugins,
     json(),
