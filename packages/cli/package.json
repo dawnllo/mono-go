@@ -39,7 +39,7 @@
     "build:vite": "vite build",
     "build:rollup": "rollup --config rollup.config.ts --configPlugin esbuild",
     "tsx": "tsx ./index.ts",
-    "dlc": "node ./dist/index.cjs"
+    "dlc": "node ./dist/index.mjs"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^12.0.1",

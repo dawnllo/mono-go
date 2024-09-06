@@ -40,6 +40,7 @@
     "tsx": "^4.19.0",
     "typescript": "^5.4.4",
     "unplugin-auto-import": "^0.18.2",
+    "unplugin-externalize-deps": "^0.0.10",
     "vite": "^5.2.8",
     "vite-plugin-node-polyfills": "^0.21.0"
   },

@@ -9,6 +9,7 @@ import typescript from 'rollup-plugin-typescript2'
 import esbuild from 'rollup-plugin-esbuild'
 import { dts } from 'rollup-plugin-dts'
 import alias from '@rollup/plugin-alias'
+import UnpluginExternalizeDeps from 'unplugin-externalize-deps/rollup';
 
 const pkg = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url)).toString(),
@@ -48,10 +49,11 @@ const dtsConfig = defineConfig({
 // 常规打包
 const normalConfig = defineConfig({
   external: [
-    'fsevents'
+    // 'fsevents'
   ],
   plugins: [
     ...commonPlugins,
+    UnpluginExternalizeDeps(),
     json(),
     commonjs({
       defaultIsModuleExports: 'auto',

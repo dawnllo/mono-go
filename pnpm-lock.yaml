@@ -68,6 +68,9 @@ importers:
       unplugin-auto-import:
         specifier: ^0.18.2
         version: 0.18.2(@nuxt/kit@3.12.4(rollup@4.18.0))(@vueuse/core@10.11.1)(rollup@4.18.0)
+      unplugin-externalize-deps:
+        specifier: ^0.0.10
+        version: 0.0.10
       vite:
         specifier: ^5.2.8
         version: 5.2.11(@types/node@20.12.12)
@@ -5065,6 +5068,10 @@ packages:
         optional: true
       '@vueuse/core':
         optional: true
+
+  unplugin-externalize-deps@0.0.10:
+    resolution: {integrity: sha512-eX/ZdnjSUfJVhawu2Qtw9SoA2+Msh9LzvZ5E3TigpUl+t25ZHZ4cGVoqqTF+0Vk+JEFp5Whk6sQmSWleaS8BZQ==}
+    engines: {node: '>=16'}
 
   unplugin-icons@0.19.2:
     resolution: {integrity: sha512-QkQJ/Iz3PFr/EoiOvFUQYvqbbJZ7Vs3hObKAFHh5eywTU1PQagSNeXKGRD+JpzXSTnUNLtG0u/xEA5Ec2OeANQ==}
@@ -11209,6 +11216,10 @@ snapshots:
       '@vueuse/core': 10.11.1(vue@3.4.37(typescript@5.5.4))
     transitivePeerDependencies:
       - rollup
+
+  unplugin-externalize-deps@0.0.10:
+    dependencies:
+      unplugin: 1.12.1
 
   unplugin-icons@0.19.2(@vue/compiler-sfc@3.4.37):
     dependencies:
