@@ -1,14 +1,18 @@
 #!/usr/bin/env node
-import process, { cwd } from 'node:process';
-import path from 'node:path';
-import fs from 'node:fs';
-import { Buffer } from 'node:buffer';
-import { loadConfigFromFile } from 'vite';
-import chalk from 'chalk';
-import prompts from 'prompts';
-import 'ora';
 
-const colors = [
+// common/config.ts
+import { cwd as cwd2 } from "node:process";
+import path3 from "node:path";
+import fs3 from "node:fs";
+import { Buffer } from "node:buffer";
+import { loadConfigFromFile } from "vite";
+
+// common/error.ts
+import process from "node:process";
+
+// utils/log.ts
+import chalk from "chalk";
+var colors = [
   "black",
   "red",
   "green",
@@ -43,7 +47,7 @@ const colors = [
   "bgCyanBright",
   "bgWhiteBright"
 ];
-const log = {};
+var log = {};
 colors.forEach((item) => {
   log[item] = (...strs) => {
     console.log(chalk[item](...strs));
@@ -53,33 +57,27 @@ colors.forEach((item) => {
   log[`_${item}`] = chalk[item];
 });
 
-var GitFetchEnum;
-(function(GitFetchEnum2) {
-  GitFetchEnum2["branches"] = "branches";
-  GitFetchEnum2["contents"] = "contents";
-  GitFetchEnum2["trees"] = "trees";
-  GitFetchEnum2["blobs"] = "blobs";
-})(GitFetchEnum || (GitFetchEnum = {}));
-const gitConfig = {};
-function init$1(configFile) {
+// utils/http.ts
+var gitConfig = {};
+function init(configFile) {
   const dclUserConfigGitOption = configFile.git;
   Object.keys(gitConfig).forEach((key) => {
     gitConfig[key] = dclUserConfigGitOption[key];
   });
 }
-const urlStrategy = {
-  [GitFetchEnum.contents]: (option) => {
-    const path = option.sha ? `${option.sha}` : "";
+var urlStrategy = {
+  ["contents" /* contents */]: (option) => {
+    const path4 = option.sha ? `${option.sha}` : "";
     const branch = option.branch || gitConfig.defaultBranch;
-    return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/contents/${path}?ref=${branch}`;
+    return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/contents/${path4}?ref=${branch}`;
   },
-  [GitFetchEnum.branches]: () => {
+  ["branches" /* branches */]: () => {
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/branches`;
   },
-  [GitFetchEnum.trees]: (option) => {
+  ["trees" /* trees */]: (option) => {
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/trees/${option.sha}${option.recursive ? "?recursive=1" : ""}`;
   },
-  [GitFetchEnum.blobs]: (option) => {
+  ["blobs" /* blobs */]: (option) => {
     return `https://api.github.com/repos/${gitConfig.owner}/${gitConfig.repo}/git/blobs/${option.sha}`;
   }
 };
@@ -103,17 +101,20 @@ async function gitUrl(url) {
   const res = await fetch(options);
   const json = await res.json();
   if (json.message)
-    throw new DLCHttpError(ERROR_TYPE_ENUM.HTTP, json.message);
+    throw new DLCHttpError("git_http_error" /* HTTP */, json.message);
   return json;
 }
-const http = {
-  init: init$1,
+var http = {
+  init,
   git,
   gitUrl
 };
 
-const fileConfig = {};
-function init(configFile) {
+// utils/file.ts
+import fs from "node:fs";
+import path from "node:path";
+var fileConfig = {};
+function init2(configFile) {
   const dlcFileConfig = configFile.file;
   Object.keys(fileConfig).forEach((key) => {
     fileConfig[key] = dlcFileConfig[key];
@@ -185,14 +186,19 @@ function rmSyncValidate(input) {
     return false;
   return true;
 }
-const file = {
-  init,
+var file = {
+  init: init2,
   writeFileSync,
   rmSyncFile,
   rmSyncEmptyDir,
   pathRename
 };
 
+// utils/prompts.ts
+import path2 from "node:path";
+import { cwd } from "node:process";
+import fs2 from "node:fs";
+import prompts from "prompts";
 async function confirm(message) {
   message = message || `file or directory already exists, rename?`;
   return await prompts({
@@ -265,11 +271,11 @@ function repeatFactory(confirmMsg, textMsg) {
     name: ""
   };
   return async function repeat_confirm_text(name, count = 0) {
-    const dirname = path.dirname(name);
-    const extname = path.extname(name);
-    const basename = path.basename(name, extname);
-    const targetPath = path.resolve(cwd(), name);
-    const isExist = fs.existsSync(targetPath);
+    const dirname = path2.dirname(name);
+    const extname = path2.extname(name);
+    const basename = path2.basename(name, extname);
+    const targetPath = path2.resolve(cwd(), name);
+    const isExist = fs2.existsSync(targetPath);
     if (!isExist) {
       return {
         confirm: true,
@@ -284,14 +290,14 @@ function repeatFactory(confirmMsg, textMsg) {
     };
     answer = await confirm_text(confirmMsg, textMsg);
     if (answer.confirm && answer.name) {
-      const newName = path.join(dirname, answer.name + extname);
+      const newName = path2.join(dirname, answer.name + extname);
       count++;
       return await repeat_confirm_text(newName, count);
     }
     return initAnswer;
   };
 }
-const pro = {
+var pro = {
   confirm,
   text,
   list,
@@ -301,26 +307,28 @@ const pro = {
   repeatFactory
 };
 
-var ERROR_TYPE_ENUM;
-(function(ERROR_TYPE_ENUM2) {
-  ERROR_TYPE_ENUM2["HTTP"] = "git_http_error";
-  ERROR_TYPE_ENUM2["SYNTAX"] = "syntax_error";
-})(ERROR_TYPE_ENUM || (ERROR_TYPE_ENUM = {}));
-let DLCHttpError$1 = class DLCHttpError extends Error {
+// utils/download.ts
+import ora from "ora";
+
+// utils/ora.ts
+import ora2 from "ora";
+
+// common/error.ts
+var DLCHttpError2 = class extends Error {
   constructor(type, message) {
     super(message);
     this.type = type;
   }
 };
 function errorInit() {
-  globalThis.DLCHttpError = DLCHttpError$1;
+  globalThis.DLCHttpError = DLCHttpError2;
 }
 function handlerHttpError(error) {
   log.red(`gitApi request error: ${error.message}`);
 }
-const errorHandler = {
-  [ERROR_TYPE_ENUM.HTTP]: handlerHttpError,
-  [ERROR_TYPE_ENUM.SYNTAX]: handlerHttpError
+var errorHandler = {
+  ["git_http_error" /* HTTP */]: handlerHttpError,
+  ["syntax_error" /* SYNTAX */]: handlerHttpError
 };
 function errorWrapper(fn) {
   return async function(...args) {
@@ -338,11 +346,12 @@ function errorWrapper(fn) {
   };
 }
 
-const CNONFIG_FILE_LIST = ["dlc.config.ts", "dlc.config.js"];
-const defualtParse = async (path2, data) => {
+// common/config.ts
+var CNONFIG_FILE_LIST = ["dlc.config.ts", "dlc.config.js"];
+var defualtParse = async (path4, data) => {
   return [Buffer.from(data.content, "base64"), "utf-8"];
 };
-const defaultConfig = {
+var defaultConfig = {
   root: ".",
   rootResolvePath: "",
   // 运行时,init 绝对路径
@@ -362,33 +371,37 @@ const defaultConfig = {
 };
 async function getRootPath() {
   const packageName = "package.json";
-  let curCwdPath = cwd();
+  let curCwdPath = cwd2();
   for (const element of CNONFIG_FILE_LIST) {
     while (curCwdPath) {
-      const configFile = path.join(curCwdPath, element);
-      const packFile = path.join(curCwdPath, packageName);
-      if (fs.existsSync(configFile) && fs.existsSync(packFile))
+      const configFile = path3.join(curCwdPath, element);
+      const packFile = path3.join(curCwdPath, packageName);
+      if (fs3.existsSync(configFile) && fs3.existsSync(packFile))
         return { rootResolvePath: curCwdPath, configFileName: element };
-      if (curCwdPath === path.dirname(curCwdPath))
+      if (curCwdPath === path3.dirname(curCwdPath))
         return void 0;
-      curCwdPath = path.dirname(curCwdPath);
+      curCwdPath = path3.dirname(curCwdPath);
     }
   }
 }
-const initConfig = errorWrapper(async () => {
+var initConfig = errorWrapper(async () => {
   const result = await getRootPath();
   if (!result)
     throw new Error(log._red("config file not found"));
   const { rootResolvePath, configFileName } = result;
-  const configFileResolvePath = path.join(rootResolvePath, configFileName);
+  const configFileResolvePath = path3.join(rootResolvePath, configFileName);
   let mergeConfig = {};
-  if (fs.existsSync(configFileResolvePath)) {
+  if (fs3.existsSync(configFileResolvePath)) {
     const loadParams = {
       configEnv: {},
       configFile: configFileResolvePath,
-      configRoot: rootResolvePath || cwd()
+      configRoot: rootResolvePath || cwd2()
     };
-    const loadResult = await loadConfigFromFile(loadParams.configEnv, loadParams.configFile, loadParams.configRoot);
+    const loadResult = await loadConfigFromFile(
+      loadParams.configEnv,
+      loadParams.configFile,
+      loadParams.configRoot
+    );
     mergeConfig = Object.assign(defaultConfig, loadResult?.config);
   } else {
     mergeConfig = defaultConfig;
@@ -400,11 +413,13 @@ const initConfig = errorWrapper(async () => {
   return mergeConfig;
 });
 
+// index.ts
 function defineConfig(config) {
   return config;
 }
 (async () => {
   await initConfig();
 })();
-
-export { defineConfig };
+export {
+  defineConfig
+};
