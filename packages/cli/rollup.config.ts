@@ -11,6 +11,8 @@ import { dts } from 'rollup-plugin-dts'
 import alias from '@rollup/plugin-alias'
 import { visualizer } from 'rollup-plugin-visualizer'
 import UnpluginExternalizeDeps from 'unplugin-externalize-deps/rollup'
+import UnpluginDetectDuplicatedDeps from 'unplugin-detect-duplicated-deps/rollup'
+// import test from './rollup-plugins/test.js'
 
 const pkg = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url)).toString(),
@@ -52,6 +54,7 @@ const normalConfig = defineConfig({
   external: ['fsevents', 'lightningcss'],
   plugins: [
     ...commonPlugins,
+    // test(),
     json(),
     commonjs({
       defaultIsModuleExports: 'auto',
@@ -72,6 +75,7 @@ const normalConfig = defineConfig({
     // ts构建
     esbuild(),
     visualizer(),
+    UnpluginDetectDuplicatedDeps(),
     UnpluginExternalizeDeps(),
   ],
   input: {
