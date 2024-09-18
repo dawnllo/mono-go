@@ -1,0 +1,82 @@
+<mxfile host="65bd71144e">
+    <diagram id="Mvq47Znp77yn4hpHZeEB" name="Page-1">
+        <mxGraphModel dx="1941" dy="1763" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="4" value="core" style="edgeStyle=none;html=1;" edge="1" parent="1" source="3">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="100" y="110" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="14" value="core" style="edgeStyle=none;html=1;" edge="1" parent="1" source="3">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="350" y="110" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="350" y="40"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="3" value="nuxt/index.ts" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="320" y="-50" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="5" target="6">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="&lt;h1&gt;createNuxt&lt;/h1&gt;&lt;div&gt;./core/nuxt&lt;/div&gt;&lt;div&gt;1. 初始化hooks&lt;/div&gt;&lt;div&gt;2. 准备 nuxt 全局上下文&lt;/div&gt;&lt;div&gt;3. 上下文中的 ready 执行 initNuxt&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="5" y="110" width="190" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="&lt;h1&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;initNuxt&lt;/span&gt;&lt;/h1&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;1. 注册用户钩子&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;2. 兼容性，promptAndUpdate&amp;nbsp; 确认更新&lt;/span&gt;&lt;/div&gt;&lt;div&gt;3. layers 目录变化，重载nuxt&lt;/div&gt;&lt;div&gt;4. 通过 @nuxt/kit 中 nuxtCtx 为 useNuxt 设置实例&lt;/div&gt;&lt;div&gt;5. 针对nuxt.options.typescript.hoist 配置的类型路径，同时除去 dependencies、devDependencies提供的 类型注入，以及 去重&amp;nbsp;&amp;nbsp;&lt;span style=&quot;color: rgb(106, 153, 85); background-color: rgb(30, 30, 30); font-family: Gabriala, Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px;&quot;&gt;deduplicate types for nightly releases&lt;/span&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;6. 添加各种 hook 及 plugin， 监听文件变化hook，&lt;font color=&quot;#ff6666&quot;&gt;initNitro&lt;/font&gt;，&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="-70" y="250" width="335" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="&lt;ul style=&quot;font-size: 12px; font-weight: 400; text-align: left;&quot;&gt;&lt;li&gt;&lt;div style=&quot;color: rgb(212, 212, 212); font-family: Gabriala, Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px; text-align: center;&quot;&gt;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;nightlies&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;color: rgb(212, 212, 212); font-family: Gabriala, Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px; text-align: center;&quot;&gt;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'nitropack'&lt;/span&gt;:&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'nitropack-nightly'&lt;/span&gt;,&lt;/div&gt;&lt;div style=&quot;color: rgb(212, 212, 212); font-family: Gabriala, Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px; text-align: center;&quot;&gt;&amp;nbsp;&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'nitro'&lt;/span&gt;:&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'nitro-nightly'&lt;/span&gt;,&lt;/div&gt;&lt;div style=&quot;color: rgb(212, 212, 212); font-family: Gabriala, Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px; text-align: center;&quot;&gt;&amp;nbsp;&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'h3'&lt;/span&gt;:&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'h3-nightly'&lt;/span&gt;,&lt;/div&gt;&lt;div style=&quot;color: rgb(212, 212, 212); font-family: Gabriala, Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px; text-align: center;&quot;&gt;&amp;nbsp;&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'nuxt'&lt;/span&gt;:&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'nuxt-nightly'&lt;/span&gt;,&lt;/div&gt;&lt;div style=&quot;color: rgb(212, 212, 212); font-family: Gabriala, Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px; text-align: center;&quot;&gt;&amp;nbsp;&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'@nuxt/schema'&lt;/span&gt;:&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'@nuxt/schema-nightly'&lt;/span&gt;,&lt;/div&gt;&lt;div style=&quot;color: rgb(212, 212, 212); font-family: Gabriala, Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px; text-align: center;&quot;&gt;&amp;nbsp;&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'@nuxt/kit'&lt;/span&gt;:&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;'@nuxt/kit-nightly'&lt;/span&gt;,&lt;/div&gt;&lt;/li&gt;&lt;/ul&gt;" style="text;strokeColor=none;fillColor=none;html=1;fontSize=24;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+                    <mxGeometry x="-490" y="280" width="380" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="f" style="endArrow=classic;html=1;" edge="1" parent="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="390" y="-20" as="sourcePoint"/>
+                        <mxPoint x="520" y="100" as="targetPoint"/>
+                        <Array as="points"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="21" value="core" style="edgeLabel;resizable=0;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1" parent="20">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="&lt;h1&gt;loadNuxt&lt;/h1&gt;&lt;div&gt;./core/nuxt&lt;/div&gt;&lt;div&gt;@nuxt/kit 中使用&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;1. options的 appDir/ app/ builder/ _modules/ alias/ modulesDir/ nitro/ 的处理&lt;/div&gt;&lt;div&gt;2. createNuxt(options)&lt;/div&gt;&lt;div&gt;3.&amp;nbsp;&lt;span style=&quot;background-color: rgb(30, 30, 30); color: rgb(212, 212, 212); font-family: Gabriala, Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px;&quot;&gt;checkDependencyVersion,&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: rgb(30, 30, 30); color: rgb(212, 212, 212); font-family: Gabriala, Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px;&quot;&gt;keyDependencies&lt;/span&gt;&lt;/div&gt;&lt;div&gt;3. return nuxt&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="105" width="190" height="205" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="&lt;h1&gt;build&lt;/h1&gt;&lt;div&gt;./core/builder&lt;/div&gt;&lt;div&gt;1. generateApp() 来自 ./app&lt;/div&gt;&lt;div&gt;2. nuxt.options.dev 时添加watcher&lt;/div&gt;&lt;div&gt;3. bundle&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="440" y="100" width="220" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" style="edgeStyle=none;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;fontColor=#FF6666;" edge="1" parent="1" source="24" target="3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="app" style="edgeStyle=none;html=1;fontColor=#FF6666;" edge="1" parent="1" source="24">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="810" y="-40" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="27" value="runtime dirs: core/ head/ components/ pages" style="edgeStyle=none;html=1;fontColor=#FF6666;" edge="1" parent="1" source="24">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1320" y="-40" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="24" value="build.config.ts" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FF6666;" vertex="1" parent="1">
+                    <mxGeometry x="540" y="-220" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="" style="edgeStyle=none;html=1;fontColor=#FF6666;" edge="1" parent="1" source="28" target="31">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" value="app/index.ts" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FF6666;" vertex="1" parent="1">
+                    <mxGeometry x="780" y="-40" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="module/runtime" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FF6666;" vertex="1" parent="1">
+                    <mxGeometry x="1280" y="-40" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="entry / nuxt.ts" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FF6666;" vertex="1" parent="1">
+                    <mxGeometry x="680" y="30" width="260" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
