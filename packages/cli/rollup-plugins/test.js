@@ -3,10 +3,7 @@ export default function test() {
     name: 'test',
     resolveId: {
       async handler(importee, importer, resolveOptions) {
-        if (importee.includes('chalk')) {
-          console.log(importee)
-          console.log(345, resolveOptions.custom)
-        }
+        console.log(123, importee, importer, resolveOptions)
       },
     },
   }
