@@ -73,7 +73,7 @@ importers:
         version: 5.5.4
       unplugin-auto-import:
         specifier: ^0.18.2
-        version: 0.18.2(@nuxt/kit@3.13.1(rollup@4.21.2))(@vueuse/core@11.0.3)(rollup@4.21.2)
+        version: 0.18.2(@nuxt/kit@3.13.1(rollup@4.21.2))(@vueuse/core@11.0.3(vue@3.5.3(typescript@5.5.4)))(rollup@4.21.2)
       unplugin-detect-duplicated-deps:
         specifier: ^2.0.0
         version: 2.0.0(rollup@4.21.2)
@@ -6771,17 +6771,6 @@ snapshots:
       - '@vue/composition-api'
       - vue
 
-  '@vueuse/core@11.0.3':
-    dependencies:
-      '@types/web-bluetooth': 0.0.20
-      '@vueuse/metadata': 11.0.3
-      '@vueuse/shared': 11.0.3
-      vue-demi: 0.14.10
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-    optional: true
-
   '@vueuse/core@11.0.3(vue@3.5.3(typescript@5.5.4))':
     dependencies:
       '@types/web-bluetooth': 0.0.20
@@ -6828,14 +6817,6 @@ snapshots:
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
-
-  '@vueuse/shared@11.0.3':
-    dependencies:
-      vue-demi: 0.14.10
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-    optional: true
 
   '@vueuse/shared@11.0.3(vue@3.5.3(typescript@5.5.4))':
     dependencies:
@@ -6921,14 +6902,6 @@ snapshots:
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.0.0
-
-  axios@1.7.7:
-    dependencies:
-      follow-redirects: 1.15.9
-      form-data: 4.0.0
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
 
   axios@1.7.7(debug@4.3.7):
     dependencies:
@@ -8277,8 +8250,6 @@ snapshots:
       vue-resize: 2.0.0-alpha.1(vue@3.5.3(typescript@5.5.4))
     optionalDependencies:
       '@nuxt/kit': 3.13.1(rollup@4.21.2)
-
-  follow-redirects@1.15.9: {}
 
   follow-redirects@1.15.9(debug@4.3.7):
     optionalDependencies:
@@ -10597,7 +10568,7 @@ snapshots:
 
   unpipe@1.0.0: {}
 
-  unplugin-auto-import@0.18.2(@nuxt/kit@3.13.1(rollup@4.21.2))(@vueuse/core@11.0.3)(rollup@4.21.2):
+  unplugin-auto-import@0.18.2(@nuxt/kit@3.13.1(rollup@4.21.2))(@vueuse/core@11.0.3(vue@3.5.3(typescript@5.5.4)))(rollup@4.21.2):
     dependencies:
       '@antfu/utils': 0.7.10
       '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
@@ -10609,7 +10580,7 @@ snapshots:
       unplugin: 1.13.1
     optionalDependencies:
       '@nuxt/kit': 3.13.1(rollup@4.21.2)
-      '@vueuse/core': 11.0.3
+      '@vueuse/core': 11.0.3(vue@3.5.3(typescript@5.5.4))
     transitivePeerDependencies:
       - rollup
       - webpack-sources
@@ -10617,7 +10588,7 @@ snapshots:
   unplugin-detect-duplicated-deps@2.0.0(rollup@4.21.2):
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@4.21.2)
-      axios: 1.7.7
+      axios: 1.7.7(debug@4.3.7)
       cardinal: 2.1.1
       consola: 3.2.3
       picocolors: 1.1.0
@@ -10852,9 +10823,6 @@ snapshots:
       vscode-languageserver-protocol: 3.17.5
 
   vscode-uri@3.0.8: {}
-
-  vue-demi@0.14.10:
-    optional: true
 
   vue-demi@0.14.10(vue@3.5.3(typescript@5.5.4)):
     dependencies:
