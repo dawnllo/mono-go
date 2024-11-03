@@ -384,7 +384,7 @@ interface UserConfigGitOption {
 }
 interface UserConfigFileOption {
     removeWhitePath: string[];
-    downloadRelativePath: string;
+    downloadRelativeDest: string;
     parse: (path: string, data: any) => Promise<WriteFileSyncRestParams>;
 }
 type UserConfigFnObject = () => UserConfig;

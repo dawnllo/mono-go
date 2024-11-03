@@ -351,7 +351,7 @@ const defaultConfig = {
   file: {
     // 文件下载/操作相关
     removeWhitePath: [],
-    downloadRelativePath: ".",
+    downloadRelativeDest: ".",
     parse: defualtParse
     // 内容解析函数
   },

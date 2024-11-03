@@ -26,8 +26,8 @@ export default async function load(this: MiddleWare, _ctx: Context) {
     // 单个文件,直接下载
     if (json.type === 'file') {
       console.log('json', json)
-      const downloadRelativePath = path.join(configFile.file.downloadRelativePath, newPath)
-      const filePath = path.resolve(cwd(), downloadRelativePath)
+      const downloadRelativeDest = path.join(configFile.file.downloadRelativeDest, newPath)
+      const filePath = path.resolve(cwd(), downloadRelativeDest)
 
       // 解析
       // const parse: ParseFunc = async (path, data) => {

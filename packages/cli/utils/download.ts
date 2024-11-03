@@ -67,26 +67,28 @@ async function treeLayerCatalog(data, type: GitFetchEnum.trees | GitFetchEnum.co
 
 async function fileBlob(catalogItem: CatalogItem, configFile: UserConfig, parse: ParseFunc): Promise<string> {
   const { url, path: itemPath } = catalogItem
-  const downloadRelativePath = path.join(configFile.file.downloadRelativePath, itemPath)
+  const downloadRelativeDest = path.join(configFile.file.downloadRelativeDest, itemPath)
 
-  const spinner = ora(log._green(downloadRelativePath)).start()
+  const spinner = ora(log._green(downloadRelativeDest)).start()
   const data = await http.gitUrl(url)
 
   spinner.stop()
 
   // 绝对路径
-  const filePath = path.resolve(cwd(), downloadRelativePath)
+  const filePath = path.resolve(cwd(), downloadRelativeDest)
   const restParams = await parse(filePath, data)
 
   let finishPath
   try {
     finishPath = await file.writeFileSync(filePath, restParams)
   }
+
+  // eslint-disable-next-line unused-imports/no-unused-vars
   catch (error) {
     throw new Error('writeFileSync error.')
   }
 
-  spinner.succeed(log._green(`${downloadRelativePath}, success.`))
+  spinner.succeed(log._green(`${downloadRelativeDest}, success.`))
   return finishPath
 }
 
@@ -126,6 +128,8 @@ async function recursiveFileBlob(
       }
     }
   }
+
+  // eslint-disable-next-line unused-imports/no-unused-vars
   catch (error) {
     for (const filePath of finishPaths)
       await file.rmSyncFile(`${filePath}`) // 删除whitepath
@@ -137,6 +141,7 @@ async function recursiveFileBlob(
 
     // 起始层, 不需要报错;
     if (_level > 1)
+      // 内层catch, 删除了内层下载的文件, 外层的也需要通过报错捕获删除, 所以内层仍要在catch报错, 让上层捕获
       throw new Error('download trees error.')
   }
   finally {

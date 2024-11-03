@@ -43,18 +43,14 @@ const dtsConfig = defineConfig({
   },
   external: [
     ...Object.keys(pkg.dependencies || {}).filter(d => d !== 'chalk'),
-    // lightningcss types are bundled
-    ...Object.keys(pkg.devDependencies || {}).filter(d => d !== 'lightningcss'),
   ],
   plugins: [...commonPlugins, dts({ respectExternal: true })],
 })
 
 // 常规打包
 const normalConfig = defineConfig({
-  external: ['fsevents', 'lightningcss'],
   plugins: [
     ...commonPlugins,
-    // test(),
     json(),
     commonjs({
       defaultIsModuleExports: 'auto',

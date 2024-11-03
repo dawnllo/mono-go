@@ -3,7 +3,7 @@ import { defineConfig } from '@dawnll/dlc'
 export default defineConfig({
   file: {
     removeWhitePath: [],
-    downloadRelativePath: 'template',
+    downloadRelativeDest: 'template',
   },
 
   git: {
