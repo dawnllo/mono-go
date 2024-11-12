@@ -7,7 +7,7 @@ import { consola } from 'consola'
 import fg from 'fast-glob'
 import fs from 'fs-extra'
 import YAML from 'yaml'
-import { packages } from '../meta/packages'
+import { packages } from './meta/packages'
 import { version } from '../package.json'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
@@ -65,31 +65,10 @@ async function buildMetaFiles() {
 }
 
 async function build() {
-  consola.info('Clean up')
-  exec('pnpm run clean', { stdio: 'inherit' })
-
-  consola.info('Generate Imports')
-  // await updateImport(metadata)
-
   consola.info('Rollup')
   exec(`pnpm run build:rollup${watch ? ' -- --watch' : ''}`, { stdio: 'inherit' })
-
-  consola.info('Fix types')
-  exec('pnpm run types:fix', { stdio: 'inherit' })
 
   await buildMetaFiles()
 }
 
-async function cli() {
-  try {
-    await build()
-  }
-  catch (e) {
-    console.error(e)
-    process.exit(1)
-  }
-}
-
-export {
-  build,
-}
+build()

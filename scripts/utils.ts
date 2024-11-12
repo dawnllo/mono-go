@@ -1,5 +1,5 @@
-import type { PackageManifest } from '../meta/packages'
-import { packages } from '../meta/packages'
+import type { PackageManifest } from './meta/packages'
+import { packages } from './meta/packages'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'

@@ -11,14 +11,18 @@
     "node": ">=20.14.0"
   },
   "scripts": {
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "ppt": "pnpm --filter @dawnll/ppt dev",
-    "build:vite": "pnpm --filter @dawnll/dlc build:vite",
+    "update": "tsx ./scripts/_update.ts",
     "build:rollup": "pnpm --filter @dawnll/dlc build:rollup",
     "build:tsup": "pnpm --filter @dawnll/dlc build:tsup",
+    "ppt": "pnpm --filter @dawnll/ppt dev",
     "dlc": "pnpm --filter @dawnll/dlc run dlc",
-    "dlc:tsx": "pnpm --filter @dawnll/dlc run tsx"
+    "dlc:tsx": "pnpm --filter @dawnll/dlc run tsx",
+
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "md5": "^2.3.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.27.3",
@@ -56,8 +60,5 @@
     "vite": "^5.4.3",
     "vite-plugin-node-polyfills": "^0.21.0",
     "yaml": "^2.6.0"
-  },
-  "dependencies": {
-    "md5": "^2.3.0"
   }
 }

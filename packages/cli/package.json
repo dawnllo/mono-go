@@ -36,9 +36,7 @@
     "node": ">=20.14.0"
   },
   "scripts": {
-    "build:vite": "vite build",
     "build:rollup": "rollup --config rollup.config.ts --configPlugin esbuild",
-    "build:tsup": "tsup",
     "tsx": "tsx ./index.ts",
     "dlc": "node ./dist/index.js"
   },
