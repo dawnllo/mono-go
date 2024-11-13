@@ -1,7 +1,7 @@
 {
   "name": "@dawnll/monorepo",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "packageManager": "pnpm@9.1.4",
   "description": "dawnl monorepo",
   "author": "dawnl",
@@ -12,12 +12,14 @@
   },
   "scripts": {
     "update": "tsx ./scripts/_update.ts",
+    "release": "tsx ./scripts/bumpp.ts",
+    "publish": "tsx ./scripts/publish.ts",
+    "urp": "pnpm update && pnpm release && pnpm publish",
     "build:rollup": "pnpm --filter @dawnll/dlc build:rollup",
     "build:tsup": "pnpm --filter @dawnll/dlc build:tsup",
     "ppt": "pnpm --filter @dawnll/ppt dev",
     "dlc": "pnpm --filter @dawnll/dlc run dlc",
     "dlc:tsx": "pnpm --filter @dawnll/dlc run tsx",
-
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
@@ -34,6 +36,8 @@
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.16.5",
     "@unocss/eslint-plugin": "0.59.0-beta.1",
+    "bumpp": "^9.8.1",
+    "cac": "^6.7.14",
     "consola": "^3.2.3",
     "esbuild": "^0.23.1",
     "eslint": "^9.10.0",

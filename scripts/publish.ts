@@ -2,14 +2,10 @@ import { execSync } from 'node:child_process'
 import path from 'node:path'
 import { consola } from 'consola'
 import { packages } from './meta/packages'
-import { version } from '../package.json'
 
-execSync('npm run build', { stdio: 'inherit' })
+execSync('pnpm run build', { stdio: 'inherit' })
 
-let command = 'npm publish --access public'
-
-if (version.includes('beta'))
-  command += ' --tag beta'
+let command = 'pnpm publish --access public'
 
 for (const { name } of packages) {
   execSync(command, { stdio: 'inherit', cwd: path.join('packages', name, 'dist') })
