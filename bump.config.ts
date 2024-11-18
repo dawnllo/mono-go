@@ -6,6 +6,7 @@ export default defineConfig({
   files: [
     'package.json',
     'packages/*/package.json',
+    '!packages/element-v2/package.json',
   ],
 })
 
