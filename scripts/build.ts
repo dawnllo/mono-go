@@ -14,18 +14,16 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
 const watch = process.argv.includes('--watch')
 
+// 全局需要融合到dist目录中的文件
 const FILES_COPY_ROOT = [
   'LICENSE',
 ]
 
+// 每个模块需要融合到dist目录中的文件
 const FILES_COPY_LOCAL = [
   'README.md',
   'index.json',
-  '*.cjs',
-  '*.mjs',
-  '*.d.ts',
-  '*.d.cts',
-  '*.d.mts',
+  '*.md',
 ]
 
 assert(process.cwd() !== __dirname)
@@ -67,7 +65,7 @@ async function buildMetaFiles() {
 async function build() {
   consola.info('Rollup')
   exec(`pnpm run build:rollup${watch ? ' -- --watch' : ''}`, { stdio: 'inherit' })
-
+  // 使用文档、开源协议、package.json版本号修改组织在一起
   await buildMetaFiles()
 }
 

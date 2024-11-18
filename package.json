@@ -13,6 +13,7 @@
   "scripts": {
     "update": "tsx ./scripts/_update.ts",
     "release": "tsx ./scripts/bumpp.ts",
+    "build": "tsx ./scripts/build.ts",
     "publish": "tsx ./scripts/publish.ts",
     "urp": "pnpm update && pnpm release && pnpm publish",
     "build:rollup": "pnpm --filter @dawnll/dlc build:rollup",
