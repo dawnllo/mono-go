@@ -1,7 +1,7 @@
 {
   "name": "@dawnll/monorepo",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "packageManager": "pnpm@9.1.4",
   "description": "dawnl monorepo",
   "author": "dawnl",
