@@ -38,7 +38,7 @@ if (oldVersion === newVersion) {
   process.exit(0)
 }
 
-// 本地更新versions.ts
+// 更新完版本号后，更新meta/versions.ts
 const files = await fg([
   'packages/*/package.json',
 ], {
