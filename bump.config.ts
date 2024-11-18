@@ -1,11 +1,12 @@
 // bump.config.ts
 import type { InterfaceOptions, VersionBumpProgress } from 'bumpp'
-import {  defineConfig } from 'bumpp'
+import { defineConfig } from 'bumpp'
 
 export default defineConfig({
   files: [
-    'packages/*/package.json'
-  ]
+    'package.json',
+    'packages/*/package.json',
+  ],
 })
 
 /**

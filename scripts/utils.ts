@@ -1,5 +1,3 @@
-import type { PackageManifest } from './meta/packages'
-import { packages } from './meta/packages'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
@@ -7,6 +5,8 @@ import matter from 'gray-matter'
 import YAML from 'js-yaml'
 import { $fetch } from 'ofetch'
 import Git from 'simple-git'
+import { packages } from './meta/packages'
+import type { PackageManifest } from './meta/packages'
 
 export const DOCS_URL = 'https://dawnll.org'
 export const DIR_SRC = resolve(__dirname, '../packages')

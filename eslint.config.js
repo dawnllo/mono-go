@@ -11,5 +11,9 @@ export default antfu({
       'eol-last': 'error',
       'no-console': 'off',
     },
+    typescript: {
+      '@typescript-eslint/no-unused-expressions': 'off',
+      'ts/ban-ts-comment': 'off',
+    },
   },
 })

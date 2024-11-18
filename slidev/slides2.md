@@ -160,7 +160,7 @@ Use code snippets and get the highlighting directly, and even types hover![^1]
 // and errors in markdown code blocks
 // More at https://shiki.style/packages/twoslash
 
-import { computed, ref } from "vue"
+import { computed, ref } from 'vue'
 
 const count = ref(0)
 const doubled = computed(() => count.value * 2)
@@ -639,7 +639,6 @@ hide: false
 
 ---
 
-
 ---
 
 # Monaco Editor
@@ -649,8 +648,8 @@ Slidev provides built-in Monaco Editor support.
 Add `{monaco}` to the code block to turn it into an editor:
 
 ```ts {monaco}
-import { ref } from "vue"
-import { emptyArray } from "./external"
+import { ref } from 'vue'
+import { emptyArray } from './external'
 
 const arr = ref(emptyArray(10))
 ```
@@ -658,14 +657,14 @@ const arr = ref(emptyArray(10))
 Use `{monaco-run}` to create an editor that can execute the code directly in the slide:
 
 ```ts {monaco-run}
-import { version } from "vue"
-import { emptyArray, sayHello } from "./external"
+import { version } from 'vue'
+import { emptyArray, sayHello } from './external'
 
 sayHello()
 console.log(`vue ${version}`)
 console.log(
   emptyArray<number>(10).reduce(
-    (fib) => [...fib, fib.at(-1)! + fib.at(-2)!],
+    fib => [...fib, fib.at(-1)! + fib.at(-2)!],
     [1, 1]
   )
 )

@@ -1,7 +1,7 @@
 {
   "name": "@dawnll/element-v3",
   "type": "module",
-  "version": "0.0.4",
+  "version": "0.0.1",
   "packageManager": "pnpm@9.1.4",
   "description": "dawanll element-v3",
   "author": "dawnl",

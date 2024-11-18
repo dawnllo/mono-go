@@ -5,7 +5,7 @@ import { packages } from './meta/packages'
 
 execSync('pnpm run build', { stdio: 'inherit' })
 
-let command = 'pnpm publish --access public'
+const command = 'pnpm publish --access public'
 
 for (const { name } of packages) {
   execSync(command, { stdio: 'inherit', cwd: path.join('packages', name, 'dist') })

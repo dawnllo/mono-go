@@ -7,8 +7,8 @@ import { consola } from 'consola'
 import fg from 'fast-glob'
 import fs from 'fs-extra'
 import YAML from 'yaml'
-import { packages } from './meta/packages'
 import { version } from '../package.json'
+import { packages } from './meta/packages'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const rootDir = path.resolve(__dirname, '..')

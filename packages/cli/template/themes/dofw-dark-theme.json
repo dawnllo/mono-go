@@ -65,7 +65,7 @@
     "panelTitle.activeBorder": "#42b883",
     "panelTitle.activeForeground": "#42b883",
     "panelTitle.inactiveForeground": "#939293",
-    "panelInput.border": "#42b883",
+    "panelInput.border": "#42b883"
   },
   "tokenColors": [
     {
