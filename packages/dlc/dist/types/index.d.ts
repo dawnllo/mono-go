@@ -371,7 +371,6 @@ type ExcludeFirstParams<T extends any[]> = T extends [any, ...rest: infer R] ? R
 type WriteFileSyncRestParams = ExcludeFirstParams<Parameters<typeof fs.writeFileSync>>;
 
 interface UserConfig {
-    root: string;
     rootResolvePath: string;
     file: UserConfigFileOption;
     git: UserConfigGitOption;

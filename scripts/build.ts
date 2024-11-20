@@ -7,7 +7,6 @@ import { consola } from 'consola'
 import fg from 'fast-glob'
 import fs from 'fs-extra'
 import YAML from 'yaml'
-import { version } from '../package.json'
 import { packages } from './meta/packages'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
@@ -35,9 +34,6 @@ async function buildMetaFiles() {
     const packageRoot = path.resolve(rootDir, 'packages', name)
     const packageDist = path.resolve(packageRoot, 'dist')
 
-    if (name === 'core')
-      await fs.copyFile(path.join(rootDir, 'README.md'), path.join(packageDist, 'README.md'))
-
     for (const file of FILES_COPY_ROOT)
       await fs.copyFile(path.join(rootDir, file), path.join(packageDist, file))
 
@@ -45,9 +41,12 @@ async function buildMetaFiles() {
     for (const file of files)
       await fs.copyFile(path.join(packageRoot, file), path.join(packageDist, file))
 
-    const packageJSON = await fs.readJSON(path.join(packageRoot, 'package.json'))
+    // 检查每个模块的package.json，将本地依赖
+    const packageJSON = await getPackageJson(name)
     for (const [key, value] of Object.entries(packageJSON.dependencies || {})) {
-      if (key.startsWith('@vueuse/')) {
+      if (key.startsWith('@dawnll/')) {
+        const packageName = key.replace('@dawnll/', '')
+        const { version } = await getPackageJson(packageName)
         packageJSON.dependencies[key] = version
       }
       else if ((value as string).startsWith('catalog:')) {
@@ -60,6 +59,16 @@ async function buildMetaFiles() {
     delete packageJSON.devDependencies
     await fs.writeJSON(path.join(packageDist, 'package.json'), packageJSON, { spaces: 2 })
   }
+}
+
+async function getPackageJson(packageName: string) {
+  const packageRoot = path.resolve(rootDir, 'packages', packageName)
+  const jsonPath = path.join(packageRoot, 'package.json')
+
+  if (!await fs.pathExists(jsonPath))
+    throw new Error(`Cannot find package.json for ${packageName}!`)
+
+  return await fs.readJSON(jsonPath)
 }
 
 async function build() {

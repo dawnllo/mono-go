@@ -1,7 +1,7 @@
 {
   "name": "@dawnll/element-v2",
   "type": "module",
-  "version": "0.0.5",
+  "version": "0.0.1",
   "packageManager": "pnpm@9.1.4",
   "description": "dawnll element v2",
   "author": "dawnl",
@@ -14,7 +14,7 @@
     "dlc": "dlc"
   },
   "dependencies": {
-    "vue-demi": "^0.14.8"
+    "vue-demi": "catalog:"
   },
   "devDependencies": {
     "@dawnll/dlc": "workspace:^"

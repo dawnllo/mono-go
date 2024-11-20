@@ -340,19 +340,21 @@ function errorWrapper(fn) {
 
 const CNONFIG_FILE_LIST = ["dlc.config.ts", "dlc.config.js"];
 const defualtParse = async (path2, data) => {
-  return [Buffer.from(data.content, "base64"), "utf-8"];
+  const content = Buffer.from(data.content, "base64");
+  return [content, "utf-8"];
 };
 const defaultConfig = {
-  root: ".",
   rootResolvePath: "",
   // 运行时,init 绝对路径
   file: {
-    // 文件下载/操作相关
     removeWhitePath: [],
+    // 删除白名单
     downloadRelativeDest: ".",
+    // 目标文件夹
     parse: defualtParse
     // 内容解析函数
   },
+  // git 为必填项，这里处理用户字段合理性需要。
   git: {
     owner: "Dofw",
     repo: "vs-theme",
@@ -375,29 +377,63 @@ async function getRootPath() {
     }
   }
 }
+function normalizeConfigPath(mergeConfig2, rootResolvePath) {
+  mergeConfig2.rootResolvePath = rootResolvePath;
+  if (!mergeConfig2.file.removeWhitePath && !Array.isArray(mergeConfig2.file.removeWhitePath))
+    throw new Error(log._red("removeWhitePath must be string array"));
+  mergeConfig2.file.removeWhitePath = mergeConfig2.file.removeWhitePath.map((item) => {
+    if (typeof item !== "string")
+      throw new Error(log._red("removeWhitePath must be string array"));
+    return path.resolve(rootResolvePath, item);
+  });
+}
+function checkGitConfig(config) {
+  if (!config.git)
+    throw new Error(log._red("git config is not complete"));
+  const keys = Object.keys(defaultConfig.git);
+  keys.forEach((key) => {
+    if (!config.git[key])
+      throw new Error(log._red(`${key} is require key in config.git`));
+  });
+}
+function mergeConfig(defaultConfig2, inputConfig) {
+  inputConfig = inputConfig || {};
+  const keys = Object.keys(defaultConfig2);
+  const configKeys = Object.keys(inputConfig);
+  configKeys.forEach((key) => {
+    if (!keys.includes(key))
+      throw new Error(log._red(`${key} is invalid key in config`));
+    if (typeof inputConfig[key] === "object") {
+      inputConfig[key] = mergeConfig(defaultConfig2[key], inputConfig[key]);
+    }
+  });
+  const result = Object.assign(defaultConfig2, inputConfig);
+  return result;
+}
 const initConfig = errorWrapper(async () => {
   const result = await getRootPath();
   if (!result)
-    throw new Error(log._red("config file not found"));
+    throw new Error(log._red("current cwd not found config file dlc.config.ts or dlc.config.js!!"));
   const { rootResolvePath, configFileName } = result;
   const configFileResolvePath = path.join(rootResolvePath, configFileName);
-  let mergeConfig = {};
-  if (fs.existsSync(configFileResolvePath)) {
-    const loadParams = {
-      configEnv: {},
-      configFile: configFileResolvePath,
-      configRoot: rootResolvePath || cwd()
-    };
-    const loadResult = await loadConfigFromFile(loadParams.configEnv, loadParams.configFile, loadParams.configRoot);
-    mergeConfig = Object.assign(defaultConfig, loadResult?.config);
-  } else {
-    mergeConfig = defaultConfig;
-  }
-  console.log("mergeConfig", mergeConfig);
-  file.init(mergeConfig);
-  http.init(mergeConfig);
+  if (!fs.existsSync(configFileResolvePath))
+    throw new Error(log._red("config file not found!!"));
+  let config = {};
+  const loadParams = {
+    configEnv: {},
+    configFile: configFileResolvePath,
+    configRoot: rootResolvePath || cwd()
+  };
+  const loadResult = await loadConfigFromFile(loadParams.configEnv, loadParams.configFile, loadParams.configRoot);
+  const inputConfig = loadResult?.config;
+  checkGitConfig(inputConfig);
+  config = mergeConfig(defaultConfig, inputConfig);
+  normalizeConfigPath(config, rootResolvePath);
+  console.log(123, JSON.stringify(config));
+  file.init(config);
+  http.init(config);
   errorInit();
-  return mergeConfig;
+  return config;
 });
 
 function defineConfig(config) {

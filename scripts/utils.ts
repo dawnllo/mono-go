@@ -1,10 +1,12 @@
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import process from 'node:process'
 import fs from 'fs-extra'
 import matter from 'gray-matter'
 import YAML from 'js-yaml'
 import { $fetch } from 'ofetch'
 import Git from 'simple-git'
+import cac from 'cac'
 import { packages } from './meta/packages'
 import type { PackageManifest } from './meta/packages'
 
@@ -42,54 +44,29 @@ export function uniq<T extends any[]>(a: T) {
   return Array.from(new Set(a))
 }
 
-// export async function updateImport({ packages, functions }: PackageIndexes) {
-//   for (const { name, dir, manualImport } of Object.values(packages)) {
-//     if (manualImport)
-//       continue
+/**
+ * 利用cac库解析命令行参数
+ * result.args: 获取未匹配的命令行参数
+ * result.options: 获取匹配的命令行参数
+ * result.rawArgs: 获取原始命令行参数process.argv
+ * result.options['--']: -- 是指cac中， -- 后面的不会被作为指令。
+ * @param argv
+ * @returns
+ */
+interface ParseArgsResult {
+  '--': string[]
+  'matchArgs': Record<string, any>
+  'noMatchArgs': Record<string, any>
+}
+export function parseArgs(argv = process.argv): ParseArgsResult {
+  const cli = cac('tools')
+  const result = cli.parse(argv)
+  const noMatchArgs = result.args // 获取未匹配的命令行参数
+  const matchArgs = result.options
 
-//     let imports: string[]
-//     if (name === 'components') {
-//       imports = functions
-//         .sort((a, b) => a.name.localeCompare(b.name))
-//         .flatMap((fn) => {
-//           const arr: string[] = []
-
-//           // don't include integration components
-//           if (fn.package === 'integrations')
-//             return arr
-
-//           if (fn.component)
-//             arr.push(`export * from '../${fn.package}/${fn.name}/component'`)
-//           if (fn.directive)
-//             arr.push(`export * from '../${fn.package}/${fn.name}/directive'`)
-//           return arr
-//         })
-//     }
-//     else {
-//       imports = functions
-//         .filter(i => i.package === name)
-//         .map(f => f.name)
-//         .sort()
-//         .map(name => `export * from './${name}'`)
-//     }
-
-//     if (name === 'core') {
-//       imports.push(
-//         'export * from \'./types\'',
-//         'export * from \'@vueuse/shared\'',
-//         'export * from \'./ssr-handlers\'',
-//       )
-//     }
-
-//     if (name === 'nuxt') {
-//       imports.push(
-//         'export * from \'@vueuse/core\'',
-//       )
-//     }
-
-//     await fs.writeFile(join(dir, 'index.ts'), `${imports.join('\n')}\n`)
-
-//     // temporary file for export-size
-//     await fs.remove(join(dir, 'index.mjs'))
-//   }
-// }
+  return {
+    '--': result.options['--'] || [],
+    matchArgs,
+    noMatchArgs,
+  }
+}

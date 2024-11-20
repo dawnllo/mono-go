@@ -20,7 +20,7 @@ export interface PackageManifest {
 
 export const packages: PackageManifest[] = [
   {
-    name: 'cli',
+    name: 'dlc',
     display: 'add template by dlc cli',
     manualImport: true,
   },

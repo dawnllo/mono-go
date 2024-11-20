@@ -9,5 +9,5 @@ const command = 'pnpm publish --access public'
 
 for (const { name } of packages) {
   execSync(command, { stdio: 'inherit', cwd: path.join('packages', name, 'dist') })
-  consola.success(`Published @vueuse/${name}`)
+  consola.success(`Published @dawnll/${name}`)
 }
