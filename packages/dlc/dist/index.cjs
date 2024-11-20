@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 'use strict';
 
-var process = require('node:process');
-var path = require('node:path');
+var extraTypings = require('@commander-js/extra-typings');
+var chalk = require('chalk');
 var fs = require('node:fs');
+var path = require('node:path');
+var process = require('node:process');
+var prompts = require('prompts');
+var ora = require('ora');
 var node_buffer = require('node:buffer');
 var vite = require('vite');
-var chalk = require('chalk');
-var prompts = require('prompts');
-require('ora');
 
 const colors = [
   "black",
@@ -54,6 +55,43 @@ colors.forEach((item) => {
 colors.forEach((item) => {
   log[`_${item}`] = chalk[item];
 });
+
+var ERROR_TYPE_ENUM;
+(function(ERROR_TYPE_ENUM2) {
+  ERROR_TYPE_ENUM2["HTTP"] = "git_http_error";
+  ERROR_TYPE_ENUM2["SYNTAX"] = "syntax_error";
+})(ERROR_TYPE_ENUM || (ERROR_TYPE_ENUM = {}));
+let DLCHttpError$1 = class DLCHttpError extends Error {
+  constructor(type, message) {
+    super(message);
+    this.type = type;
+  }
+};
+function errorInit() {
+  globalThis.DLCHttpError = DLCHttpError$1;
+}
+function handlerHttpError(error) {
+  log.red(`gitApi request error: ${error.message}`);
+}
+const errorHandler = {
+  [ERROR_TYPE_ENUM.HTTP]: handlerHttpError,
+  [ERROR_TYPE_ENUM.SYNTAX]: handlerHttpError
+};
+function errorWrapper(fn) {
+  return async function(...args) {
+    try {
+      return await fn.apply(this, args);
+    } catch (error) {
+      if (typeof error === "string")
+        log.red(error);
+      else if (errorHandler[error.type])
+        errorHandler[error.type]?.(error);
+      else
+        log.red(error);
+      process.exit(0);
+    }
+  };
+}
 
 var GitFetchEnum;
 (function(GitFetchEnum2) {
@@ -195,7 +233,7 @@ const file = {
   pathRename
 };
 
-async function confirm(message) {
+async function confirm$1(message) {
   message = message || `file or directory already exists, rename?`;
   return await prompts({
     type: "toggle",
@@ -253,7 +291,7 @@ async function autoMultiselect(choices, message, suggest, onState) {
   });
 }
 async function confirm_text(confirmMsg, textMsg) {
-  const step1 = await confirm(confirmMsg);
+  const step1 = await confirm$1(confirmMsg);
   const step2 = step1.confirm ? await text(textMsg) : { name: "" };
   return {
     ...step1,
@@ -294,7 +332,7 @@ function repeatFactory(confirmMsg, textMsg) {
   };
 }
 const pro = {
-  confirm,
+  confirm: confirm$1,
   text,
   list,
   autoMultiselect,
@@ -303,42 +341,294 @@ const pro = {
   repeatFactory
 };
 
-var ERROR_TYPE_ENUM;
-(function(ERROR_TYPE_ENUM2) {
-  ERROR_TYPE_ENUM2["HTTP"] = "git_http_error";
-  ERROR_TYPE_ENUM2["SYNTAX"] = "syntax_error";
-})(ERROR_TYPE_ENUM || (ERROR_TYPE_ENUM = {}));
-let DLCHttpError$1 = class DLCHttpError extends Error {
-  constructor(type, message) {
-    super(message);
-    this.type = type;
+function oneLayerCatalog(data, type) {
+  if (!data)
+    return [];
+  const urlKey = type === GitFetchEnum.contents ? "git_url" : "url";
+  const catalog = [];
+  for (const item of data) {
+    const ele = {
+      path: item.path,
+      url: item[urlKey],
+      type: type === GitFetchEnum.contents ? item.type : item.type === "tree" ? "dir" : "file",
+      size: item.size,
+      sha: item.sha
+    };
+    catalog.push(ele);
   }
-};
-function errorInit() {
-  globalThis.DLCHttpError = DLCHttpError$1;
+  return catalog;
 }
-function handlerHttpError(error) {
-  log.red(`gitApi request error: ${error.message}`);
-}
-const errorHandler = {
-  [ERROR_TYPE_ENUM.HTTP]: handlerHttpError,
-  [ERROR_TYPE_ENUM.SYNTAX]: handlerHttpError
-};
-function errorWrapper(fn) {
-  return async function(...args) {
-    try {
-      return await fn.apply(this, args);
-    } catch (error) {
-      if (typeof error === "string")
-        log.red(error);
-      else if (errorHandler[error.type])
-        errorHandler[error.type]?.(error);
-      else
-        log.red(error);
-      process.exit(0);
+let treeLevel = 0;
+async function treeLayerCatalog(data, type, level) {
+  const oneLayer = oneLayerCatalog(data, type);
+  treeLevel++;
+  try {
+    for (let i = 0; i < oneLayer.length; i++) {
+      const element = oneLayer[i];
+      if (element.type === "dir" && (!level || treeLevel < level)) {
+        const json = await http.gitUrl(element.url);
+        oneLayer[i].children = await treeLayerCatalog(json.tree, GitFetchEnum.trees, level);
+        oneLayer[i].children = oneLayer[i].children?.map((item) => {
+          return {
+            ...item,
+            relativeInputPath: path.join(element.path, item.path)
+          };
+        });
+      }
     }
-  };
+  } finally {
+    treeLevel--;
+  }
+  return oneLayer;
 }
+async function fileBlob(catalogItem, configFile, parse) {
+  const { url, path: itemPath } = catalogItem;
+  const downloadRelativeDest = path.join(configFile.file.downloadRelativeDest, itemPath);
+  const spinner = ora(log._green(downloadRelativeDest)).start();
+  const data = await http.gitUrl(url);
+  spinner.stop();
+  const filePath = path.resolve(process.cwd(), downloadRelativeDest);
+  const restParams = await parse(filePath, data);
+  let finishPath;
+  try {
+    finishPath = await file.writeFileSync(filePath, restParams);
+  } catch (error) {
+    throw new Error("writeFileSync error.");
+  }
+  spinner.succeed(log._green(`${downloadRelativeDest}, success.`));
+  return finishPath;
+}
+let _level = 0;
+async function recursiveFileBlob(catalogItem, configFile, parse) {
+  _level++;
+  const finishPaths = [];
+  const { sha, path: path2 } = catalogItem;
+  try {
+    const config = {
+      type: GitFetchEnum.trees,
+      sha
+    };
+    const json = await http.git(config);
+    const catalog = oneLayerCatalog(json.tree, GitFetchEnum.trees);
+    for (const item of catalog) {
+      item.path = `${path2}/${item.path}`;
+      if (item.type === "file") {
+        const finish = await fileBlob(item, configFile, parse);
+        finishPaths.push(finish);
+      } else if (item.type === "dir") {
+        const finishs = await recursiveFileBlob(item, configFile, parse);
+        finishPaths.push(...finishs);
+      }
+    }
+  } catch (error) {
+    for (const filePath of finishPaths)
+      await file.rmSyncFile(`${filePath}`);
+    await file.rmSyncEmptyDir(path2);
+    log.white("-- quit --");
+    if (_level > 1)
+      throw new Error("download trees error.");
+  } finally {
+    _level--;
+  }
+  return finishPaths;
+}
+const download = {
+  fileBlob,
+  recursiveFileBlob,
+  oneLayerCatalog,
+  treeLayerCatalog
+};
+
+async function oraWrapper(cb, param, start = log._yellow("loading..."), end = log._green("success")) {
+  const spinner = ora(start).start();
+  let result;
+  cb && (result = await cb(param));
+  spinner.succeed(end);
+  return result;
+}
+
+function repeatEmptyStr(num) {
+  let str = "";
+  for (let i = 0; i < num; i++)
+    str += " ";
+  return str;
+}
+const tools = {
+  repeatEmptyStr
+};
+
+class MiddleWare {
+  constructor() {
+    this.queues = [];
+    this.iterator = null;
+  }
+  construction() {
+  }
+  use(fn) {
+    if (typeof fn !== "function")
+      throw new Error("param must be a function");
+    this.queues.push(fn.bind(this));
+    return this;
+  }
+  async run(context) {
+    this.context = context;
+    this.iterator = this.generator();
+    let result = this.iterator.next();
+    const handlerResult = async () => {
+      if (result.done)
+        return;
+      const res = result.value(this.context);
+      if (res && typeof res.then === "function") {
+        try {
+          await res;
+          result = this.iterator.next();
+          await handlerResult();
+        } catch (error) {
+          result = this.iterator.throw(error);
+          await handlerResult();
+        }
+      } else {
+        result = this.iterator.next();
+        handlerResult();
+      }
+    };
+    await handlerResult();
+  }
+  cancel(str = "cancel", color = "yellow") {
+    if (this.iterator) {
+      log[color](str);
+      return this.iterator.return("cancel");
+    } else {
+      throw new Error("not execute run !");
+    }
+  }
+  *generator() {
+    const queues = this.queues;
+    for (let i = 0; i < queues.length; i++) {
+      const fn = queues[i];
+      yield fn;
+    }
+    return "done";
+  }
+}
+
+async function load(_ctx) {
+  const { answers: { confirm }, args: [path, branch], configFile } = _ctx;
+  const { parse } = configFile.file;
+  let newPath = path;
+  if (confirm.isRenamed)
+    newPath = file.pathRename(path, confirm.name);
+  const config = {
+    type: GitFetchEnum.contents,
+    sha: newPath,
+    branch
+  };
+  await oraWrapper(async () => {
+    const json = await http.git(config);
+    if (json.type === "file") {
+      console.log("json", json);
+      const downloadRelativeDest = path.join(configFile.file.downloadRelativeDest, newPath);
+      const filePath = path.resolve(process.cwd(), downloadRelativeDest);
+      await file.writeFileSync(filePath, [json.content]);
+    } else {
+      const arrs = download.oneLayerCatalog(json, GitFetchEnum.contents);
+      for (const fileOption of arrs)
+        await dowanloadFunc(fileOption, configFile, parse);
+    }
+  });
+}
+async function dowanloadFunc(fileOption, configFile, parse) {
+  const { type } = fileOption;
+  if (type === "file") {
+    await download.fileBlob(fileOption, configFile, parse);
+    return;
+  }
+  if (type === "dir")
+    await download.recursiveFileBlob(fileOption, configFile, parse);
+}
+
+async function confirm(ctx) {
+  const { args: [path] } = ctx;
+  const answer = await pro.repeat_confirm_text(path);
+  if (!answer.confirm)
+    this.cancel();
+  ctx.answers.confirm = answer;
+}
+
+const app = new MiddleWare();
+app.use(confirm).use(load);
+async function addAction(configFile, _args) {
+  const [path] = _args;
+  if (!path)
+    throw new Error(chalk.red("Missing require argument: `tempalte`."));
+  const context = {
+    args: _args,
+    answers: {
+      confirm: {
+        confirm: false,
+        isRenamed: false,
+        name: ""
+      }
+    },
+    configFile
+  };
+  await app.run(context);
+}
+var addAction$1 = errorWrapper(addAction);
+
+let coutLevel = 0;
+async function getListAction(configFile, _args) {
+  const [repPath, branch, { level }] = _args;
+  const config = {
+    type: GitFetchEnum.contents,
+    sha: repPath,
+    branch
+  };
+  const catalog = await oraWrapper(async () => {
+    const json = await http.git(config);
+    console.log(json);
+    return await download.treeLayerCatalog(json, GitFetchEnum.contents, +level);
+  });
+  const choices = mapChoices(catalog, level);
+  const suggest = async (input, choices2) => {
+    return choices2.filter((choice) => {
+      return choice.title.toLowerCase().includes(input.toLowerCase());
+    });
+  };
+  const { selects } = await pro.autoMultiselect(choices, `show ${level} layer catalog.`, suggest);
+  const selects2 = selects || [];
+  if (selects2.length === 0)
+    return;
+  log.yellow(`note: the path is relative to root of repository. selected:`);
+  for (let i = 0; i < selects2.length; i++) {
+    const element = selects2[i];
+    log.green(element.relativeInputPath);
+  }
+}
+function mapChoices(data, level) {
+  const result = [];
+  for (let i = 0; i < data.length; i++) {
+    const element = data[i];
+    const markStr = element.type === "dir" ? "\u{1F4C2}" : "\u{1F4C4}";
+    const relativeInputPath = element.relativeInputPath ? element.relativeInputPath : element.path;
+    result.push({
+      title: `${tools.repeatEmptyStr(coutLevel * 3)}${markStr} ${element.path}`,
+      value: {
+        path: element.path,
+        type: element.type,
+        relativeInputPath
+      }
+    });
+    if (element.children && coutLevel < level - 1) {
+      coutLevel++;
+      const childResult = mapChoices(element.children, level);
+      coutLevel--;
+      result.push(...childResult);
+    }
+  }
+  return result;
+}
+var getListAction$1 = errorWrapper(getListAction);
 
 const CNONFIG_FILE_LIST = ["dlc.config.ts", "dlc.config.js"];
 const defualtParse = async (path2, data) => {
@@ -431,7 +721,6 @@ const initConfig = errorWrapper(async () => {
   checkGitConfig(inputConfig);
   config = mergeConfig(defaultConfig, inputConfig);
   normalizeConfigPath(config, rootResolvePath);
-  console.log(123, JSON.stringify(config));
   file.init(config);
   http.init(config);
   errorInit();
@@ -442,7 +731,17 @@ function defineConfig(config) {
   return config;
 }
 (async () => {
-  await initConfig();
+  const config = await initConfig();
+  const gitConfig = config.git;
+  const dlc = new extraTypings.Command();
+  dlc.name("dlc-cli").description("study build myself Cli Tool !").version("0.0.1");
+  dlc.command("add").argument("<path>", "file or directory path of template repository.").argument("[branch]", "branch to use", gitConfig.defaultBranch).description("add template").action((...args) => {
+    addAction$1(config, args);
+  });
+  dlc.command("list-remote").argument("[path]", "path to use", "").argument("[branch]", "branch to use", gitConfig.defaultBranch).option("-l, --level <num>", "level layer of catalog ", "3").description("view the remote template list").action((...args) => {
+    getListAction$1(config, args);
+  });
+  dlc.parse();
 })();
 
 exports.defineConfig = defineConfig;
