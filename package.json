@@ -15,7 +15,7 @@
     "update": "tsx ./scripts/_update.ts",
     "release": "tsx ./scripts/bumpp.ts",
     "build": "pnpm clean && tsx ./scripts/build.ts",
-    "publish": "tsx ./scripts/publish.ts",
+    "publish:ci": "tsx ./scripts/publish.ts",
     "urp": "pnpm update && pnpm release && pnpm publish",
     "build:rollup": "pnpm --filter @dawnll/dlc build:rollup",
     "build:tsup": "pnpm --filter @dawnll/dlc build:tsup",
