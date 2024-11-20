@@ -136,7 +136,6 @@ export const initConfig = errorWrapper(async () => {
   config = mergeConfig(defaultConfig, inputConfig)
 
   normalizeConfigPath(config, rootResolvePath)
-  console.log(123, JSON.stringify(config))
 
   file.init(config) // file模块初始化
   http.init(config) // http模块初始化
