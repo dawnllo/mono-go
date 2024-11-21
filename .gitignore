@@ -2,7 +2,7 @@
 node_modules
 dist
 packages/*/LICENSE
-packages/cli/stats.html
+packages/dlc/stats.html
 *.sock
 .idea
 .vscode/
