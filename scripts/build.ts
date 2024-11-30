@@ -41,8 +41,16 @@ async function buildMetaFiles() {
     for (const file of files)
       await fs.copyFile(path.join(packageRoot, file), path.join(packageDist, file))
 
-    // 检查每个模块的package.json，将本地依赖
     const packageJSON = await getPackageJson(name)
+    // common meta, homepage, repository
+    packageJSON.homepage = 'https://github.com/dawnllo/mono-go#readme'
+    packageJSON.repository = {
+      type: 'git',
+      url: 'git+https://github.com/dawnllo/mono-go.git',
+      directory: `packages/${name}`,
+    }
+
+    // 检查每个模块的package.json，将本地依赖
     for (const [key, value] of Object.entries(packageJSON.dependencies || {})) {
       if (key.startsWith('@dawnll/')) {
         const packageName = key.replace('@dawnll/', '')
