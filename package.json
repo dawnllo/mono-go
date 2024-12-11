@@ -22,7 +22,10 @@
     "ppt": "pnpm --filter @dawnll/ppt dev",
     "dlc:tsx": "pnpm --filter @dawnll/dlc run tsx",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "md5": "catalog:"
@@ -65,6 +68,7 @@
     "unplugin-externalize-deps": "catalog:",
     "vite": "catalog:",
     "vite-plugin-node-polyfills": "catalog:",
+    "vitepress": "^1.5.0",
     "yaml": "catalog:"
   }
 }

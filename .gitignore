@@ -7,3 +7,5 @@ packages/dlc/stats.html
 .idea
 .vscode/
 coverage/
+docs/.vitepress/dist
+docs/.vitepress/cache
