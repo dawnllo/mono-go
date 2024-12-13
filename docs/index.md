@@ -4,8 +4,8 @@ layout: home
 
 hero:
   name: "do.while"
-  text: "A VitePress Site"
-  tagline: My great project tagline
+  text: "lifting the world."
+  tagline: "provide a cli tool to download templates from reponsitories. and so on."
   actions:
     - theme: brand
       text: Markdown Examples
@@ -16,10 +16,9 @@ hero:
 
 features:
   - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    details: 我们的世界
   - title: Feature B
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
   - title: Feature C
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
 ---
-
