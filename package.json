@@ -57,6 +57,7 @@
     "rollup-plugin-typescript2": "catalog:",
     "rollup-plugin-visualizer": "catalog:",
     "simple-git": "catalog:",
+    "tinyglobby": "^0.2.10",
     "ts-node": "catalog:",
     "tsconfig-paths": "catalog:",
     "tslib": "catalog:",
