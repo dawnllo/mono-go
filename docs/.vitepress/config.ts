@@ -1,29 +1,27 @@
 import { defineConfig } from 'vitepress'
-import { getPackageSide } from '../utils'
-
-const pkgName = {
-  v2: 'element-v2',
-  v3: 'element-v3',
-}
+import { createPackageLinksSide } from '../utils/createPackageLinksSide'
 
 export default async function () {
-  const [v2Items, v3Items] = await Promise.all([
-    getPackageSide(pkgName.v2),
-    getPackageSide(pkgName.v3),
+  const [v3Sidebar] = await Promise.all([
+    createPackageLinksSide('element-v3'),
   ])
-
-  console.log(v2Items, v3Items)
 
   return defineConfig({
     title: 'do.while',
     lang: 'en-ZH',
+    cleanUrls: true,
+    rewrites: {
+      'packages/:pkg/:index': ':pkg/:index',
+      'packages/:pkg/components/:comp': ':pkg/components/:comp',
+    },
+
     themeConfig: {
       nav: [
         { text: 'Home', link: '/' },
         { text: 'Guide', link: '/guide' },
         { text: 'Template', items: [
           { text: 'Element v2', link: '/element-v2' },
-          { text: 'Element v3', link: '/element-v3' },
+          { text: 'Element v3', link: '/element-v3/components/List' },
         ] },
       ],
 
@@ -37,23 +35,8 @@ export default async function () {
             ],
           },
         ],
-        '/element-v2': v2Items,
-        // '/element-v3': v3Items,
-        '/element-v3': [
-          {
-            text: 'components',
-            items: [
-              {
-                text: 'List',
-                link: '/element-v3/components/List',
-              },
-              {
-                text: 'Upload',
-                link: '/element-v3/components/Upload',
-              },
-            ],
-          },
-        ],
+        // '/element-v2': v2Items, // TODO use dynamic sidebar
+        '/element-v3': v3Sidebar,
       },
 
       socialLinks: [
