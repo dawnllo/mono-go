@@ -3,9 +3,7 @@
 </script>
 
 <template>
-  <div>
-    markdown use vue-components
-  </div>
+  packages-element-v3-upload
 </template>
 
 <style scoped>

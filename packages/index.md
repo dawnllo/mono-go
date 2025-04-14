@@ -8,11 +8,11 @@ hero:
   tagline: "provide a cli tool to download templates from reponsitories. and so on."
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: Home
+      link: /
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: Guide
+      link: /docs/guide/
 
 features:
   - title: Feature A
