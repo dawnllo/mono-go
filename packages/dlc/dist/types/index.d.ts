@@ -389,4 +389,5 @@ interface UserConfigFileOption {
 type UserConfigFnObject = () => UserConfig;
 type UserConfigExport = UserConfig | UserConfigFnObject;
 
-export { type CatalogItem, type ExcludeFirstParams, type FuncKeys, GitFetchEnum, type GitHttpOption, type PRepeatConfirmText, type ParseFunc, type UserConfig, type UserConfigExport, type UserConfigFileOption, type UserConfigFnObject, type UserConfigGitOption, type WriteFileSyncRestParams, download, file, http, log, oraWrapper, pro, tools };
+export { GitFetchEnum, download, file, http, log, oraWrapper, pro, tools };
+export type { CatalogItem, ExcludeFirstParams, FuncKeys, GitHttpOption, PRepeatConfirmText, ParseFunc, UserConfig, UserConfigExport, UserConfigFileOption, UserConfigFnObject, UserConfigGitOption, WriteFileSyncRestParams };

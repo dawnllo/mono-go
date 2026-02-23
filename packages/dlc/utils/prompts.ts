@@ -76,8 +76,6 @@ async function autoMultiselect(choices, message?, suggest?: (input, choices) => 
     name: 'selects',
     initial: 0,
     limit: 100,
-    optionsPerPage: 100,
-    fallback: 'no match!',
     instructions: false,
     message,
     choices,

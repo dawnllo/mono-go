@@ -3,8 +3,12 @@
 </script>
 
 <template>
+
+
+
   <div>
     markdown use vue-components
+    
   </div>
 </template>
 

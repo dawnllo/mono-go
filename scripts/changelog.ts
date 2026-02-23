@@ -2,7 +2,6 @@
  * vueuse 在 vitepress 中使用 changelog
  */
 
-import md5 from 'md5'
 import Git from 'simple-git'
 import { uniq } from './utils'
 

@@ -9,9 +9,9 @@
     "export": "slidev export"
   },
   "dependencies": {
-    "@slidev/cli": "catalog:",
-    "@slidev/theme-default": "catalog:",
+    "@slidev/cli": "catalog:ppt",
+    "@slidev/theme-default": "catalog:ppt",
     "@slidev/theme-seriph": "latest",
-    "vue": "catalog:"
+    "vue": "catalog:frontend"
   }
 }

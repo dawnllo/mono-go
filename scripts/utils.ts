@@ -1,13 +1,7 @@
 import { join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import process from 'node:process'
 import fs from 'fs-extra'
-import matter from 'gray-matter'
-import YAML from 'js-yaml'
-import { $fetch } from 'ofetch'
-import Git from 'simple-git'
 import cac from 'cac'
-import { packages } from './meta/packages'
 import type { PackageManifest } from './meta/packages'
 
 export const DOCS_URL = 'https://dawnll.org'

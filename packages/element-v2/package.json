@@ -2,7 +2,7 @@
   "name": "@dawnll/element-v2",
   "type": "module",
   "version": "0.0.2",
-  "packageManager": "pnpm@9.1.4",
+  "packageManager": "pnpm@10.28.2",
   "description": "dawnll element v2",
   "author": "dawnl",
   "license": "ISC",
@@ -14,7 +14,7 @@
     "dlc": "dlc"
   },
   "dependencies": {
-    "vue-demi": "catalog:"
+    "vue-demi": "catalog:frontend"
   },
   "devDependencies": {
     "@dawnll/dlc": "workspace:^"

@@ -2,7 +2,7 @@
   "name": "@dawnll/dlc",
   "type": "module",
   "version": "0.0.2",
-  "packageManager": "pnpm@9.1.4",
+  "packageManager": "pnpm@10.28.2",
   "description": "command dlc, a cli tool",
   "author": "dawnl",
   "license": "ISC",
@@ -40,15 +40,13 @@
     "tsx": "tsx ./index.ts"
   },
   "dependencies": {
-    "@commander-js/extra-typings": "catalog:",
-    "@types/inquirer": "catalog:",
-    "adm-zip": "catalog:",
-    "chalk": "catalog:",
-    "commander": "catalog:",
-    "crypto-js": "catalog:",
-    "download-git-repo": "catalog:",
-    "ora": "catalog:",
-    "prompts": "catalog:",
-    "vite": "catalog:"
+    "@commander-js/extra-typings": "catalog:cli",
+    "@types/inquirer": "catalog:types",
+    "adm-zip": "catalog:tool",
+    "chalk": "catalog:cli",
+    "commander": "catalog:cli",
+    "download-git-repo": "catalog:tool",
+    "ora": "catalog:cli",
+    "vite": "catalog:build"
   }
 }

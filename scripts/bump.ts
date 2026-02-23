@@ -4,10 +4,7 @@ import fs from 'fs-extra'
 import fg from 'fast-glob'
 import prompts from 'prompts'
 
-
 import { consola } from 'consola'
-
-
 
 const pkgs = [
   'dlc',
@@ -15,24 +12,22 @@ const pkgs = [
   'element-v3',
 ]
 
-const {selects} = await prompts({
+const { selects } = await prompts({
   type: 'autocompleteMultiselect',
   name: 'selects',
   initial: 0,
   limit: 100,
-  optionsPerPage: 100,
-  fallback: 'no match!',
   instructions: false,
   message: 'Select packages to bump',
   choices: pkgs.map((pkg) => {
     return {
       title: pkg,
-      value: pkg
+      value: pkg,
     }
   }),
   onState: () => {
     consola.success(`--onState--`)
-  }
+  },
 })
 
 const allUpState: boolean[] = []
@@ -40,19 +35,19 @@ for (const pkg of selects) {
   console.log(pkg)
   const isUp = await updateVersion(pkg)
   allUpState.push(isUp)
-  if(!isUp) {
+  if (!isUp) {
     console.log(`${pkg} no version change`)
     continue
   }
 }
 
-if (allUpState.every((isUp) => isUp === false)) {
+if (allUpState.every(isUp => isUp === false)) {
   console.log(`no version change`)
   process.exit(0)
 }
 
 // 更新版本号
-function updateVersion(pkg) : boolean {
+function updateVersion(pkg): boolean {
   const pkgPath = `packages/${pkg}/package.json`
   if (!fs.existsSync(pkgPath)) {
     console.log(`${pkgPath} not exist!`)
